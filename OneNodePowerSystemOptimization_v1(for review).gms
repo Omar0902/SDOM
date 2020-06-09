@@ -134,7 +134,7 @@ Positive Variables
          GenWind(h) Generated wind power during hour h
          CurtWind(h) Generated wind power during hour h
          CapCC Capacity requirements for backup gas combined cycle units (MW)
-         GenCC(h) Generation from the backup gas combined cycle units (MWh)
+         GenCC(h) Generation from backup gas combined cycle units (MWh)
 
 Binary variables
          Ystorage(j,h) 1 if storage technology j is charging during hour h (0 otherwise)
@@ -178,7 +178,7 @@ Obj..    TSC =e= sum(k, CapSolar(k,'total_lcoe')*sum(h,CFSolar(h,k)*CapSolar(k,'
 
                  sum(j, CRF(j)*(1000*StorageData('P_Capex',j)*Pcap(j) + 1000*StorageData('E_Capex',j)*Ecap(j)))+
 
-                 sum(j, 1000*StorageData('FOM',j)*Pcap(j) + StorageData('VOM',j)*Ecap(j))+
+                 sum(j, 1000*StorageData('FOM',j)*Pcap(j) + StorageData('VOM',j)*sum(h,PD(h,j)))+
 
                  FCR_GasCC*1000*CapexGasCC*CapCC + GasPrice*HR*sum(h, GenCC(h));
 
@@ -237,6 +237,7 @@ Option resLim = 1000000;
 
 Option mip = CPLEX;
 $onecho > cplex.opt
+lpmethod 4
 threads 4
 $offecho
 TechMix.OptFile = 1;
@@ -295,7 +296,7 @@ loop ( Runs ,
                                      sum(j, PC.l(h,j))$(Load(h)-AlphaNuclear*Nuclear(h)-AlphaLargHy*LargeHydro(h)-AlphaOtheRe*OtherRenewables(h)-GenPV.l(h)-GenWind.l(h) > 0)
      );
 
-FILE csv Report File /OutputSummary.csv/;
+FILE csv Report File /OutputSummaryNuclear_%AlphaNuclear%_Target_%GenMix_Target%v15.csv/;
 csv.pc = 5;
 PUT csv;
 
@@ -339,7 +340,7 @@ loop ((Runs,j),
 
 Putclose ;
 
-FILE csvPC Report File /Output_Storage_Charging.csv/;
+FILE csvPC Report File /Output_Storage_ChargingNuclear_%AlphaNuclear%_Target_%GenMix_Target%v15.csv/;
 csvPC.pc = 5;
 PUT csvPC;
 
@@ -348,7 +349,7 @@ loop ((Runs,h,j),
      PUT Runs.tl, j.tl, h.tl, SummaryPC(Runs,h,j) /);
 Putclose ;
 
-FILE csvPD Report File /Output_Storage_Discharging.csv/;
+FILE csvPD Report File /Output_Storage_DischargingNuclear_%AlphaNuclear%_Target_%GenMix_Target%v15.csv/;
 csvPD.pc = 5;
 PUT csvPD;
 
@@ -357,7 +358,7 @@ loop ((Runs,h,j),
      PUT Runs.tl, j.tl, h.tl, SummaryPD(Runs,h,j) /);
 Putclose ;
 
-FILE csvSOC Report File /Output_state-of-charge.csv/;
+FILE csvSOC Report File /Output_state-of-chargeNuclear_%AlphaNuclear%_Target_%GenMix_Target%v15.csv/;
 csvSOC.pc = 5;
 PUT csvSOC;
 
@@ -366,7 +367,7 @@ loop ((Runs,h,j),
      PUT Runs.tl, j.tl, h.tl, SummarySOC(Runs,h,j) /);
 Putclose ;
 
-FILE csvSolarPVGen Report File /Output_SolarPV_Generation.csv/;
+FILE csvSolarPVGen Report File /Output_SolarPV_GenerationNuclear_%AlphaNuclear%_Target_%GenMix_Target%v15.csv/;
 csvSolarPVGen.pc = 5;
 PUT csvSolarPVGen;
 
@@ -375,7 +376,7 @@ loop ((Runs,h),
      PUT Runs.tl, h.tl, SolarPVGen(Runs,h) /);
 Putclose ;
 
-FILE csvWindGen Report File /Output_Wind_Generation.csv/;
+FILE csvWindGen Report File /Output_Wind_GenerationNuclear_%AlphaNuclear%_Target_%GenMix_Target%v15.csv/;
 csvWindGen.pc = 5;
 PUT csvWindGen;
 
@@ -384,7 +385,7 @@ loop ((Runs,h),
      PUT Runs.tl, h.tl, WindGen(Runs,h) /);
 Putclose ;
 
-FILE csvSolarPVCurt Report File /Output_SolarPV_Curtailment.csv/;
+FILE csvSolarPVCurt Report File /Output_SolarPV_CurtailmentNuclear_%AlphaNuclear%_Target_%GenMix_Target%v15.csv/;
 csvSolarPVCurt.pc = 5;
 PUT csvSolarPVCurt;
 
@@ -393,7 +394,7 @@ loop ((Runs,h),
      PUT Runs.tl, h.tl, SolarPVCurt(Runs,h) /);
 Putclose ;
 
-FILE csvWindCurt Report File /Output_Wind_Curtailment.csv/;
+FILE csvWindCurt Report File /Output_Wind_CurtailmentNuclear_%AlphaNuclear%_Target_%GenMix_Target%v15.csv/;
 csvWindCurt.pc = 5;
 PUT csvWindCurt;
 
@@ -402,7 +403,7 @@ loop ((Runs,h),
      PUT Runs.tl, h.tl, WindCurt(Runs,h) /);
 Putclose ;
 
-FILE csvGenGasCC Report File /Output_GenGasCC_Generation.csv/;
+FILE csvGenGasCC Report File /Output_GenGasCC_GenerationNuclear_%AlphaNuclear%_Target_%GenMix_Target%v15.csv/;
 csvGenGasCC.pc = 5;
 PUT csvGenGasCC;
 
@@ -411,7 +412,7 @@ loop ((Runs,h),
      PUT Runs.tl, h.tl, GenGasCC(Runs,h) /);
 Putclose ;
 
-FILE csvStorGasCCToStor Report File /Output_StorageGasCC_Storage.csv/;
+FILE csvStorGasCCToStor Report File /Output_StorageGasCC_StorageNuclear_%AlphaNuclear%_Target_%GenMix_Target%v15.csv/;
 csvStorGasCCToStor.pc = 5;
 PUT csvStorGasCCToStor;
 

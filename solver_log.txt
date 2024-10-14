@@ -1,0 +1,51 @@
+Solver command line: ['C:\\Users\\ttran2\\AppData\\Local\\anaconda3\\Library\\bin\\glpsol.exe', '--mipgap', '0', '--write', 'C:\\Users\\ttran2\\AppData\\Local\\Temp\\2\\tmpri_7ogxz.glpk.raw', '--wglp', 'C:\\Users\\ttran2\\AppData\\Local\\Temp\\2\\tmpr0x97oe_.glpk.glp', '--cpxlp', 'C:\\Users\\ttran2\\AppData\\Local\\Temp\\2\\tmpqqm06ep4.pyomo.lp']
+
+GLPSOL--GLPK LP/MIP Solver 5.0
+Parameter(s) specified in the command line:
+ --mipgap 0 --write C:\Users\ttran2\AppData\Local\Temp\2\tmpri_7ogxz.glpk.raw
+ --wglp C:\Users\ttran2\AppData\Local\Temp\2\tmpr0x97oe_.glpk.glp --cpxlp
+ C:\Users\ttran2\AppData\Local\Temp\2\tmpqqm06ep4.pyomo.lp
+Reading problem data from 'C:\Users\ttran2\AppData\Local\Temp\2\tmpqqm06ep4.pyomo.lp'...
+C:\Users\ttran2\AppData\Local\Temp\2\tmpqqm06ep4.pyomo.lp:919896: warning: lower bound of variable 'x105136' redefined
+C:\Users\ttran2\AppData\Local\Temp\2\tmpqqm06ep4.pyomo.lp:919896: warning: upper bound of variable 'x105136' redefined
+113896 rows, 166453 columns, 376692 non-zeros
+35040 integer variables, all of which are binary
+954936 lines were read
+Writing problem data to 'C:\Users\ttran2\AppData\Local\Temp\2\tmpr0x97oe_.glpk.glp'...
+902366 lines were written
+GLPK Integer Optimizer 5.0
+113896 rows, 166453 columns, 376692 non-zeros
+35040 integer variables, all of which are binary
+Preprocessing...
+2 constraint coefficient(s) were reduced
+113884 rows, 157680 columns, 367912 non-zeros
+35040 integer variables, all of which are binary
+Scaling...
+ A: min|aij| =  6.633e-01  max|aij| =  1.000e+05  ratio =  1.508e+05
+GM: min|aij| =  1.115e-01  max|aij| =  8.972e+00  ratio =  8.050e+01
+EQ: min|aij| =  1.242e-02  max|aij| =  1.000e+00  ratio =  8.050e+01
+2N: min|aij| =  1.178e-02  max|aij| =  1.526e+00  ratio =  1.296e+02
+Constructing initial basis...
+Size of triangular part is 113884
+Solving LP relaxation...
+GLPK Simplex Optimizer 5.0
+113884 rows, 157680 columns, 367912 non-zeros
+*     0: obj =   7.687228309e+09 inf =   0.000e+00 (17532)
+*  1463: obj =   6.486618538e+09 inf =   0.000e+00 (14616)
+*  2722: obj =   5.502599779e+09 inf =   0.000e+00 (12108)
+*  4645: obj =   3.846211479e+09 inf =   0.000e+00 (8282)
+*  6511: obj =   1.893945110e+09 inf =   0.000e+00 (4570)
+*  8325: obj =   4.004633017e+08 inf =   0.000e+00 (962)
+*  8801: obj =   2.180544859e-05 inf =   0.000e+00 (0)
+OPTIMAL LP SOLUTION FOUND
+Integer optimization begins...
+Long-step dual simplex will be used
++  8801: mip =     not found yet >=              -inf        (1; 0)
++  8801: >>>>>   4.063930828e-05 >=   4.063930828e-05   0.0% (1; 0)
++  8801: mip =   4.063930828e-05 >=     tree is empty   0.0% (0; 1)
+INTEGER OPTIMAL SOLUTION FOUND
+Time used:   27.3 secs
+Memory used: 220.2 Mb (230859246 bytes)
+Writing MIP solution to 'C:\Users\ttran2\AppData\Local\Temp\2\tmpri_7ogxz.glpk.raw'...
+280358 lines were written
+

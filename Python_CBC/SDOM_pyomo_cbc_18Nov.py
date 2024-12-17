@@ -113,8 +113,8 @@ def initialize_model(data):
         model.add_component(f"CapWind_{property_name}", Param(model.w, initialize=filtered_property_dict))
 
     # Define sets
-    model.h = RangeSet(1, 8760)
-    #model.h = RangeSet(1, 24)
+    # model.h = RangeSet(1, 8760)
+    model.h = RangeSet(1, 24)
     model.j = Set(initialize=['Li-Ion', 'CAES', 'PHS', 'H2'])
     model.b = Set(initialize=['Li-Ion', 'PHS'])
 
@@ -241,45 +241,45 @@ def initialize_model(data):
         fixed_costs = (
             # Solar PV Capex and Fixed O&M
             sum(
-                model.FCR_VRE * (model.CapSolar_CAPEX_M[k] * model.Ypv[k] + model.CapSolar_trans_cap_cost[k] * model.Ypv[k]) +
-                model.CapSolar_FOM_M[k] * model.Ypv[k]
+                (model.FCR_VRE * (1000*model.CapSolar_CAPEX_M[k] + model.CapSolar_trans_cap_cost[k]) + 1000*model.CapSolar_FOM_M[k])
+                * model.CapSolar_capacity[k] * model.Ypv[k]
                 for k in model.k
-            ) +
+            )
+            +
             # Wind Capex and Fixed O&M
             sum(
-                model.FCR_VRE * (model.CapWind_CAPEX_M[w] * model.Ywind[w] + model.CapWind_trans_cap_cost[w] * model.Ywind[w]) +
-                model.CapWind_FOM_M[w] * model.Ywind[w]
+                (model.FCR_VRE * (1000*model.CapWind_CAPEX_M[w] + model.CapWind_trans_cap_cost[w]) + 1000*model.CapWind_FOM_M[w])
+                * model.CapWind_capacity[w] * model.Ywind[w]
                 for w in model.w
-            ) +
+            )
+            +
             # Storage Capex and Fixed O&M
             sum(
-                model.CRF[j] * (
-                    1000 * model.StorageData['CostRatio', j] * model.StorageData['P_Capex', j] * model.Pcha[j] +
-                    1000 * (1 - model.StorageData['CostRatio', j]) * model.StorageData['P_Capex', j] * model.Pdis[j] +
-                    1000 * model.StorageData['E_Capex', j] * model.Ecap[j]
-                ) +
-                1000 * model.StorageData['CostRatio', j] * model.StorageData['FOM', j] * model.Pcha[j] +
-                1000 * (1 - model.StorageData['CostRatio', j]) * model.StorageData['FOM', j] * model.Pdis[j]
+                model.CRF[j]*(
+                    1000*model.StorageData['CostRatio', j]*model.StorageData['P_Capex', j]*model.Pcha[j]
+                    + 1000*(1 - model.StorageData['CostRatio', j])*model.StorageData['P_Capex', j]*model.Pdis[j]
+                    + 1000*model.StorageData['E_Capex', j]*model.Ecap[j]
+                )
+                + 1000*model.StorageData['CostRatio', j]*model.StorageData['FOM', j]*model.Pcha[j]
+                + 1000*(1 - model.StorageData['CostRatio', j])*model.StorageData['FOM', j]*model.Pdis[j]
                 for j in model.j
-            ) +
+            )
+            +
             # Gas CC Capex and Fixed O&M
-            model.FCR_GasCC * 1000 * model.CapexGasCC * model.CapCC +
-            1000 * model.FOM_GasCC * model.CapCC
+            model.FCR_GasCC*1000*model.CapexGasCC*model.CapCC
+            + 1000*model.FOM_GasCC*model.CapCC
         )
     
-        # Variable Costs (Summed Over Hours)
+        # Variable Costs (Gas CC Fuel & VOM, Storage VOM)
         variable_costs = sum(
-            # Gas CC Variable Costs
-            model.GasPrice * model.HR * model.GenCC[h] +
-            model.VOM_GasCC * model.GenCC[h] +
-            # Storage Variable O&M Costs
-            sum(model.StorageData['VOM', j] * model.PD[h, j] for j in model.j)
+            model.GasPrice * model.HR * model.GenCC[h]
+            + model.VOM_GasCC * model.GenCC[h]
+            + sum(model.StorageData['VOM', j]*model.PD[h, j] for j in model.j)
             for h in model.h
         )
     
-        total_cost = fixed_costs + variable_costs
-        return total_cost
-
+        return fixed_costs + variable_costs
+    
     model.Obj = Objective(rule=objective_rule, sense=minimize)
    
     # Define constraints ---------------------------------------------------------
@@ -546,7 +546,7 @@ def run_solver(model, log_file_path='solver_log.txt', mipgap=0, num_runs=1):
     logging.basicConfig(level=logging.INFO)
 
     # Export the model to an LP file for comparing with gdx file
-    #model.write('model.lp', io_options={'symbolic_solver_labels': True})
+    model.write('model.lp', io_options={'symbolic_solver_labels': True})
     
     results_over_runs = []  
     best_result = None       
@@ -668,7 +668,7 @@ def main():
     model = initialize_model(data)  
 
     iso = ['CAISO']  
-    nuclear = ['1']
+    nuclear = ['0']
     target = ['0.7']  
 
     # Loop over each scenario combination and solve the model

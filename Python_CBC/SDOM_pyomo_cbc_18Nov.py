@@ -216,7 +216,7 @@ def initialize_model(data):
     model.Ypv = Var(model.k, domain=NonNegativeReals, bounds=(0, 1), initialize=0)
     model.Ywind = Var(model.w, domain=NonNegativeReals, bounds=(0, 1), initialize=0)
     #model.Ystorage = Var(model.j, model.h, domain=Binary, initialize=0)  # Storage selection (binary)
-    model.Ystorage = Var(model.j, model.h, domain=UnitInterval, initialize=0)
+    model.Ystorage = Var(model.j, model.h, domain=UnitInterval, initialize=0) # Allow partial charging mode
 
     for pv in model.Ypv:
         if model.Ypv[pv].value is None:
@@ -376,9 +376,8 @@ def initialize_model(data):
                 * model.Pdis[j] / sqrt(model.StorageData['Eff', j])
     model.MaxEcap = Constraint(model.j, rule=max_ecap_rule)
     
-    # Add the following after the model and variables are defined and just before solving:
+    # max cycle year rule
     def max_cycle_year_rule(model):
-        # This assumes 'Li-Ion' is in model.j and 'Lifetime' is a property in model.StorageData.
         return sum(model.PD[h, 'Li-Ion'] for h in model.h) <= (model.MaxCycles / model.StorageData['Lifetime', 'Li-Ion']) * model.Ecap['Li-Ion']
     model.MaxCycleYear = Constraint(rule=max_cycle_year_rule)
 

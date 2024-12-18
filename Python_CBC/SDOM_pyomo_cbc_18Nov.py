@@ -114,8 +114,8 @@ def initialize_model(data):
         model.add_component(f"CapWind_{property_name}", Param(model.w, initialize=filtered_property_dict))
 
     # Define sets
-    # model.h = RangeSet(1, 8760)
-    model.h = RangeSet(1, 24)
+    model.h = RangeSet(1, 8760)
+    # model.h = RangeSet(1, 24)
     model.j = Set(initialize=['Li-Ion', 'CAES', 'PHS', 'H2'])
     model.b = Set(initialize=['Li-Ion', 'PHS'])
 
@@ -216,7 +216,7 @@ def initialize_model(data):
     model.Ypv = Var(model.k, domain=NonNegativeReals, bounds=(0, 1), initialize=0)
     model.Ywind = Var(model.w, domain=NonNegativeReals, bounds=(0, 1), initialize=0)
     #model.Ystorage = Var(model.j, model.h, domain=Binary, initialize=0)  # Storage selection (binary)
-    model.Ystorage = Var(model.j, model.h, domain=UnitInterval, initialize=0) # Allow partial charging mode
+    model.Ystorage = Var(model.j, model.h, domain=UnitInterval, initialize=0) # Partial charging
 
     for pv in model.Ypv:
         if model.Ypv[pv].value is None:
@@ -376,7 +376,7 @@ def initialize_model(data):
                 * model.Pdis[j] / sqrt(model.StorageData['Eff', j])
     model.MaxEcap = Constraint(model.j, rule=max_ecap_rule)
     
-    # max cycle year rule
+    # Max cycle year
     def max_cycle_year_rule(model):
         return sum(model.PD[h, 'Li-Ion'] for h in model.h) <= (model.MaxCycles / model.StorageData['Lifetime', 'Li-Ion']) * model.Ecap['Li-Ion']
     model.MaxCycleYear = Constraint(rule=max_cycle_year_rule)
@@ -555,14 +555,14 @@ def run_solver(model, log_file_path='solver_log.txt', mipgap=0, num_runs=1):
     logging.basicConfig(level=logging.INFO)
 
     # Export the model to an LP file for comparing with gdx file
-    model.write('model.lp', io_options={'symbolic_solver_labels': True})
+    # model.write('model.lp', io_options={'symbolic_solver_labels': True})
     
     results_over_runs = []  
     best_result = None       
     best_objective_value = float('inf')  
 
     for run in range(num_runs):
-        target_value = 0.65 + 0.05 * run
+        target_value = 0.5 + 0.05 * run
         model.GenMix_Target.set_value(target_value)  
 
         print(f"Running optimization for GenMix_Target = {target_value:.2f}")
@@ -676,9 +676,13 @@ def main():
     data = load_data()  
     model = initialize_model(data)  
 
-    iso = ['CAISO']  
+    #iso = ['CAISO', 'ERCOT', 'ISONE', 'MISO', 'NYISO', 'PJM', 'SPP']
+    iso = ['CAISO']
     nuclear = ['1']
-    target = ['1']  
+    target = ['1.00']
+    
+    #nuclear = ['0', '1']
+    #target = ['0.00', '0.75', '0.80', '0.85', '0.90', '0.95', '1.00'] 
 
     # Loop over each scenario combination and solve the model
     for j in iso:

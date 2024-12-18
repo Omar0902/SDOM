@@ -677,8 +677,8 @@ def main():
     model = initialize_model(data)  
 
     iso = ['CAISO']  
-    nuclear = ['0']
-    target = ['0.7']  
+    nuclear = ['1']
+    target = ['1']  
 
     # Loop over each scenario combination and solve the model
     for j in iso:

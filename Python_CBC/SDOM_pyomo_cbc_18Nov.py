@@ -15,6 +15,7 @@ from pyomo.environ import TransformationFactory
 from pyomo.core import Var, Constraint
 from pyomo.core.expr.visitor import identify_variables
 from pyomo.util.model_size import build_model_size_report
+from pyomo.environ import UnitInterval
 
 # ---------------------------------------------------------------------------------
 # Data loading
@@ -136,6 +137,7 @@ def initialize_model(data):
     # Fixed Charge Rates (FCR) for VRE and Gas CC
     def fcr_rule(model, lifetime=30):
         return (model.r * (1 + model.r) ** lifetime) / ((1 + model.r) ** lifetime - 1)
+    
     model.FCR_VRE = Param(initialize=fcr_rule(model))  
     model.FCR_GasCC = Param(initialize=fcr_rule(model))
 
@@ -213,7 +215,8 @@ def initialize_model(data):
     # Capacity selection variables with continuous bounds between 0 and 1
     model.Ypv = Var(model.k, domain=NonNegativeReals, bounds=(0, 1), initialize=0)
     model.Ywind = Var(model.w, domain=NonNegativeReals, bounds=(0, 1), initialize=0)
-    model.Ystorage = Var(model.j, model.h, domain=Binary, initialize=0)  # Storage selection (binary)
+    #model.Ystorage = Var(model.j, model.h, domain=Binary, initialize=0)  # Storage selection (binary)
+    model.Ystorage = Var(model.j, model.h, domain=UnitInterval, initialize=0)
 
     for pv in model.Ypv:
         if model.Ypv[pv].value is None:
@@ -316,13 +319,13 @@ def initialize_model(data):
     
     # Ensure the solar generation and curtailment match the available solar capacity for each hour
     def solar_balance_rule(model, h):
-        return model.GenPV[h] + model.CurtPV[h] == sum(model.CFSolar[h, k] * model.Ypv[k] for k in model.k)    
+        return model.GenPV[h] + model.CurtPV[h] == sum(model.CFSolar[h, k] * model.CapSolar_capacity[k] * model.Ypv[k] for k in model.k)    
     
     model.SolarBal = Constraint(model.h, rule=solar_balance_rule)    
     
     # Ensure the wind generation and curtailment match the available wind capacity for each hour.
     def wind_balance_rule(model, h):
-        return model.GenWind[h] + model.CurtWind[h] == sum(model.CFWind[h, w] * model.Ywind[w] for w in model.w)
+        return model.GenWind[h] + model.CurtWind[h] == sum(model.CFWind[h, w] * model.CapWind_capacity[w] * model.Ywind[w] for w in model.w)
     
     model.WindBal = Constraint(model.h, rule=wind_balance_rule)
    
@@ -372,6 +375,13 @@ def initialize_model(data):
             return model.Ecap[j] <= model.StorageData['Max_Duration', j] \
                 * model.Pdis[j] / sqrt(model.StorageData['Eff', j])
     model.MaxEcap = Constraint(model.j, rule=max_ecap_rule)
+    
+    # Add the following after the model and variables are defined and just before solving:
+    def max_cycle_year_rule(model):
+        # This assumes 'Li-Ion' is in model.j and 'Lifetime' is a property in model.StorageData.
+        return sum(model.PD[h, 'Li-Ion'] for h in model.h) <= (model.MaxCycles / model.StorageData['Lifetime', 'Li-Ion']) * model.Ecap['Li-Ion']
+    model.MaxCycleYear = Constraint(rule=max_cycle_year_rule)
+
     
     # Sanity checks of loaded and initialized data ---------------------------------    
     # Open a file to save all sanity checks output

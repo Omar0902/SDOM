@@ -21,17 +21,17 @@ Alias (h, hh)
 
 Set    k potential solar PV plants
 /
-$include Set_k(SolarPV).csv
+$include Set_k_SolarPV.csv
 /
 
 Set    w potential wind plants
 /
-$include Set_w(Wind).csv
+$include Set_w_Wind.csv
 /
 
 Set    l properties of power plants
 /
-$include Set_l(Properties).csv
+$include Set_l_Properties.csv
 /
 
 

@@ -349,7 +349,7 @@ def initialize_model(data):
     
     model.WindBal = Constraint(model.h, rule=wind_balance_rule)
    
-    # Ensure the backup generatio can generate enough electricity when needed
+    # Backup gas generation cannot produce more than its capacity
     def backup_gen_rule(model, h):
         if model.GenCC[h].value is None or model.CapCC.value is None:
             return Constraint.Skip

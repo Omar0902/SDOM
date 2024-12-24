@@ -333,18 +333,7 @@ def initialize_model(data):
     
     # Ensure that the total generation from gas does not exceed the GenMix_Target percentage
     def genmix_share_rule(model):
-        total_gas_gen = sum(model.GenCC[h] for h in model.h)
-        total_gen = sum(
-            model.AlphaNuclear * model.Nuclear[h] +
-            model.AlphaLargHy * model.LargeHydro[h] +
-            model.AlphaOtheRe * model.OtherRenewables[h] +
-            model.GenPV[h] +
-            model.GenWind[h] +
-            sum(model.PD[h, j] for j in model.j) +
-            model.GenCC[h]
-            for h in model.h
-        )
-        return total_gas_gen <= (1 - model.GenMix_Target) * total_gen
+        return sum(model.GenCC[h] for h in model.h) <= (1 - model.GenMix_Target) * sum(model.Load[h] +sum(model.PC[h,j] - model.PD[h,j] for j in model.j) for h in model.h)
     
     model.GenMix_Share = Constraint(rule=genmix_share_rule)
     

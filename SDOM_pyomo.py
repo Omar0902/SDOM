@@ -20,18 +20,18 @@ from pyomo.environ import UnitInterval
 # ---------------------------------------------------------------------------------
 # Data loading
 def load_data():
-    solar_plants = pd.read_csv('Set_k_SolarPV.csv', header=None)[0].tolist()
-    wind_plants = pd.read_csv('Set_w_Wind.csv', header=None)[0].tolist()
+    solar_plants = pd.read_csv('./Data/Set_k_SolarPV.csv', header=None)[0].tolist()
+    wind_plants = pd.read_csv('./Data/Set_w_Wind.csv', header=None)[0].tolist()
 
-    load_data = pd.read_csv('Load_hourly_2050.csv').round(5) # rounding to 5 decimal 
-    nuclear_data = pd.read_csv('Nucl_hourly_2019.csv').round(5)
-    large_hydro_data = pd.read_csv('lahy_hourly_2019.csv').round(5)
-    other_renewables_data = pd.read_csv('otre_hourly_2019.csv').round(5)
-    cf_solar = pd.read_csv('CFSolar_2050.csv').round(5)
-    cf_wind = pd.read_csv('CFWind_2050.csv').round(5)
-    cap_solar = pd.read_csv('CapSolar_2050.csv').round(5)
-    cap_wind = pd.read_csv('CapWind_2050.csv').round(5)
-    storage_data = pd.read_csv('StorageData_2050.csv', index_col=0).round(5)
+    load_data = pd.read_csv('./Data/Load_hourly_2050.csv').round(5) # rounding to 5 decimal 
+    nuclear_data = pd.read_csv('./Data/Nucl_hourly_2019.csv').round(5)
+    large_hydro_data = pd.read_csv('./Data/lahy_hourly_2019.csv').round(5)
+    other_renewables_data = pd.read_csv('./Data/otre_hourly_2019.csv').round(5)
+    cf_solar = pd.read_csv('./Data/CFSolar_2050.csv').round(5)
+    cf_wind = pd.read_csv('./Data/CFWind_2050.csv').round(5)
+    cap_solar = pd.read_csv('./Data/CapSolar_2050.csv').round(5)
+    cap_wind = pd.read_csv('./Data/CapWind_2050.csv').round(5)
+    storage_data = pd.read_csv('./Data/StorageData_2050.csv', index_col=0).round(5)
 
     return {
         "solar_plants": solar_plants,
@@ -198,41 +198,28 @@ def initialize_model(data):
     model.CRF = Param(model.j, initialize=crf_rule)
 
     # Define variables
-    model.GenPV = Var(model.h, domain=NonNegativeReals, initialize=0)  # Generated solar PV power
-    model.CurtPV = Var(model.h, domain=NonNegativeReals, initialize=0)  # Curtailment for solar PV power
-    model.GenWind = Var(model.h, domain=NonNegativeReals, initialize=0)  # Generated wind power
-    model.CurtWind = Var(model.h, domain=NonNegativeReals, initialize=0)  # Curtailment for wind power
-    model.CapCC = Var(domain=NonNegativeReals, initialize=0)  # Capacity of backup GCC units
-    model.GenCC = Var(model.h, domain=NonNegativeReals, initialize=0)  # Generation from GCC units
-    model.LoadShed = Var(model.h, domain=NonNegativeReals, initialize=0) # Load shedding
-    model.EUE = Var(domain=NonNegativeReals) # Expected Unserved Energy
+    model.GenPV = Var(model.h, domain=NonNegativeReals)         # Generated solar PV power
+    model.CurtPV = Var(model.h, domain=NonNegativeReals)        # Curtailment for solar PV power
+    model.GenWind = Var(model.h, domain=NonNegativeReals)       # Generated wind power
+    model.CurtWind = Var(model.h, domain=NonNegativeReals)      # Curtailment for wind power
+    model.CapCC = Var(domain=NonNegativeReals)                  # Capacity of backup GCC units
+    model.GenCC = Var(model.h, domain=NonNegativeReals)         # Generation from GCC units
+    model.LoadShed = Var(model.h, domain=NonNegativeReals)      # Load shedding
+    model.EUE = Var(domain=NonNegativeReals)                    # Expected Unserved Energy
     
     # Storage-related variables
-    model.PC = Var(model.h, model.j, domain=NonNegativeReals, initialize=0)  # Charging power for storage technology j in hour h
-    model.PD = Var(model.h, model.j, domain=NonNegativeReals, initialize=0)  # Discharging power for storage technology j in hour h
-    model.SOC = Var(model.h, model.j, domain=NonNegativeReals, initialize=0)  # State-of-charge for storage technology j in hour h
-    model.Pcha = Var(model.j, domain=NonNegativeReals, initialize=0) # Charging capacity for storage technology j
-    model.Pdis = Var(model.j, domain=NonNegativeReals, initialize=0) # Discharging capacity for storage technology j
-    model.Ecap = Var(model.j, domain=NonNegativeReals, initialize=0)  # Energy capacity for storage technology j
+    model.PC = Var(model.h, model.j, domain=NonNegativeReals)                       # Charging power for storage technology j in hour h
+    model.PD = Var(model.h, model.j, domain=NonNegativeReals)                       # Discharging power for storage technology j in hour h
+    model.SOC = Var(model.h, model.j, domain=NonNegativeReals)                      # State-of-charge for storage technology j in hour h
+
+    model.Pcha = Var(model.j, domain=NonNegativeReals)                              # Charging capacity for storage technology j
+    model.Pdis = Var(model.j, domain=NonNegativeReals)                              # Discharging capacity for storage technology j
+    model.Ecap = Var(model.j, domain=NonNegativeReals)                              # Energy capacity for storage technology j
 
     # Capacity selection variables with continuous bounds between 0 and 1
-    model.Ypv = Var(model.k, domain=NonNegativeReals, bounds=(0, 1), initialize=0)
-    model.Ywind = Var(model.w, domain=NonNegativeReals, bounds=(0, 1), initialize=0)
-    model.Ystorage = Var(model.j, model.h, domain=Binary, initialize=0)  # Storage selection (binary)
-    # model.Ystorage = Var(model.j, model.h, domain=UnitInterval, initialize=0) # Partial charging
-
-    for pv in model.Ypv:
-        if model.Ypv[pv].value is None:
-            model.Ypv[pv].set_value(0)  # Initialize to 0 if not already set
-            
-    for wind in model.Ywind:
-        if model.Ywind[wind].value is None:
-            model.Ywind[wind].set_value(0)  # Initialize to 0 if not already set
-            
-    for s in model.Ystorage:
-        if model.Ystorage[s].value is None:
-            model.Ystorage[s].set_value(0)  # Initialize to 0 if not already set
-
+    model.Ypv = Var(model.k, domain=NonNegativeReals, bounds=(0, 1))
+    model.Ywind = Var(model.w, domain=NonNegativeReals, bounds=(0, 1))
+    model.Ystorage = Var(model.j, model.h, domain=Binary)  # Storage selection (binary)
     
 
     # Define the objective function ---------------------------------------------
@@ -299,7 +286,7 @@ def initialize_model(data):
 
     model.SupplyBalance = Constraint(model.h, rule=supply_balance_rule)
 
-    # Enforce the upper bound for CapCC
+    # Enforce the upper bound for CapCC: CapCC.up in GAMS code
     model.maxRemainingLoad = Var(domain = NonNegativeReals)
 
     def max_remainingLoad(model, h):
@@ -310,59 +297,43 @@ def initialize_model(data):
         return model.CapCC - model.maxRemainingLoad <= 0 
     model.max_capcc = Constraint(rule=max_capcc)
 
-    # Define critical load as part of the load for essential services 
-    critical_load_percentage = 0.3 # 30% of the total load
-    total_critical_load = sum(value(model.Load[h]) for h in model.h) * critical_load_percentage
-    
-    # PCLS Constraint:
-    PCLS_target = 0.9 # 90% of the total load
-    # LoadShed[h] = how much load is unmet during hour h
-    
-    def pcls_constraint_rule(model):
-        return sum(model.Load[h] - model.LoadShed[h] for h in model.h) \
-               >= PCLS_target * total_critical_load
-    
-    model.PCLS_Constraint = Constraint(rule=pcls_constraint_rule)
-    
-    # EUE Constraint:
-    def eue_constraint_rule(model):
-        return model.EUE == sum(model.LoadShed[h] for h in model.h)
-    model.EUE_Constraint = Constraint(rule=eue_constraint_rule)
-    
-    model.MaxEUE_Constraint = Constraint(expr=model.EUE <= model.EUE_max)
-    
     # Ensure that the total generation from gas does not exceed the GenMix_Target percentage
     def genmix_share_rule(model):
         return sum(model.GenCC[h] for h in model.h) <= (1 - model.GenMix_Target) * sum(model.Load[h] +sum(model.PC[h,j] - model.PD[h,j] for j in model.j) for h in model.h)
-    
     model.GenMix_Share = Constraint(rule=genmix_share_rule)
     
     # Ensure the solar generation and curtailment match the available solar capacity for each hour
     def solar_balance_rule(model, h):
         return model.GenPV[h] + model.CurtPV[h] == sum(model.CFSolar[h, k] * model.CapSolar_capacity[k] * model.Ypv[k] for k in model.k)    
-    
     model.SolarBal = Constraint(model.h, rule=solar_balance_rule)    
     
     # Ensure the wind generation and curtailment match the available wind capacity for each hour.
     def wind_balance_rule(model, h):
         return model.GenWind[h] + model.CurtWind[h] == sum(model.CFWind[h, w] * model.CapWind_capacity[w] * model.Ywind[w] for w in model.w)
-    
     model.WindBal = Constraint(model.h, rule=wind_balance_rule)
-   
-    # Backup gas generation cannot produce more than its capacity
-    def backup_gen_rule(model, h):
-        if model.GenCC[h].value is None or model.CapCC.value is None:
-            return Constraint.Skip
-        else:
-            return model.CapCC >= model.GenCC[h]
-        
-    model.BackupGen = Constraint(model.h, rule=backup_gen_rule)
     
     # Keep track of the state of charge for storage across time - charging and discharging
+    # Ensure that the charging and discharging power do not exceed storage limits
+    def max_charge_power(model, h, j):
+        return model.PC[h,j] <= model.StorageData['Max_P',j] * model.Ystorage[j,h]
+    model.MaxChargePower = Constraint(model.h, model.j, rule=max_charge_power)
+
+    def max_discharge_power(model, h, j):
+        return model.PD[h,j] <= model.StorageData['Max_P', j] * (1 - model.Ystorage[j,h])
+    model.MaxDischargePower = Constraint(model.h, model.j, rule=max_discharge_power)
+
+    # Hourly capacity bounds
+    def max_hourly_charging_rule(m, h, j):
+        return m.PC[h, j] <= m.Pcha[j]
+    model.MaxHourlyCharging = Constraint(model.h, model.j, rule=max_hourly_charging_rule)
+    
+    def max_hourly_discharging_rule(m, h, j):
+        return m.PD[h, j] <= m.Pdis[j]
+    model.MaxHourlyDischarging = Constraint(model.h, model.j, rule=max_hourly_discharging_rule)
+
     # Max SOC
     def max_soc_rule(model, h, j):
         return model.SOC[h,j] <= model.Ecap[j]
-    
     model.MaxSOC = Constraint(model.h, model.j, rule=max_soc_rule)
     
     # SOC Balance
@@ -378,48 +349,60 @@ def initialize_model(data):
                    - model.PD[h, j] / sqrt(model.StorageData['Eff', j])
     
     model.SOCBalance = Constraint(model.h, model.j, rule=soc_balance_rule)
-    
-    # Ensure that the charging and discharging power do not exceed storage limits
-    model.MaxChargePower = Constraint(model.h, model.j, rule=lambda m, h, j: m.PC[h, j] <= m.StorageData['Max_P', j] * m.Ystorage[j, h])
-    model.MaxDischargePower = Constraint(model.h, model.j, rule=lambda m, h, j: m.PD[h, j] <= m.StorageData['Max_P', j] * (1 - m.Ystorage[j, h]))
-    
+
     # Constraints on the maximum charging (Pcha) and discharging (Pdis) power for each technology
     model.MaxPcha = Constraint(model.j, rule=lambda m, j: m.Pcha[j] <= m.StorageData['Max_P', j])
     model.MaxPdis = Constraint(model.j, rule=lambda m, j: m.Pdis[j] <= m.StorageData['Max_P', j])
 
     model.PchaPdis = Constraint(model.b, rule=lambda m, j: m.Pcha[j] == m.Pdis[j])
-
-    # Hourly capacity bounds
-    def max_hourly_charging_rule(m, h, j):
-        return m.PC[h, j] <= m.Pcha[j]
-    model.MaxHourlyCharging = Constraint(model.h, model.j, rule=max_hourly_charging_rule)
     
-    def max_hourly_discharging_rule(m, h, j):
-        return m.PD[h, j] <= m.Pdis[j]
-    model.MaxHourlyDischarging = Constraint(model.h, model.j, rule=max_hourly_discharging_rule)
- 
+
     # Max and min energy capacity constraints (handle uninitialized variables)
     def min_ecap_rule(model, j):
-        if model.StorageData['Eff', j] <= 0:
-            return Constraint.Skip 
-        else:
-            return model.Ecap[j] >= model.StorageData['Min_Duration', j] \
-                * model.Pdis[j] / sqrt(model.StorageData['Eff', j])
+        return model.Ecap[j] >= model.StorageData['Min_Duration', j] \
+               * model.Pdis[j] / sqrt(model.StorageData['Eff', j])
     model.MinEcap = Constraint(model.j, rule=min_ecap_rule)
 
     def max_ecap_rule(model, j):
-        if model.StorageData['Eff', j] <= 0:
+        return model.Ecap[j] <= model.StorageData['Max_Duration', j] \
+            * model.Pdis[j] / sqrt(model.StorageData['Eff', j])
+    model.MaxEcap = Constraint(model.j, rule=max_ecap_rule)
+
+    # Backup gas generation cannot produce more than its capacity
+    def backup_gen_rule(model, h):
+        if model.GenCC[h].value is None or model.CapCC.value is None:
             return Constraint.Skip
         else:
-            return model.Ecap[j] <= model.StorageData['Max_Duration', j] \
-                * model.Pdis[j] / sqrt(model.StorageData['Eff', j])
-    model.MaxEcap = Constraint(model.j, rule=max_ecap_rule)
+            return model.CapCC >= model.GenCC[h]
+        
+    model.BackupGen = Constraint(model.h, rule=backup_gen_rule)
     
     # Max cycle year
     def max_cycle_year_rule(model):
         return sum(model.PD[h, 'Li-Ion'] for h in model.h) <= (model.MaxCycles / model.StorageData['Lifetime', 'Li-Ion']) * model.Ecap['Li-Ion']
     model.MaxCycleYear = Constraint(rule=max_cycle_year_rule)
 
+    ## Resilience related constraints
+    # Define critical load as part of the load for essential services 
+    critical_load_percentage = 0.3 # 30% of the total load
+    total_critical_load = sum(value(model.Load[h]) for h in model.h) * critical_load_percentage
+    
+    # PCLS Constraint:
+    PCLS_target = 0.9 # 90% of the total load
+    # LoadShed[h] = how much load is unmet during hour h
+    
+    def pcls_constraint_rule(model):
+        return sum(model.Load[h] - model.LoadShed[h] for h in model.h) \
+               >= PCLS_target * total_critical_load
+    
+    #model.PCLS_Constraint = Constraint(rule=pcls_constraint_rule)
+    
+    # EUE Constraint:
+    def eue_constraint_rule(model):
+        return model.EUE == sum(model.LoadShed[h] for h in model.h)
+    #model.EUE_Constraint = Constraint(rule=eue_constraint_rule)
+    
+    #model.MaxEUE_Constraint = Constraint(expr=model.EUE <= model.EUE_max)
     
     # Sanity checks of loaded and initialized data ---------------------------------    
     # Open a file to save all sanity checks output
@@ -585,51 +568,45 @@ def collect_results(model):
     return results
 
 # Run solver function
-def run_solver(model, log_file_path='solver_log.txt', mipgap=0, num_runs=1):
+def run_solver(model, log_file_path='./solver_log.txt', mipgap=0, num_runs=1):
     #solver = SolverFactory('cbc', executable='C:/NREL_Projects/LDES/SDOM/Open-source/CBC/cbc.exe')
-    solver = SolverFactory('cbc')
-    solver.options['loglevel'] = 3
-    solver.options['ratioGap'] = mipgap
+    solver = SolverFactory('glpk')
+    #solver.options['loglevel'] = 3
+    #solver.options['ratioGap'] = mipgap
     logging.basicConfig(level=logging.INFO)
 
     # Export the model to an LP file for comparing with the gdx file
     # model.write('model.lp', io_options={'symbolic_solver_labels': True})
     
-    results_over_runs = []  
     best_result = None       
     best_objective_value = float('inf')  
 
-    for run in range(num_runs):
-        target_value = 0.5 + 0.05 * run
-        model.GenMix_Target.set_value(target_value)  
+    #for run in range(num_runs):
+    result = solver.solve(model, tee=True, keepfiles=True, logfile=log_file_path)#, options_string="threads=4")
 
-        print(f"Running optimization for GenMix_Target = {target_value:.2f}")
-        result = solver.solve(model, tee=True, keepfiles=True, logfile=log_file_path, options_string="threads=4")
+    if (result.solver.status == SolverStatus.ok) and (result.solver.termination_condition == TerminationCondition.optimal):
+        # If the solution is optimal, collect the results
+        run_results = collect_results(model)
+        #results_over_runs.append(run_results)
 
-        if (result.solver.status == SolverStatus.ok) and (result.solver.termination_condition == TerminationCondition.optimal):
-            # If the solution is optimal, collect the results
-            run_results = collect_results(model)
-            run_results['GenMix_Target'] = target_value  
-            results_over_runs.append(run_results)
-
-            # Update the best result if it found a better one
-            if 'Total_Cost' in run_results and run_results['Total_Cost'] < best_objective_value:
-                best_objective_value = run_results['Total_Cost']
-                best_result = run_results
-        else:
-            print(f"Solver did not find an optimal solution for GenMix_Target = {target_value:.2f}.")
-            
-            # Log infeasible constraints for debugging
-            print("Logging infeasible constraints...")
-            logging.basicConfig(level=logging.INFO)
-            log_infeasible_constraints(model)
+        # Update the best result if it found a better one
+        if 'Total_Cost' in run_results and run_results['Total_Cost'] < best_objective_value:
+            best_objective_value = run_results['Total_Cost']
+            best_result = run_results
+    else:
+        print(f"Solver did not find an optimal solution for GenMix_Target.")
+        
+        # Log infeasible constraints for debugging
+        print("Logging infeasible constraints...")
+        logging.basicConfig(level=logging.INFO)
+        log_infeasible_constraints(model)
     
-    return results_over_runs, best_result
+    return best_result
 
 # ---------------------------------------------------------------------------------
 # Export results to CSV files
-def export_results(model, iso_name, case):
-    output_dir = f'C:/NREL_Projects/LDES/SDOM/Open-source/CBC/{iso_name}/'
+def export_results(model, target):
+    output_dir = f'./pyomo_results_targetGenMix_{target}/'
     os.makedirs(output_dir, exist_ok=True)
 
     # Initialize results dictionaries
@@ -689,21 +666,21 @@ def export_results(model, iso_name, case):
 
     # Save generation results to CSV
     if gen_results['Hour']:
-        with open(output_dir + f'OutputGeneration_{case}.csv', mode='w', newline='') as file:
+        with open(output_dir + f'OutputGeneration.csv', mode='w', newline='') as file:
             writer = csv.DictWriter(file, fieldnames=gen_results.keys())
             writer.writeheader()
             writer.writerows([dict(zip(gen_results, t)) for t in zip(*gen_results.values())])
 
     # Save storage results to CSV
     if storage_results['Hour']:
-        with open(output_dir + f'OutputStorage_{case}.csv', mode='w', newline='') as file:
+        with open(output_dir + f'OutputStorage.csv', mode='w', newline='') as file:
             writer = csv.DictWriter(file, fieldnames=storage_results.keys())
             writer.writeheader()
             writer.writerows([dict(zip(storage_results, t)) for t in zip(*storage_results.values())])
 
     # Save summary results to CSV
     if summary_results:
-        with open(output_dir + f'OutputSummary_{case}.csv', mode='w', newline='') as file:
+        with open(output_dir + f'OutputSummary.csv', mode='w', newline='') as file:
             writer = csv.DictWriter(file, fieldnames=summary_results.keys())
             writer.writeheader()
             writer.writerow(summary_results)
@@ -715,27 +692,23 @@ def main():
     model = initialize_model(data)  
 
     #iso = ['CAISO', 'ERCOT', 'ISONE', 'MISO', 'NYISO', 'PJM', 'SPP']
-    iso = ['CAISO']
-    nuclear = ['1']
-    target = ['1.00']
+    #iso = ['CAISO']
+    #nuclear = ['1']
+    targets = [0.5]
+    
     
     #nuclear = ['0', '1']
     #target = ['0.00', '0.75', '0.80', '0.85', '0.90', '0.95', '1.00'] 
 
     # Loop over each scenario combination and solve the model
-    for j in iso:
-        for i in nuclear:
-            for k in target:
-                case = f"{j}_Nuclear_{i}_Target_{k}"
-                print(f"Solving for {case}...")
+    for target in targets:
+        model.GenMix_Target.set_value(target) 
+        best_result = run_solver(model)
 
-                results_over_runs, best_result = run_solver(model)
-
-                if best_result:
-                    print(f"Best result for {case}: {best_result}")
-                    export_results(model, j, case)  
-                else:
-                    print(f"Solver did not find an optimal solution for {case}, skipping result export.")
+        if best_result:
+            export_results(model, target)  
+        else:
+            print(f"Solver did not find an optimal solution for GenMix target {target}, skipping result export.")
 
 # ---------------------------------------------------------------------------------
 # Execute the main function

@@ -330,7 +330,6 @@ def initialize_model(data):
     def pcls_constraint_rule(model):
         return sum(model.Load[h] - model.LoadShed[h] for h in model.h) \
             >= PCLS_target * sum(model.Load[h] for h in model.h) * critical_load_percentage
-
     model.PCLS_Constraint = Constraint(rule=pcls_constraint_rule)
 
     # EUE - Expected Unserved Energy - Constraint : Resilience
@@ -343,30 +342,30 @@ def initialize_model(data):
     def genmix_share_rule(model):
         return sum(model.GenCC[h] for h in model.h) <= (1 - model.GenMix_Target)*sum(model.Load[h] + sum(model.PC[h, j] for j in model.j)
                            - sum(model.PD[h, j] for j in model.j) for h in model.h)
-
     model.GenMix_Share = Constraint(rule=genmix_share_rule)
 
-    # Solar balance : generation + curtailed generation = capacity factor * capacity
+    # - Solar balance : generation + curtailed generation = capacity factor * capacity
     def solar_balance_rule(model, h):
         return model.GenPV[h] + model.CurtPV[h] == sum(model.CFSolar[h, k] * model.CapSolar_capacity[k] * model.Ypv[k] for k in model.k)
     model.SolarBal = Constraint(model.h, rule=solar_balance_rule)
 
-    # Wind balance : generation + curtailed generation = capacity factor * capacity
+    # - Wind balance : generation + curtailed generation = capacity factor * capacity 
     def wind_balance_rule(model, h):
         return model.GenWind[h] + model.CurtWind[h] == sum(model.CFWind[h, w] * model.CapWind_capacity[w] * model.Ywind[w] for w in model.w)
     model.WindBal = Constraint(model.h, rule=wind_balance_rule)
 
-    # Capacity of the backup generation
-    def backup_gen_rule(model, h):
-        return model.CapCC >= model.GenCC[h]
-    model.BackupGen = Constraint(model.h, rule=backup_gen_rule)
+    # Ensure that the charging and discharging power do not exceed storage limits
+    model.ChargSt= Constraint(model.h, model.j, rule=lambda m, h, j: m.PC[h, j] <= m.StorageData['Max_P', j] * m.Ystorage[j, h])
+    model.DischargeSt = Constraint(model.h, model.j, rule=lambda m, h, j: m.PD[h, j] <= m.StorageData['Max_P', j] * (1 - m.Ystorage[j, h]))
+
+    # Hourly capacity bounds
+    model.MaxHourlyCharging = Constraint(model.h, model.j, rule= lambda m,h,j: m.PC[h, j] <= m.Pcha[j])
+    model.MaxHourlyDischarging = Constraint(model.h, model.j, rule= lambda m,h,j: m.PD[h, j] <= m.Pdis[j])
 
     # Limit state of charge of storage by its capacity
-    def max_soc_rule(model, h, j):
-        return model.SOC[h, j] <= model.Ecap[j]
-    model.MaxSOC = Constraint(model.h, model.j, rule=max_soc_rule)
+    model.MaxSOC = Constraint(model.h, model.j, rule=lambda m, h, j: m.SOC[h,j]<= m.Ecap[j])
 
-    # State-Of-Charge Balance
+    # State-Of-Charge Balance -
     def soc_balance_rule(model, h, j):
         if h > 1: 
             return model.SOC[h, j] == model.SOC[h-1, j] \
@@ -379,48 +378,20 @@ def initialize_model(data):
                 - model.PD[h, j] / sqrt(model.StorageData['Eff', j])
     model.SOCBalance = Constraint(model.h, model.j, rule=soc_balance_rule)
 
-    # Ensure that the charging and discharging power do not exceed storage limits
-    model.MaxChargePower = Constraint(
-        model.h, model.j, rule=lambda m, h, j: m.PC[h, j] <= m.StorageData['Max_P', j] * m.Ystorage[j, h])
-    model.MaxDischargePower = Constraint(
-        model.h, model.j, rule=lambda m, h, j: m.PD[h, j] <= m.StorageData['Max_P', j] * (1 - m.Ystorage[j, h]))
 
-    # Constraints on the maximum charging (Pcha) and discharging (Pdis) power for each technology
-    model.MaxPcha = Constraint(
-        model.j, rule=lambda m, j: m.Pcha[j] <= m.StorageData['Max_P', j])
-    model.MaxPdis = Constraint(
-        model.j, rule=lambda m, j: m.Pdis[j] <= m.StorageData['Max_P', j])
+    # - Constraints on the maximum charging (Pcha) and discharging (Pdis) power for each technology
+    model.MaxPcha = Constraint( model.j, rule=lambda m, j: m.Pcha[j] <= m.StorageData['Max_P', j])
+    model.MaxPdis = Constraint(model.j, rule=lambda m, j: m.Pdis[j] <= m.StorageData['Max_P', j])
 
-    model.PchaPdis = Constraint(
-        model.b, rule=lambda m, j: m.Pcha[j] == m.Pdis[j])
-
-    # Hourly capacity bounds
-    def max_hourly_charging_rule(m, h, j):
-        return m.PC[h, j] <= m.Pcha[j]
-    model.MaxHourlyCharging = Constraint(
-        model.h, model.j, rule=max_hourly_charging_rule)
-
-    def max_hourly_discharging_rule(m, h, j):
-        return m.PD[h, j] <= m.Pdis[j]
-    model.MaxHourlyDischarging = Constraint(
-        model.h, model.j, rule=max_hourly_discharging_rule)
+    # Charge and discharge rates are equal -
+    model.PchaPdis = Constraint(model.b, rule=lambda m, j: m.Pcha[j] == m.Pdis[j])
 
     # Max and min energy capacity constraints (handle uninitialized variables)
-    def min_ecap_rule(model, j):
-        if model.StorageData['Eff', j] <= 0:
-            return Constraint.Skip
-        else:
-            return model.Ecap[j] >= model.StorageData['Min_Duration', j] \
-                * model.Pdis[j] / sqrt(model.StorageData['Eff', j])
-    model.MinEcap = Constraint(model.j, rule=min_ecap_rule)
+    model.MinEcap = Constraint(model.j, rule= lambda m,j: m.Ecap[j] >= m.StorageData['Min_Duration', j] * m.Pdis[j] / sqrt(m.StorageData['Eff', j]))
+    model.MaxEcap = Constraint(model.j, rule= lambda m,j: m.Ecap[j] <= m.StorageData['Max_Duration', j] * m.Pdis[j] / sqrt(m.StorageData['Eff', j]))
 
-    def max_ecap_rule(model, j):
-        if model.StorageData['Eff', j] <= 0:
-            return Constraint.Skip
-        else:
-            return model.Ecap[j] <= model.StorageData['Max_Duration', j] \
-                * model.Pdis[j] / sqrt(model.StorageData['Eff', j])
-    model.MaxEcap = Constraint(model.j, rule=max_ecap_rule)
+    # Capacity of the backup generation
+    model.BackupGen = Constraint(model.h, rule= lambda m,h: m.CapCC >= m.GenCC[h])
 
     # Max cycle year
     def max_cycle_year_rule(model):
@@ -555,7 +526,7 @@ def collect_results(model):
 def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, num_runs=1):
     #solver = SolverFactory('HiGHS')
     #solver = HiGHS(mip_heuristic_effort=0.2, mip_detect_symmetry="on")
-    solver = SolverFactory('cbc')#, executable = './cbc.exe')
+    solver = SolverFactory('cbc')
     #solver = SolverFactory('appsi_highs')
     #solver = SolverFactory('scip')
     solver.options['loglevel'] = 3

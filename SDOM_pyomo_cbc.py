@@ -58,7 +58,7 @@ def safe_pyomo_value(var):
         return None
 
 
-def initialize_model(data):
+def initialize_model(data, with_resilience_constraints=False):
     model = ConcreteModel(name="SDOM_Model")
 
     # Solar plant ID alignment
@@ -109,7 +109,7 @@ def initialize_model(data):
         model.add_component(f"CapWind_{property_name}", Param(model.w, initialize=filtered_property_dict_wind))
 
     # Define sets
-    model.h = RangeSet(1, 24)
+    model.h = RangeSet(1,  720)
     model.j = Set(initialize=['Li-Ion', 'CAES', 'PHS', 'H2'])
     model.b = Set(initialize=['Li-Ion', 'PHS'])
 
@@ -207,7 +207,7 @@ def initialize_model(data):
 
     # Resilience variables
     # How much load is unmet during hour h
-    model.LoadShed = Var(model.h, domain=NonNegativeReals, initialize=0, bounds=(0,0))
+    model.LoadShed = Var(model.h, domain=NonNegativeReals, initialize=0)
 
     # Storage-related variables
     # Charging power for storage technology j in hour h
@@ -314,12 +314,14 @@ def initialize_model(data):
     def pcls_constraint_rule(model):
         return sum(model.Load[h] - model.LoadShed[h] for h in model.h) \
             >= PCLS_target * sum(model.Load[h] for h in model.h) * critical_load_percentage
-    model.PCLS_Constraint = Constraint(rule=pcls_constraint_rule)
+    if with_resilience_constraints:
+        model.PCLS_Constraint = Constraint(rule=pcls_constraint_rule)
 
     # EUE - Expected Unserved Energy - Constraint : Resilience
     def max_eue_constraint_rule(model):
         return sum(model.LoadShed[h] for h in model.h) <= model.EUE_max
-    model.MaxEUE_Constraint = Constraint(rule=max_eue_constraint_rule)
+    if with_resilience_constraints:
+        model.MaxEUE_Constraint = Constraint(rule=max_eue_constraint_rule)
 
     # Generation mix target
     # Limit on generation from NG
@@ -419,7 +421,7 @@ def collect_results(model):
                                 * model.CapWind_capacity[w] * model.Ywind[w] for w in model.w)
     results['SolarFOM'] = sum((model.FCR_VRE * 1000*model.CapSolar_FOM_M[k]) * model.CapSolar_capacity[k] * model.Ypv[k] for k in model.k)
     results['WindFOM'] =  sum((model.FCR_VRE * 1000*model.CapWind_FOM_M[w]) * model.CapWind_capacity[w] * model.Ywind[w] for w in model.w)
-    
+
     results['LiIonPowerCapex'] = model.CRF['Li-Ion']*(1000*model.StorageData['CostRatio', 'Li-Ion'] * model.StorageData['P_Capex', 'Li-Ion']*model.Pcha['Li-Ion']
                         + 1000*(1 - model.StorageData['CostRatio', 'Li-Ion']) * model.StorageData['P_Capex', 'Li-Ion']*model.Pdis['Li-Ion'])
     results['LiIonEnergyCapex'] = model.CRF['Li-Ion']*1000*model.StorageData['E_Capex', 'Li-Ion']*model.Ecap['Li-Ion']
@@ -667,7 +669,7 @@ def export_results(model, case):
 
 def main(with_resilience_constraints = False, case='test_data'):
     data = load_data()
-    model = initialize_model(data)
+    model = initialize_model(data, with_resilience_constraints=with_resilience_constraints)
 
 
     # Loop over each scenario combination and solve the model

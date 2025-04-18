@@ -4,34 +4,18 @@ import pandas as pd
 import csv
 import os
 import logging
-#import math
-#import matplotlib.pyplot as plt
 from pyomo.opt import SolverFactory, SolverStatus, TerminationCondition
-#from pyomo.opt import SolverResults
 from pyomo.environ import value
 from pyomo.environ import Binary
 from pyomo.util.infeasible import log_infeasible_constraints
-#from pyomo.environ import TransformationFactory
 from pyomo.core import Var, Constraint
-#from pyomo.core.expr.visitor import identify_variables
-#from pyomo.util.model_size import build_model_size_report
-#from pympler import muppy, summary
-#import sys
-#from pyomo.contrib import appsi
-#from pyomo.contrib.appsi.solvers import Highs
-#from gethighs import HiGHS
-#import highspy
-#solver = highspy.Highs()
 
-# ---------------------------------------------------------------------------------
-# Data loading
 
 
 def load_data():
     os.chdir('./Data/.')
     solar_plants = pd.read_csv('Set_k_SolarPV.csv', header=None)[0].tolist()
     wind_plants = pd.read_csv('Set_w_Wind.csv', header=None)[0].tolist()
-
     load_data = pd.read_csv('Load_hourly_2050.csv').round(5)
     nuclear_data = pd.read_csv('Nucl_hourly_2019.csv').round(5)
     large_hydro_data = pd.read_csv('lahy_hourly_2019.csv').round(5)
@@ -414,108 +398,60 @@ def collect_results(model):
 
     # Capacity and generation results
     results['Total_CapCC'] = safe_pyomo_value(model.CapCC)
-    results['Total_CapPV'] = sum(safe_pyomo_value(
-        model.Ypv[k]) * model.CapSolar_CAPEX_M[k] for k in model.k)
-    results['Total_CapWind'] = sum(safe_pyomo_value(
-        model.Ywind[w]) * model.CapWind_CAPEX_M[w] for w in model.w)
-    results['Total_CapScha'] = {
-        j: safe_pyomo_value(model.Pcha[j]) for j in model.j}
-    results['Total_CapSdis'] = {
-        j: safe_pyomo_value(model.Pdis[j]) for j in model.j}
-    results['Total_EcapS'] = {
-        j: safe_pyomo_value(model.Ecap[j]) for j in model.j}
+    results['Total_CapPV'] = sum(safe_pyomo_value(model.Ypv[k]) * model.CapSolar_CAPEX_M[k] for k in model.k)
+    results['Total_CapWind'] = sum(safe_pyomo_value(model.Ywind[w]) * model.CapWind_CAPEX_M[w] for w in model.w)
+    results['Total_CapScha'] = {j: safe_pyomo_value(model.Pcha[j]) for j in model.j}
+    results['Total_CapSdis'] = {j: safe_pyomo_value(model.Pdis[j]) for j in model.j}
+    results['Total_EcapS'] = {j: safe_pyomo_value(model.Ecap[j]) for j in model.j}
 
     # Generation and dispatch results
-    results['Total_GenPV'] = sum(
-        safe_pyomo_value(model.GenPV[h]) for h in model.h)
-    results['Total_GenWind'] = sum(
-        safe_pyomo_value(model.GenWind[h]) for h in model.h)
-    results['Total_GenS'] = {j: sum(safe_pyomo_value(
-        model.PD[h, j]) for h in model.h) for j in model.j}
+    results['Total_GenPV'] = sum(safe_pyomo_value(model.GenPV[h]) for h in model.h)
+    results['Total_GenWind'] = sum(safe_pyomo_value(model.GenWind[h]) for h in model.h)
+    results['Total_GenS'] = {j: sum(safe_pyomo_value(model.PD[h, j]) for h in model.h) for j in model.j}
 
-    results['SolarPVGen'] = {h: safe_pyomo_value(
-        model.GenPV[h]) for h in model.h}
-    results['WindGen'] = {h: safe_pyomo_value(
-        model.GenWind[h]) for h in model.h}
-    results['GenGasCC'] = {h: safe_pyomo_value(
-        model.GenCC[h]) for h in model.h}
+    results['SolarPVGen'] = {h: safe_pyomo_value(model.GenPV[h]) for h in model.h}
+    results['WindGen'] = {h: safe_pyomo_value(model.GenWind[h]) for h in model.h}
+    results['GenGasCC'] = {h: safe_pyomo_value(model.GenCC[h]) for h in model.h}
     
-    results['SolarCapex'] = sum(
-         (model.FCR_VRE * (1000 * \
-          model.CapSolar_CAPEX_M[k] + model.CapSolar_trans_cap_cost[k])) * model.CapSolar_capacity[k] * model.Ypv[k]
-         for k in model.k
-         )
-    results['WindCapex'] =  sum(
-         (model.FCR_VRE * (1000 * \
-         model.CapWind_CAPEX_M[w] + model.CapWind_trans_cap_cost[w])) * model.CapWind_capacity[w] * model.Ywind[w]
-         for w in model.w
-         )        
-    results['SolarFOM'] = sum(
-         (model.FCR_VRE * 1000*model.CapSolar_FOM_M[k]) * model.CapSolar_capacity[k] * model.Ypv[k]
-         for k in model.k
-         )
-    results['WindFOM'] =  sum(
-         (model.FCR_VRE * 1000*model.CapWind_FOM_M[w]) * model.CapWind_capacity[w] * model.Ywind[w]
-         for w in model.w
-         )
-    results['LiIonPowerCapex'] = model.CRF['Li-Ion']*(
-                        1000*model.StorageData['CostRatio', 'Li-Ion'] * \
-                        model.StorageData['P_Capex', 'Li-Ion']*model.Pcha['Li-Ion']
-                        + 1000*(1 - model.StorageData['CostRatio', 'Li-Ion']) * \
-                        model.StorageData['P_Capex', 'Li-Ion']*model.Pdis['Li-Ion'])
-
+    results['SolarCapex'] = sum((model.FCR_VRE * (1000 * model.CapSolar_CAPEX_M[k] + model.CapSolar_trans_cap_cost[k])) \
+                                * model.CapSolar_capacity[k] * model.Ypv[k] for k in model.k)
+    results['WindCapex'] =  sum((model.FCR_VRE * (1000 * model.CapWind_CAPEX_M[w] + model.CapWind_trans_cap_cost[w])) \
+                                * model.CapWind_capacity[w] * model.Ywind[w] for w in model.w)
+    results['SolarFOM'] = sum((model.FCR_VRE * 1000*model.CapSolar_FOM_M[k]) * model.CapSolar_capacity[k] * model.Ypv[k] for k in model.k)
+    results['WindFOM'] =  sum((model.FCR_VRE * 1000*model.CapWind_FOM_M[w]) * model.CapWind_capacity[w] * model.Ywind[w] for w in model.w)
+    
+    results['LiIonPowerCapex'] = model.CRF['Li-Ion']*(1000*model.StorageData['CostRatio', 'Li-Ion'] * model.StorageData['P_Capex', 'Li-Ion']*model.Pcha['Li-Ion']
+                        + 1000*(1 - model.StorageData['CostRatio', 'Li-Ion']) * model.StorageData['P_Capex', 'Li-Ion']*model.Pdis['Li-Ion'])
     results['LiIonEnergyCapex'] = model.CRF['Li-Ion']*1000*model.StorageData['E_Capex', 'Li-Ion']*model.Ecap['Li-Ion']
-
-    results['LiIonFOM'] = 1000*model.StorageData['CostRatio', 'Li-Ion'] * model.StorageData['FOM', 'Li-Ion']*model.Pcha['Li-Ion']
-    + 1000*(1 - model.StorageData['CostRatio', 'Li-Ion']) * model.StorageData['FOM', 'Li-Ion']*model.Pdis['Li-Ion']
-
+    results['LiIonFOM'] = 1000*model.StorageData['CostRatio', 'Li-Ion'] * model.StorageData['FOM', 'Li-Ion']*model.Pcha['Li-Ion'] \
+                        + 1000*(1 - model.StorageData['CostRatio', 'Li-Ion']) * model.StorageData['FOM', 'Li-Ion']*model.Pdis['Li-Ion']
     results['LiIonVOM'] = model.StorageData['VOM', 'Li-Ion'] * sum(model.PD[h, 'Li-Ion'] for h in model.h) 
     
-    results['CAESPowerCapex'] = model.CRF['CAES']*(
-                        1000*model.StorageData['CostRatio', 'CAES'] * \
-                        model.StorageData['P_Capex', 'CAES']*model.Pcha['CAES']
-                        + 1000*(1 - model.StorageData['CostRatio', 'CAES']) * \
-                        model.StorageData['P_Capex', 'CAES']*model.Pdis['CAES'])
-
+    results['CAESPowerCapex'] = model.CRF['CAES']*(1000*model.StorageData['CostRatio', 'CAES'] * model.StorageData['P_Capex', 'CAES']*model.Pcha['CAES']\
+                                + 1000*(1 - model.StorageData['CostRatio', 'CAES']) * model.StorageData['P_Capex', 'CAES']*model.Pdis['CAES'])
     results['CAESEnergyCapex'] = model.CRF['CAES']*1000*model.StorageData['E_Capex', 'CAES']*model.Ecap['CAES']
-
-    results['CAESFOM'] = 1000*model.StorageData['CostRatio', 'CAES'] * model.StorageData['FOM', 'CAES']*model.Pcha['CAES']
-    + 1000*(1 - model.StorageData['CostRatio', 'CAES']) * model.StorageData['FOM', 'CAES']*model.Pdis['CAES']
-
+    results['CAESFOM'] = 1000*model.StorageData['CostRatio', 'CAES'] * model.StorageData['FOM', 'CAES']*model.Pcha['CAES']\
+                        + 1000*(1 - model.StorageData['CostRatio', 'CAES']) * model.StorageData['FOM', 'CAES']*model.Pdis['CAES']
     results['CAESVOM'] = model.StorageData['VOM', 'CAES'] * sum(model.PD[h, 'CAES'] for h in model.h) 
     
-    results['PHSPowerCapex'] = model.CRF['PHS']*(
-                        1000*model.StorageData['CostRatio', 'PHS'] * \
-                        model.StorageData['P_Capex', 'PHS']*model.Pcha['PHS']
-                        + 1000*(1 - model.StorageData['CostRatio', 'PHS']) * \
-                        model.StorageData['P_Capex', 'PHS']*model.Pdis['PHS'])
-
+    results['PHSPowerCapex'] = model.CRF['PHS']*(1000*model.StorageData['CostRatio', 'PHS'] * model.StorageData['P_Capex', 'PHS']*model.Pcha['PHS']
+                                + 1000*(1 - model.StorageData['CostRatio', 'PHS']) * model.StorageData['P_Capex', 'PHS']*model.Pdis['PHS'])
     results['PHSEnergyCapex'] = model.CRF['PHS']*1000*model.StorageData['E_Capex', 'PHS']*model.Ecap['PHS']
 
-    results['CAESFOM'] = 1000*model.StorageData['CostRatio', 'PHS'] * model.StorageData['FOM', 'PHS']*model.Pcha['PHS']
-    + 1000*(1 - model.StorageData['CostRatio', 'PHS']) * model.StorageData['FOM', 'PHS']*model.Pdis['PHS']
-
+    results['CAESFOM'] = 1000*model.StorageData['CostRatio', 'PHS'] * model.StorageData['FOM', 'PHS']*model.Pcha['PHS']\
+                        + 1000*(1 - model.StorageData['CostRatio', 'PHS']) * model.StorageData['FOM', 'PHS']*model.Pdis['PHS']
     results['CAESVOM'] = model.StorageData['VOM', 'PHS'] * sum(model.PD[h, 'PHS'] for h in model.h) 
     
-    results['H2PowerCapex'] = model.CRF['H2']*(
-                        1000*model.StorageData['CostRatio', 'H2'] * \
-                        model.StorageData['P_Capex', 'H2']*model.Pcha['H2']
-                        + 1000*(1 - model.StorageData['CostRatio', 'H2']) * \
-                        model.StorageData['P_Capex', 'H2']*model.Pdis['H2'])
-
+    results['H2PowerCapex'] = model.CRF['H2']*(1000*model.StorageData['CostRatio', 'H2'] * model.StorageData['P_Capex', 'H2']*model.Pcha['H2']
+                        + 1000*(1 - model.StorageData['CostRatio', 'H2']) * model.StorageData['P_Capex', 'H2']*model.Pdis['H2'])
     results['H2EnergyCapex'] = model.CRF['H2']*1000*model.StorageData['E_Capex', 'H2']*model.Ecap['H2']
-
-    results['H2FOM'] = 1000*model.StorageData['CostRatio', 'H2'] * model.StorageData['FOM', 'H2']*model.Pcha['H2']
-    + 1000*(1 - model.StorageData['CostRatio', 'H2']) * model.StorageData['FOM', 'H2']*model.Pdis['H2']
-
+    results['H2FOM'] = 1000*model.StorageData['CostRatio', 'H2'] * model.StorageData['FOM', 'H2']*model.Pcha['H2']\
+                    + 1000*(1 - model.StorageData['CostRatio', 'H2']) * model.StorageData['FOM', 'H2']*model.Pdis['H2']
     results['H2VOM'] = model.StorageData['VOM', 'H2'] * sum(model.PD[h, 'H2'] for h in model.h) 
         
     results['GasCCCapex'] = model.FCR_GasCC*1000*model.CapexGasCC*model.CapCC
-
     results['GasCCFuel'] = (model.GasPrice * model.HR) * sum(model.GenCC[h] for h in model.h)
-
     results['GasCCFOM'] = 1000*model.FOM_GasCC*model.CapCC
-
     results['GasCCVOM'] = (model.GasPrice * model.HR) * sum(model.GenCC[h] for h in model.h)
 
     return results
@@ -524,19 +460,12 @@ def collect_results(model):
 
 
 def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, num_runs=1):
-    #solver = SolverFactory('HiGHS')
-    #solver = HiGHS(mip_heuristic_effort=0.2, mip_detect_symmetry="on")
     solver = SolverFactory('cbc')
-    #solver = SolverFactory('appsi_highs')
-    #solver = SolverFactory('scip')
     solver.options['loglevel'] = 3
     solver.options['mip_rel_gap'] = optcr
-#    solver.options['threads'] = 6
     solver.options['tee'] = True
     solver.options['keepfiles'] = True
     solver.options['logfile'] = log_file_path
-#l    solver.options['warmstart'] = True
-#    solver.options['load_solution'] = False
     logging.basicConfig(level=logging.INFO)
 
     results_over_runs = []
@@ -550,24 +479,19 @@ def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, num_runs=1):
         print(f"Running optimization for GenMix_Target = {target_value:.2f}")
         result = solver.solve(model, 
                               #, tee=True, keepfiles = True, #working_dir='C:/Users/mkoleva/Documents/Masha/Projects/LDES_Demonstration/CBP/TEA/Results/solver_log.txt'
-
                              )
         
-       # result = opt.solve(model)
-
         if (result.solver.status == SolverStatus.ok) and (result.solver.termination_condition == TerminationCondition.optimal):
             # If the solution is optimal, collect the results
             run_results = collect_results(model)
             run_results['GenMix_Target'] = target_value
             results_over_runs.append(run_results)
-
             # Update the best result if it found a better one
             if 'Total_Cost' in run_results and run_results['Total_Cost'] < best_objective_value:
                 best_objective_value = run_results['Total_Cost']
                 best_result = run_results
         else:
             print(f"Solver did not find an optimal solution for GenMix_Target = {target_value:.2f}.")
-
             # Log infeasible constraints for debugging
             print("Logging infeasible constraints...")
             logging.basicConfig(level=logging.INFO)

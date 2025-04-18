@@ -5,7 +5,7 @@ import csv
 import os
 import logging
 import math
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from pyomo.opt import SolverFactory, SolverStatus, TerminationCondition
 from pyomo.opt import SolverResults
 from pyomo.environ import value
@@ -15,12 +15,12 @@ from pyomo.environ import TransformationFactory
 from pyomo.core import Var, Constraint
 from pyomo.core.expr.visitor import identify_variables
 from pyomo.util.model_size import build_model_size_report
-from pympler import muppy, summary
+#from pympler import muppy, summary
 import sys
 from pyomo.contrib import appsi
 from pyomo.contrib.appsi.solvers import Highs
-from gethighs import HiGHS
-import highspy
+#from gethighs import HiGHS
+#import highspy
 #solver = highspy.Highs()
 
 # ---------------------------------------------------------------------------------
@@ -28,6 +28,7 @@ import highspy
 
 
 def load_data():
+    os.chdir('./Data')
     solar_plants = pd.read_csv('Set_k_SolarPV.csv', header=None)[0].tolist()
     wind_plants = pd.read_csv('Set_w_Wind.csv', header=None)[0].tolist()
 
@@ -44,7 +45,7 @@ def load_data():
     cap_wind = pd.read_csv('CapWind_2050.csv').round(5)
     cap_wind['sc_gid'] = cap_wind['sc_gid'].astype(str)
     storage_data = pd.read_csv('StorageData_2050.csv', index_col=0).round(5)
-
+    os.chdir('..')
     return {
         "solar_plants": solar_plants,
         "wind_plants": wind_plants,
@@ -146,7 +147,7 @@ def initialize_model(data):
             model.w, initialize=filtered_property_dict))
 
     # Define sets
-    model.h = RangeSet(1, 8760)
+    model.h = RangeSet(1, 24)
     model.j = Set(initialize=['Li-Ion', 'CAES', 'PHS', 'H2'])
     model.b = Set(initialize=['Li-Ion', 'PHS'])
 
@@ -507,8 +508,8 @@ def initialize_model(data):
     model.MaxCycleYear = Constraint(rule=max_cycle_year_rule)
 
     # Build a model size report
-    all_objects = muppy.get_objects()
-    print(summary.summarize(all_objects))
+    #all_objects = muppy.get_objects()
+    #print(summary.summarize(all_objects))
 
     return model
 
@@ -631,10 +632,10 @@ def collect_results(model):
 # Run solver function
 
 
-def run_solver(model, log_file_path='C:/Users/mkoleva/Documents/Masha/Projects/LDES_Demonstration/CBP/TEA/Results/solver_log.txt', optcr=0.0, num_runs=1):
+def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, num_runs=1):
     #solver = SolverFactory('HiGHS')
     #solver = HiGHS(mip_heuristic_effort=0.2, mip_detect_symmetry="on")
-    solver = SolverFactory('cbc', executable = 'C:/Users/mkoleva/Documents/Masha/Projects/LDES_Demonstration/CBP/TEA/SDOM_pyomo_cbc_122324/Cbc-releases.2.10.12-w64/bin/cbc.exe')
+    solver = SolverFactory('cbc')#, executable = 'C:/Users/mkoleva/Documents/Masha/Projects/LDES_Demonstration/CBP/TEA/SDOM_pyomo_cbc_122324/Cbc-releases.2.10.12-w64/bin/cbc.exe')
     #solver = SolverFactory('appsi_highs')
     #solver = SolverFactory('scip')
     solver.options['loglevel'] = 3
@@ -665,6 +666,7 @@ def run_solver(model, log_file_path='C:/Users/mkoleva/Documents/Masha/Projects/L
 
         if (result.solver.status == SolverStatus.ok) and (result.solver.termination_condition == TerminationCondition.optimal):
             # If the solution is optimal, collect the results
+            print("Optimal solution found")
             run_results = collect_results(model)
             run_results['GenMix_Target'] = target_value
             results_over_runs.append(run_results)
@@ -688,7 +690,7 @@ def run_solver(model, log_file_path='C:/Users/mkoleva/Documents/Masha/Projects/L
 
 
 def export_results(model, iso_name, case):
-    output_dir = f'C:/Users/mkoleva/Documents/Masha/Projects/LDES_Demonstration/CBP/TEA/Results/{iso_name}/'
+    output_dir = f'./results'
     os.makedirs(output_dir, exist_ok=True)
 
     # Initialize results dictionaries

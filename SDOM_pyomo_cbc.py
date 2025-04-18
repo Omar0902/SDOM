@@ -15,7 +15,7 @@ from pyomo.util.infeasible import log_infeasible_constraints
 from pyomo.core import Var, Constraint
 #from pyomo.core.expr.visitor import identify_variables
 #from pyomo.util.model_size import build_model_size_report
-from pympler import muppy, summary
+#from pympler import muppy, summary
 #import sys
 #from pyomo.contrib import appsi
 #from pyomo.contrib.appsi.solvers import Highs
@@ -245,20 +245,6 @@ def initialize_model(data):
 
     model.Ystorage = Var(model.j, model.h, domain=Binary, initialize=0)  # Storage selection (binary)
 
-    for pv in model.Ypv:
-        if model.Ypv[pv].value is None:
-            model.Ypv[pv].set_value(0)  # Initialize to 0 if not already set
-
-    for wind in model.Ywind:
-        if model.Ywind[wind].value is None:
-            # Initialize to 0 if not already set
-            model.Ywind[wind].set_value(0)
-
-    for s in model.Ystorage:
-        if model.Ystorage[s].value is None:
-            # Initialize to 0 if not already set
-            model.Ystorage[s].set_value(0)
-
     # Compute and set the upper bound for CapCC
     CapCC_upper_bound_value = max(
         value(model.Load[h]) - value(model.AlphaNuclear) *
@@ -329,17 +315,11 @@ def initialize_model(data):
     # Energy supply demand
     def supply_balance_rule(model, h):
         return (
-            model.Load[h]
-            + sum(model.PC[h, j] for j in model.j)
-            - model.AlphaNuclear * model.Nuclear[h]
-            - model.AlphaLargHy * model.LargeHydro[h]
-            - model.AlphaOtheRe * model.OtherRenewables[h]
-            - model.GenPV[h]
-            - model.GenWind[h]
-            - sum(model.PD[h, j] for j in model.j)
+            model.Load[h] + sum(model.PC[h, j] for j in model.j) - sum(model.PD[h, j] for j in model.j)
+            - model.AlphaNuclear * model.Nuclear[h] - model.AlphaLargHy * model.LargeHydro[h] - model.AlphaOtheRe * model.OtherRenewables[h]
+            - model.GenPV[h] - model.GenWind[h]
             - model.GenCC[h] == 0
         ) 
-
     model.SupplyBalance = Constraint(model.h, rule=supply_balance_rule)
 
 
@@ -358,50 +338,37 @@ def initialize_model(data):
         return sum(model.LoadShed[h] for h in model.h) <= model.EUE_max
     model.MaxEUE_Constraint = Constraint(rule=max_eue_constraint_rule)
 
-    # Ensure that the total generation from gas does not exceed the GenMix_Target percentage
+    # Generation mix target
+    # Limit on generation from NG
     def genmix_share_rule(model):
-#        total_gas = sum(model.GenCC[h] for h in model.h)
-#        total_demand = sum(model.Load[h]
-#                           + sum(model.PC[h, j] for j in model.j)
-#                           - sum(model.PD[h, j] for j in model.j)
-#                           for h in model.h)
-        return sum(model.GenCC[h] for h in model.h) <= (1 - model.GenMix_Target)*sum(model.Load[h]
-                           + sum(model.PC[h, j] for j in model.j)
-                           - sum(model.PD[h, j] for j in model.j)
-                           for h in model.h)
+        return sum(model.GenCC[h] for h in model.h) <= (1 - model.GenMix_Target)*sum(model.Load[h] + sum(model.PC[h, j] for j in model.j)
+                           - sum(model.PD[h, j] for j in model.j) for h in model.h)
 
     model.GenMix_Share = Constraint(rule=genmix_share_rule)
 
-    # Ensure the solar generation and curtailment match the available solar capacity for each hour
+    # Solar balance : generation + curtailed generation = capacity factor * capacity
     def solar_balance_rule(model, h):
         return model.GenPV[h] + model.CurtPV[h] == sum(model.CFSolar[h, k] * model.CapSolar_capacity[k] * model.Ypv[k] for k in model.k)
-
     model.SolarBal = Constraint(model.h, rule=solar_balance_rule)
 
-    # Ensure the wind generation and curtailment match the available wind capacity for each hour.
+    # Wind balance : generation + curtailed generation = capacity factor * capacity
     def wind_balance_rule(model, h):
         return model.GenWind[h] + model.CurtWind[h] == sum(model.CFWind[h, w] * model.CapWind_capacity[w] * model.Ywind[w] for w in model.w)
-
     model.WindBal = Constraint(model.h, rule=wind_balance_rule)
 
-    # Ensure the backup generation can generate enough electricity when needed
+    # Capacity of the backup generation
     def backup_gen_rule(model, h):
-#        if model.GenCC[h].value is None or model.CapCC.value is None:
-#            return Constraint.Skip
-#        else:
         return model.CapCC >= model.GenCC[h]
-
     model.BackupGen = Constraint(model.h, rule=backup_gen_rule)
 
-    # Keep track of the state of charge for storage across time - charging and discharging
+    # Limit state of charge of storage by its capacity
     def max_soc_rule(model, h, j):
         return model.SOC[h, j] <= model.Ecap[j]
-
     model.MaxSOC = Constraint(model.h, model.j, rule=max_soc_rule)
 
-    # SOC Balance
+    # State-Of-Charge Balance
     def soc_balance_rule(model, h, j):
-        if h > 1:
+        if h > 1: 
             return model.SOC[h, j] == model.SOC[h-1, j] \
                 + sqrt(model.StorageData['Eff', j]) * model.PC[h, j] \
                 - model.PD[h, j] / sqrt(model.StorageData['Eff', j])
@@ -410,7 +377,6 @@ def initialize_model(data):
             return model.SOC[h, j] == model.SOC[max(model.h), j] \
                 + sqrt(model.StorageData['Eff', j]) * model.PC[h, j] \
                 - model.PD[h, j] / sqrt(model.StorageData['Eff', j])
-
     model.SOCBalance = Constraint(model.h, model.j, rule=soc_balance_rule)
 
     # Ensure that the charging and discharging power do not exceed storage limits

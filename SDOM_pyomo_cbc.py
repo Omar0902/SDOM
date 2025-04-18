@@ -512,7 +512,7 @@ def export_results(model, case):
     # Initialize results dictionaries
     gen_results = {'Scenario':[],'Hour': [], 'Solar PV Generation (MW)': [], 'Solar PV Curtailment (MW)': [],
                    'Wind Generation (MW)': [], 'Wind Curtailment (MW)': [],
-                   'Gas CC Generation (MW)': [], 'Power from Storage and Gas CC to Storage (MW)': []}
+                   'Gas CC Generation (MW)': [], 'Storage Charge/Discharge (MW)': []}
 
     storage_results = {'Hour': [], 'Technology': [], 'Charging power (MW)': [],
                        'Discharging power (MW)': [], 'State of charge (MWh)': []}
@@ -538,7 +538,7 @@ def export_results(model, case):
             gen_results['Gas CC Generation (MW)'].append(gas_cc_gen)
 
             power_to_storage = sum(safe_pyomo_value(model.PC[h, j]) or 0 for j in model.j) - sum(safe_pyomo_value(model.PD[h, j]) or 0 for j in model.j)
-            gen_results['Power from Storage and Gas CC to Storage (MW)'].append(power_to_storage)
+            gen_results['Storage Charge/Discharge (MW)'].append(power_to_storage)
         gen_results['Scenario'].append(case)
 
     # Extract storage results

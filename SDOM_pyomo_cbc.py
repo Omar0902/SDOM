@@ -4,23 +4,23 @@ import pandas as pd
 import csv
 import os
 import logging
-import math
-import matplotlib.pyplot as plt
+#import math
+#import matplotlib.pyplot as plt
 from pyomo.opt import SolverFactory, SolverStatus, TerminationCondition
-from pyomo.opt import SolverResults
+#from pyomo.opt import SolverResults
 from pyomo.environ import value
 from pyomo.environ import Binary
 from pyomo.util.infeasible import log_infeasible_constraints
-from pyomo.environ import TransformationFactory
+#from pyomo.environ import TransformationFactory
 from pyomo.core import Var, Constraint
-from pyomo.core.expr.visitor import identify_variables
-from pyomo.util.model_size import build_model_size_report
+#from pyomo.core.expr.visitor import identify_variables
+#from pyomo.util.model_size import build_model_size_report
 from pympler import muppy, summary
-import sys
-from pyomo.contrib import appsi
-from pyomo.contrib.appsi.solvers import Highs
-from gethighs import HiGHS
-import highspy
+#import sys
+#from pyomo.contrib import appsi
+#from pyomo.contrib.appsi.solvers import Highs
+#from gethighs import HiGHS
+#import highspy
 #solver = highspy.Highs()
 
 # ---------------------------------------------------------------------------------
@@ -28,6 +28,7 @@ import highspy
 
 
 def load_data():
+    os.chdir('./Data/.')
     solar_plants = pd.read_csv('Set_k_SolarPV.csv', header=None)[0].tolist()
     wind_plants = pd.read_csv('Set_w_Wind.csv', header=None)[0].tolist()
 
@@ -44,7 +45,7 @@ def load_data():
     cap_wind = pd.read_csv('CapWind_2050.csv').round(5)
     cap_wind['sc_gid'] = cap_wind['sc_gid'].astype(str)
     storage_data = pd.read_csv('StorageData_2050.csv', index_col=0).round(5)
-
+    os.chdir('../')
     return {
         "solar_plants": solar_plants,
         "wind_plants": wind_plants,
@@ -58,6 +59,7 @@ def load_data():
         "cap_wind": cap_wind,
         "storage_data": storage_data,
     }
+
 
 # ---------------------------------------------------------------------------------
 # Model initialization
@@ -81,24 +83,18 @@ def initialize_model(data):
     common_solar_plants = list(set(solar_plants_cf) & set(solar_plants_cap))
 
     # Filter solar data and initialize model set
-    complete_solar_data = data["cap_solar"][data["cap_solar"]
-                                            ['sc_gid'].astype(str).isin(common_solar_plants)]
-    complete_solar_data = complete_solar_data.dropna(
-        subset=['CAPEX_M', 'trans_cap_cost', 'FOM_M', 'capacity'])
-    common_solar_plants_filtered = complete_solar_data['sc_gid'].astype(
-        str).tolist()
+    complete_solar_data = data["cap_solar"][data["cap_solar"]['sc_gid'].astype(str).isin(common_solar_plants)]
+    complete_solar_data = complete_solar_data.dropna(subset=['CAPEX_M', 'trans_cap_cost', 'FOM_M', 'capacity'])
+    common_solar_plants_filtered = complete_solar_data['sc_gid'].astype(str).tolist()
     model.k = Set(initialize=common_solar_plants_filtered)
 
     # Load the solar capacities
-    cap_solar_dict = complete_solar_data.set_index('sc_gid')[
-        'capacity'].to_dict()
+    cap_solar_dict = complete_solar_data.set_index('sc_gid')['capacity'].to_dict()
 
     # Filter the dictionary to ensure only valid keys are included
     default_capacity_value = 0.0
-    filtered_cap_solar_dict = {k: cap_solar_dict.get(
-        k, default_capacity_value) for k in model.k}
-    model.CapSolar_capacity = Param(
-        model.k, initialize=filtered_cap_solar_dict)
+    filtered_cap_solar_dict = {k: cap_solar_dict.get(k, default_capacity_value) for k in model.k}
+    model.CapSolar_capacity = Param(model.k, initialize=filtered_cap_solar_dict)
 
     # Wind plant ID alignment
     wind_plants_cf = data['cf_wind'].columns[1:].astype(str).tolist()
@@ -106,47 +102,30 @@ def initialize_model(data):
     common_wind_plants = list(set(wind_plants_cf) & set(wind_plants_cap))
 
     # Filter wind data and initialize model set
-    complete_wind_data = data["cap_wind"][data["cap_wind"]
-                                          ['sc_gid'].astype(str).isin(common_wind_plants)]
-    complete_wind_data = complete_wind_data.dropna(
-        subset=['CAPEX_M', 'trans_cap_cost', 'FOM_M', 'capacity'])
-    common_wind_plants_filtered = complete_wind_data['sc_gid'].astype(
-        str).tolist()
+    complete_wind_data = data["cap_wind"][data["cap_wind"]['sc_gid'].astype(str).isin(common_wind_plants)]
+    complete_wind_data = complete_wind_data.dropna(subset=['CAPEX_M', 'trans_cap_cost', 'FOM_M', 'capacity'])
+    common_wind_plants_filtered = complete_wind_data['sc_gid'].astype(str).tolist()
     model.w = Set(initialize=common_wind_plants_filtered)
 
     # Load the wind capacities
-    cap_wind_dict = complete_wind_data.set_index(
-        'sc_gid')['capacity'].to_dict()
+    cap_wind_dict = complete_wind_data.set_index('sc_gid')['capacity'].to_dict()
 
     # Filter the dictionary to ensure only valid keys are included
-    filtered_cap_wind_dict = {w: cap_wind_dict.get(
-        w, default_capacity_value) for w in model.w}
+    filtered_cap_wind_dict = {w: cap_wind_dict.get(w, default_capacity_value) for w in model.w}
     model.CapWind_capacity = Param(model.w, initialize=filtered_cap_wind_dict)
 
-    # Initialize solar parameters, with default values for missing data
+    # Initialize solar and wind parameters, with default values for missing data
     for property_name in ['trans_cap_cost', 'CAPEX_M', 'FOM_M']:
-        property_dict = complete_solar_data.set_index(
-            'sc_gid')[property_name].to_dict()
-
+        property_dict_solar = complete_solar_data.set_index('sc_gid')[property_name].to_dict()
+        property_dict_wind = complete_wind_data.set_index('sc_gid')[property_name].to_dict()
         default_value = 0.0
-        filtered_property_dict = {k: property_dict.get(
-            k, default_value) for k in model.k}
-        model.add_component(f"CapSolar_{property_name}", Param(
-            model.k, initialize=filtered_property_dict))
-
-    # Initialize wind parameters, with default values for missing data
-    for property_name in ['trans_cap_cost', 'CAPEX_M', 'FOM_M']:
-        property_dict = complete_wind_data.set_index(
-            'sc_gid')[property_name].to_dict()
-
-        default_value = 0.0
-        filtered_property_dict = {k: property_dict.get(
-            k, default_value) for k in model.w}
-        model.add_component(f"CapWind_{property_name}", Param(
-            model.w, initialize=filtered_property_dict))
+        filtered_property_dict_solar = {k: property_dict_solar.get(k, default_value) for k in model.k}
+        filtered_property_dict_wind = {w: property_dict_wind.get(w, default_value) for w in model.w}
+        model.add_component(f"CapSolar_{property_name}", Param(model.k, initialize=filtered_property_dict_solar))
+        model.add_component(f"CapWind_{property_name}", Param(model.w, initialize=filtered_property_dict_wind))
 
     # Define sets
-    model.h = RangeSet(1, 8760)
+    model.h = RangeSet(1, 24)
     model.j = Set(initialize=['Li-Ion', 'CAES', 'PHS', 'H2'])
     model.b = Set(initialize=['Li-Ion', 'PHS'])
 
@@ -195,47 +174,34 @@ def initialize_model(data):
 
     # Nuclear data initialization
     nuclear_data = data["nuclear_data"].set_index('*Hour')['Nuclear'].to_dict()
-    filtered_nuclear_data = {h: nuclear_data[h]
-                             for h in model.h if h in nuclear_data}
+    filtered_nuclear_data = {h: nuclear_data[h] for h in model.h if h in nuclear_data}
     model.Nuclear = Param(model.h, initialize=filtered_nuclear_data)
 
     # Large hydro data initialization
-    large_hydro_data = data["large_hydro_data"].set_index(
-        '*Hour')['LargeHydro'].to_dict()
-    filtered_large_hydro_data = {
-        h: large_hydro_data[h] for h in model.h if h in large_hydro_data}
+    large_hydro_data = data["large_hydro_data"].set_index('*Hour')['LargeHydro'].to_dict()
+    filtered_large_hydro_data = {h: large_hydro_data[h] for h in model.h if h in large_hydro_data}
     model.LargeHydro = Param(model.h, initialize=filtered_large_hydro_data)
 
     # Other renewables data initialization
-    other_renewables_data = data["other_renewables_data"].set_index(
-        '*Hour')['OtherRenewables'].to_dict()
-    filtered_other_renewables_data = {
-        h: other_renewables_data[h] for h in model.h if h in other_renewables_data}
-    model.OtherRenewables = Param(
-        model.h, initialize=filtered_other_renewables_data)
+    other_renewables_data = data["other_renewables_data"].set_index('*Hour')['OtherRenewables'].to_dict()
+    filtered_other_renewables_data = {h: other_renewables_data[h] for h in model.h if h in other_renewables_data}
+    model.OtherRenewables = Param(model.h, initialize=filtered_other_renewables_data)
 
     # Solar capacity factor initialization
-    cf_solar_melted = data["cf_solar"].melt(
-        id_vars='Hour', var_name='plant', value_name='CF')
-    cf_solar_filtered = cf_solar_melted[
-        (cf_solar_melted['plant'].isin(model.k)) & (cf_solar_melted['Hour'].isin(model.h))]
-    cf_solar_dict = cf_solar_filtered.set_index(['Hour', 'plant'])[
-        'CF'].to_dict()
+    cf_solar_melted = data["cf_solar"].melt(id_vars='Hour', var_name='plant', value_name='CF')
+    cf_solar_filtered = cf_solar_melted[(cf_solar_melted['plant'].isin(model.k)) & (cf_solar_melted['Hour'].isin(model.h))]
+    cf_solar_dict = cf_solar_filtered.set_index(['Hour', 'plant'])['CF'].to_dict()
     model.CFSolar = Param(model.h, model.k, initialize=cf_solar_dict)
 
     # Wind capacity factor initialization
-    cf_wind_melted = data["cf_wind"].melt(
-        id_vars='Hour', var_name='plant', value_name='CF')
-    cf_wind_filtered = cf_wind_melted[
-        (cf_wind_melted['plant'].isin(model.w)) & (cf_wind_melted['Hour'].isin(model.h))]
-    cf_wind_dict = cf_wind_filtered.set_index(
-        ['Hour', 'plant'])['CF'].to_dict()
+    cf_wind_melted = data["cf_wind"].melt(id_vars='Hour', var_name='plant', value_name='CF')
+    cf_wind_filtered = cf_wind_melted[(cf_wind_melted['plant'].isin(model.w)) & (cf_wind_melted['Hour'].isin(model.h))]
+    cf_wind_dict = cf_wind_filtered.set_index(['Hour', 'plant'])['CF'].to_dict()
     model.CFWind = Param(model.h, model.w, initialize=cf_wind_dict)
 
     # Storage data initialization
     storage_dict = data["storage_data"].stack().to_dict()
-    storage_tuple_dict = {(prop, tech): storage_dict[(
-        prop, tech)] for prop in storage_properties for tech in model.j}
+    storage_tuple_dict = {(prop, tech): storage_dict[(prop, tech)] for prop in storage_properties for tech in model.j}
     model.StorageData = Param(model.sp, model.j, initialize=storage_tuple_dict)
 
     # Capital recovery factor for storage
@@ -246,21 +212,18 @@ def initialize_model(data):
     #model.CRF.display()
 
     # Define variables
-    model.GenPV = Var(model.h, domain=NonNegativeReals,
-                      initialize=0)  # Generated solar PV power
+    model.GenPV = Var(model.h, domain=NonNegativeReals,initialize=0)  # Generated solar PV power
     # Curtailment for solar PV power
     model.CurtPV = Var(model.h, domain=NonNegativeReals, initialize=0)
-    model.GenWind = Var(model.h, domain=NonNegativeReals,
-                        initialize=0)  # Generated wind power
-    model.CurtWind = Var(model.h, domain=NonNegativeReals,
-                         initialize=0)  # Curtailment for wind power
+    model.GenWind = Var(model.h, domain=NonNegativeReals,initialize=0)  # Generated wind power
+    model.CurtWind = Var(model.h, domain=NonNegativeReals,initialize=0)  # Curtailment for wind power
     # Capacity of backup GCC units
     model.CapCC = Var(domain=NonNegativeReals, initialize=0)
-    model.GenCC = Var(model.h, domain=NonNegativeReals,
-                      initialize=0)  # Generation from GCC units
+    model.GenCC = Var(model.h, domain=NonNegativeReals,initialize=0)  # Generation from GCC units
+
+    # Resilience variables
     # How much load is unmet during hour h
     model.LoadShed = Var(model.h, domain=NonNegativeReals, initialize=0, bounds=(0,0))
-    model.EUE = Var(domain=NonNegativeReals, bounds=(0,0))  # Expected Unserved Energy
 
     # Storage-related variables
     # Charging power for storage technology j in hour h
@@ -277,13 +240,10 @@ def initialize_model(data):
     model.Ecap = Var(model.j, domain=NonNegativeReals, initialize=0)
 
     # Capacity selection variables with continuous bounds between 0 and 1
-    model.Ypv = Var(model.k, domain=NonNegativeReals,
-                    bounds=(0, 1), initialize=1)
-    model.Ywind = Var(model.w, domain=NonNegativeReals,
-                      bounds=(0, 1), initialize=1)
+    model.Ypv = Var(model.k, domain=NonNegativeReals, bounds=(0, 1), initialize=1)
+    model.Ywind = Var(model.w, domain=NonNegativeReals, bounds=(0, 1), initialize=1)
 
-    model.Ystorage = Var(model.j, model.h, domain=Binary,
-                         initialize=0)  # Storage selection (binary)
+    model.Ystorage = Var(model.j, model.h, domain=Binary, initialize=0)  # Storage selection (binary)
 
     for pv in model.Ypv:
         if model.Ypv[pv].value is None:
@@ -312,7 +272,7 @@ def initialize_model(data):
    # model.CapCC.setub(0)
     #print(CapCC_upper_bound_value)
 
-    # Define the objective function ---------------------------------------------
+    # ----------------------------------- Objective function -----------------------------------
     def objective_rule(model):
         # Annual Fixed Costs
         fixed_costs = (
@@ -365,8 +325,8 @@ def initialize_model(data):
 
     model.Obj = Objective(rule=objective_rule, sense=minimize)
 
-    # Define constraints ---------------------------------------------------------
-    # Ensure that the total supply (load, charging) matches the generation (solar, wind, gas, discharging).
+    # ----------------------------------- Constraints -----------------------------------
+    # Energy supply demand
     def supply_balance_rule(model, h):
         return (
             model.Load[h]
@@ -382,26 +342,21 @@ def initialize_model(data):
 
     model.SupplyBalance = Constraint(model.h, rule=supply_balance_rule)
 
-    # Define critical load as part of the load for essential services
-    critical_load_percentage = 1  # 10% of the total load
-    total_critical_load = sum(
-        value(model.Load[h]) for h in model.h) * critical_load_percentage
 
-    # PCLS (Percentage of Critical Load Served) Constraint:
+    # PCLS - Percentage of Critical Load Served - Constraint : Resilience
+    critical_load_percentage = 1  # 10% of the total load
     PCLS_target = 0.9  # 90% of the total load
 
     def pcls_constraint_rule(model):
         return sum(model.Load[h] - model.LoadShed[h] for h in model.h) \
-            >= PCLS_target * total_critical_load
+            >= PCLS_target * sum(model.Load[h] for h in model.h) * critical_load_percentage
 
     model.PCLS_Constraint = Constraint(rule=pcls_constraint_rule)
 
-    # EUE Constraint:
-    def eue_constraint_rule(model):
-        return model.EUE == sum(model.LoadShed[h] for h in model.h)
-    model.EUE_Constraint = Constraint(rule=eue_constraint_rule)
-
-    model.MaxEUE_Constraint = Constraint(expr=model.EUE <= model.EUE_max)
+    # EUE - Expected Unserved Energy - Constraint : Resilience
+    def max_eue_constraint_rule(model):
+        return sum(model.LoadShed[h] for h in model.h) <= model.EUE_max
+    model.MaxEUE_Constraint = Constraint(rule=max_eue_constraint_rule)
 
     # Ensure that the total generation from gas does not exceed the GenMix_Target percentage
     def genmix_share_rule(model):
@@ -507,8 +462,8 @@ def initialize_model(data):
     model.MaxCycleYear = Constraint(rule=max_cycle_year_rule)
 
     # Build a model size report
-    all_objects = muppy.get_objects()
-    print(summary.summarize(all_objects))
+    #all_objects = muppy.get_objects()
+    #print(summary.summarize(all_objects))
 
     return model
 
@@ -631,10 +586,10 @@ def collect_results(model):
 # Run solver function
 
 
-def run_solver(model, log_file_path='C:/Users/mkoleva/Documents/Masha/Projects/LDES_Demonstration/CBP/TEA/Results/solver_log.txt', optcr=0.0, num_runs=1):
+def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, num_runs=1):
     #solver = SolverFactory('HiGHS')
     #solver = HiGHS(mip_heuristic_effort=0.2, mip_detect_symmetry="on")
-    solver = SolverFactory('cbc', executable = 'C:/Users/mkoleva/Documents/Masha/Projects/LDES_Demonstration/CBP/TEA/SDOM_pyomo_cbc_122324/Cbc-releases.2.10.12-w64/bin/cbc.exe')
+    solver = SolverFactory('cbc')#, executable = './cbc.exe')
     #solver = SolverFactory('appsi_highs')
     #solver = SolverFactory('scip')
     solver.options['loglevel'] = 3
@@ -687,8 +642,8 @@ def run_solver(model, log_file_path='C:/Users/mkoleva/Documents/Masha/Projects/L
 # Export results to CSV files
 
 
-def export_results(model, iso_name, case):
-    output_dir = f'C:/Users/mkoleva/Documents/Masha/Projects/LDES_Demonstration/CBP/TEA/Results/{iso_name}/'
+def export_results(model, case):
+    output_dir = './results_pyomo/'
     os.makedirs(output_dir, exist_ok=True)
 
     # Initialize results dictionaries
@@ -888,33 +843,21 @@ def export_results(model, iso_name, case):
 # Main loop for handling scenarios and results exporting
 
 
-def main():
+def main(with_resilience_constraints = False, case='test_data'):
     data = load_data()
     model = initialize_model(data)
 
-    # iso = ['CAISO', 'ERCOT', 'ISONE', 'MISO', 'NYISO', 'PJM', 'SPP']
-    iso = ['CAISO']
-    nuclear = ['1']
-    target = ['1.00']
-
-    # nuclear = ['0', '1']
-    # target = ['0.00', '0.75', '0.80', '0.85', '0.90', '0.95', '1.00']
 
     # Loop over each scenario combination and solve the model
-    for j in iso:
-        for i in nuclear:
-            for k in target:
-                case = f"{j}_Nuclear_{i}_Target_{k}"
-                print(f"Solving for {case}...")
-
-                #results_over_runs, 
-                best_result = run_solver(model)
-
-                if best_result:
-                    print(f"Best result for {case}: {best_result}")
-                    export_results(model, j, case)
-                else:
-                    print(f"Solver did not find an optimal solution for {case}, skipping result export.")
+    if with_resilience_constraints:
+        best_result = run_solver(model, with_resilience_constraints=True)
+        case += '_resilience'
+    else:
+        best_result = run_solver(model)
+    if best_result:
+        export_results(model, case)
+    else:
+        print(f"Solver did not find an optimal solution for given data and with resilience constraints = {with_resilience_constraints}, skipping result export.")
 
 
 # ---------------------------------------------------------------------------------

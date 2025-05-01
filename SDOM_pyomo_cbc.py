@@ -506,7 +506,7 @@ def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, num_runs=1):
 
 
 def export_results(model, case):
-    output_dir = './results_pyomo_test/'
+    output_dir = './results_pyomo/'
     os.makedirs(output_dir, exist_ok=True)
 
     # Initialize results dictionaries column: [values]
@@ -517,7 +517,7 @@ def export_results(model, case):
     storage_results = {'Hour': [], 'Technology': [], 'Charging power (MW)': [],
                        'Discharging power (MW)': [], 'State of charge (MWh)': []}
 
-    summary_results_columns = ['Metric', 'Technology', 'Run', 'Optimal value', 'Unit']
+    summary_results_columns = ['Metric', 'Technology', 'Run', 'Optimal Value', 'Unit']
     summary_results = pd.DataFrame(columns=summary_results_columns)
 
     # Extract generation results
@@ -555,13 +555,15 @@ def export_results(model, case):
                 storage_results['Discharging power (MW)'].append(discharge_power)
                 storage_results['State of charge (MWh)'].append(soc)
 
+
+
     # Summary results (total capacities and costs)
-    # Total cost
-    total_cost = pd.DataFrame.from_dict({'Total cost':[None, 1,safe_pyomo_value(model.Obj()), 'US$']}, orient='index',
+    ## Total cost
+    total_cost = pd.DataFrame.from_dict({'Total cost':[None, 1,safe_pyomo_value(model.Obj()), '$US']}, orient='index',
                                         columns=['Technology','Run','Optimal Value', 'Unit'])
     total_cost = total_cost.reset_index(names='Metric')
     summary_results = pd.concat([summary_results, total_cost], ignore_index=True)
-    # Total capacity
+    ## Total capacity
     cap = {}
     cap['GasCC'] = safe_pyomo_value(model.CapCC)
     cap['Solar PV'] = sum(safe_pyomo_value(model.Ypv[k]) * model.CapSolar_CAPEX_M[k] for k in model.k)
@@ -572,7 +574,7 @@ def export_results(model, case):
     capacities['Unit'] = 'MW'
     capacities['Metric'] = 'Capacity'
     summary_results = pd.concat([summary_results, capacities], ignore_index=True)
-    # Generation
+    ## Generation
     gen = {}
     gen['GasCC'] = safe_pyomo_value(sum(model.GenCC[h] for h in model.h))
     gen['Solar PV'] = sum(safe_pyomo_value(model.GenPV[h]) for h in model.h)
@@ -580,59 +582,134 @@ def export_results(model, case):
     gen['Other renewables'] = safe_pyomo_value(sum(model.OtherRenewables[h]for h in model.h)) 
     gen['Hydro'] = safe_pyomo_value(sum(model.LargeHydro[h] for h in model.h))
     gen['Nuclear'] = safe_pyomo_value(sum(model.Nuclear[h] for h in model.h))
+    gen['LiIon'] = safe_pyomo_value(sum(model.PD[h, 'Li-Ion'] for h in model.h))
+    gen['CAES'] = safe_pyomo_value(sum(model.PD[h, 'CAES'] for h in model.h) )
+    gen['PHS'] = safe_pyomo_value(sum(model.PD[h, 'PHS'] for h in model.h) )
+    gen['H2'] = safe_pyomo_value(sum(model.PD[h, 'H2'] for h in model.h) )
     generation = pd.DataFrame.from_dict(gen, orient='index', columns=['Optimal Value'])
     generation = generation.reset_index(names=['Technology'])
     generation['Run'] = 1
     generation['Unit'] = 'MWh'
     generation['Metric'] = 'Total generation'
     summary_results = pd.concat([summary_results, generation], ignore_index=True)
-    # CAPEX
-
-
-
-    solar_capex =  sum(safe_pyomo_value((model.FCR_VRE * (1000 * model.CapSolar_CAPEX_M[k] + model.CapSolar_trans_cap_cost[k]))\
+    ## CAPEX
+    capex = {}
+    capex['Solar PV'] = sum(safe_pyomo_value((model.FCR_VRE * (1000 * model.CapSolar_CAPEX_M[k] + model.CapSolar_trans_cap_cost[k]))\
                                          * model.CapSolar_capacity[k] * model.Ypv[k]) for k in model.k)
-    wind_capex =  sum(safe_pyomo_value((model.FCR_VRE * (1000 * model.CapWind_CAPEX_M[w] + model.CapWind_trans_cap_cost[w])) \
-                                       * model.CapWind_capacity[w] * model.Ywind[w]) for w in model.w)        
-    solar_FOM = sum(safe_pyomo_value((model.FCR_VRE * 1000*model.CapSolar_FOM_M[k]) * model.CapSolar_capacity[k] * model.Ypv[k]) for k in model.k)
-    wind_FOM =  sum(safe_pyomo_value((model.FCR_VRE * 1000*model.CapWind_FOM_M[w]) * model.CapWind_capacity[w] * model.Ywind[w]) for w in model.w)
-    LiIon_power_capex = safe_pyomo_value(model.CRF['Li-Ion']*(1000*model.StorageData['CostRatio', 'Li-Ion'] * \
+    capex['Wind'] = sum(safe_pyomo_value((model.FCR_VRE * (1000 * model.CapWind_CAPEX_M[w] + model.CapWind_trans_cap_cost[w])) \
+                                       * model.CapWind_capacity[w] * model.Ywind[w]) for w in model.w) 
+    capex['GasCC'] = safe_pyomo_value(model.FCR_GasCC*1000*model.CapexGasCC*model.CapCC)
+    capital_costs = pd.DataFrame.from_dict(capex, orient='index', columns=['Optimal Value'])
+    capital_costs = capital_costs.reset_index(names=['Technology'])
+    capital_costs['Run'] = 1
+    capital_costs['Unit'] = '$US'
+    capital_costs['Metric'] = 'CAPEX'
+    summary_results = pd.concat([summary_results, capital_costs], ignore_index=True)
+    ## Power CAPEX
+    pcapex = {}
+    pcapex['LiIon'] = safe_pyomo_value(model.CRF['Li-Ion']*(1000*model.StorageData['CostRatio', 'Li-Ion'] * \
                                         model.StorageData['P_Capex', 'Li-Ion']*model.Pcha['Li-Ion']
                                         + 1000*(1 - model.StorageData['CostRatio', 'Li-Ion']) * \
                                         model.StorageData['P_Capex', 'Li-Ion']*model.Pdis['Li-Ion']))
-    LiIon_energy_capex = safe_pyomo_value(model.CRF['Li-Ion']*1000*model.StorageData['E_Capex', 'Li-Ion']*model.Ecap['Li-Ion'])
-    LiIon_FOM =safe_pyomo_value(1000*model.StorageData['CostRatio', 'Li-Ion'] * model.StorageData['FOM', 'Li-Ion']*model.Pcha['Li-Ion']
-                                + 1000*(1 - model.StorageData['CostRatio', 'Li-Ion']) * model.StorageData['FOM', 'Li-Ion']*model.Pdis['Li-Ion'])
-    LiIon_VOM = safe_pyomo_value(model.StorageData['VOM', 'Li-Ion'] * sum(model.PD[h, 'Li-Ion'] for h in model.h))
-    caes_power_capex = safe_pyomo_value(model.CRF['CAES']*(1000*model.StorageData['CostRatio', 'CAES'] * \
+    pcapex['CAES'] = safe_pyomo_value(model.CRF['CAES']*(1000*model.StorageData['CostRatio', 'CAES'] * \
                                         model.StorageData['P_Capex', 'CAES']*model.Pcha['CAES']
                                         + 1000*(1 - model.StorageData['CostRatio', 'CAES']) * \
                                         model.StorageData['P_Capex', 'CAES']*model.Pdis['CAES']))
-    caes_energy_capex = safe_pyomo_value(model.CRF['CAES']*1000*model.StorageData['E_Capex', 'CAES']*model.Ecap['CAES'])
-    caes_FOM = safe_pyomo_value(1000*model.StorageData['CostRatio', 'CAES'] * model.StorageData['FOM', 'CAES']*model.Pcha['CAES']
-                            + 1000*(1 - model.StorageData['CostRatio', 'CAES']) * model.StorageData['FOM', 'CAES']*model.Pdis['CAES'])
-    caes_VOM = safe_pyomo_value(model.StorageData['VOM', 'CAES'] * sum(model.PD[h, 'CAES'] for h in model.h) )
-    phs_power_capex = safe_pyomo_value(model.CRF['PHS']*(1000*model.StorageData['CostRatio', 'PHS'] * \
+    pcapex['PHS'] = safe_pyomo_value(model.CRF['PHS']*(1000*model.StorageData['CostRatio', 'PHS'] * \
                                     model.StorageData['P_Capex', 'PHS']*model.Pcha['PHS']
                                     + 1000*(1 - model.StorageData['CostRatio', 'PHS']) * \
                                     model.StorageData['P_Capex', 'PHS']*model.Pdis['PHS']))
-    phs_energy_capex = safe_pyomo_value(model.CRF['PHS']*1000*model.StorageData['E_Capex', 'PHS']*model.Ecap['PHS'])
-    phs_FOM = safe_pyomo_value(1000*model.StorageData['CostRatio', 'PHS'] * model.StorageData['FOM', 'PHS']*model.Pcha['PHS']
-                                + 1000*(1 - model.StorageData['CostRatio', 'PHS']) * model.StorageData['FOM', 'PHS']*model.Pdis['PHS'])
-    phs_VOM = safe_pyomo_value(model.StorageData['VOM', 'PHS'] * sum(model.PD[h, 'PHS'] for h in model.h) )
-    H2_power_capex = safe_pyomo_value(model.CRF['H2']*(
-                        1000*model.StorageData['CostRatio', 'H2'] * \
+    pcapex['H2'] = safe_pyomo_value(model.CRF['H2']*(1000*model.StorageData['CostRatio', 'H2'] * \
                         model.StorageData['P_Capex', 'H2']*model.Pcha['H2']
                         + 1000*(1 - model.StorageData['CostRatio', 'H2']) * \
                         model.StorageData['P_Capex', 'H2']*model.Pdis['H2']))
-    H2_energy_capex = safe_pyomo_value(model.CRF['H2']*1000*model.StorageData['E_Capex', 'H2']*model.Ecap['H2'])
-    H2_FOM = safe_pyomo_value(1000*model.StorageData['CostRatio', 'H2'] * model.StorageData['FOM', 'H2']*model.Pcha['H2']
+    power_capex = pd.DataFrame.from_dict(pcapex, orient='index',columns=['Optimal Value'])
+    power_capex = power_capex.reset_index(names=['Technology'])
+    power_capex['Run'] = 1
+    power_capex['Unit'] = '$US'
+    power_capex['Metric'] = 'Power-CAPEX'
+    summary_results = pd.concat([summary_results, power_capex], ignore_index=True)
+    ## Energy CAPEX
+    ecapex = {}    
+    ecapex['LiIon'] = safe_pyomo_value(model.CRF['Li-Ion']*1000*model.StorageData['E_Capex', 'Li-Ion']*model.Ecap['Li-Ion'])
+    ecapex['CAES'] = safe_pyomo_value(model.CRF['CAES']*1000*model.StorageData['E_Capex', 'CAES']*model.Ecap['CAES'])    
+    ecapex['PHS'] = safe_pyomo_value(model.CRF['PHS']*1000*model.StorageData['E_Capex', 'PHS']*model.Ecap['PHS'])   
+    ecapex['H2'] = safe_pyomo_value(model.CRF['H2']*1000*model.StorageData['E_Capex', 'H2']*model.Ecap['H2'])
+    energy_capex = pd.DataFrame.from_dict(ecapex, orient='index',columns=['Optimal Value'])
+    energy_capex = energy_capex.reset_index(names=['Technology'])
+    energy_capex['Run'] = 1
+    energy_capex['Unit'] = '$US'
+    energy_capex['Metric'] = 'Energy-CAPEX'
+    summary_results = pd.concat([summary_results, energy_capex], ignore_index=True)
+    ## FOM
+    fom = {}
+    fom['GasCC'] = safe_pyomo_value(1000*model.FOM_GasCC*model.CapCC)
+    fom['Solar PV'] = sum(safe_pyomo_value((model.FCR_VRE * 1000*model.CapSolar_FOM_M[k]) * model.CapSolar_capacity[k] * model.Ypv[k]) for k in model.k)
+    fom['Wind'] = sum(safe_pyomo_value((model.FCR_VRE * 1000*model.CapWind_FOM_M[w]) * model.CapWind_capacity[w] * model.Ywind[w]) for w in model.w)
+    fom['LiIon'] = safe_pyomo_value(1000*model.StorageData['CostRatio', 'Li-Ion'] * model.StorageData['FOM', 'Li-Ion']*model.Pcha['Li-Ion']
+                                + 1000*(1 - model.StorageData['CostRatio', 'Li-Ion']) * model.StorageData['FOM', 'Li-Ion']*model.Pdis['Li-Ion'])
+    fom['CAES'] = safe_pyomo_value(1000*model.StorageData['CostRatio', 'CAES'] * model.StorageData['FOM', 'CAES']*model.Pcha['CAES']
+                            + 1000*(1 - model.StorageData['CostRatio', 'CAES']) * model.StorageData['FOM', 'CAES']*model.Pdis['CAES'])
+    fom['PHS'] = safe_pyomo_value(1000*model.StorageData['CostRatio', 'PHS'] * model.StorageData['FOM', 'PHS']*model.Pcha['PHS']
+                                + 1000*(1 - model.StorageData['CostRatio', 'PHS']) * model.StorageData['FOM', 'PHS']*model.Pdis['PHS'])
+    fom['H2'] = safe_pyomo_value(1000*model.StorageData['CostRatio', 'H2'] * model.StorageData['FOM', 'H2']*model.Pcha['H2']
                             + 1000*(1 - model.StorageData['CostRatio', 'H2']) * model.StorageData['FOM', 'H2']*model.Pdis['H2'])
-    H2_VOM = safe_pyomo_value(model.StorageData['VOM', 'H2'] * sum(model.PD[h, 'H2'] for h in model.h) )
-    gasCC_capex = safe_pyomo_value(model.FCR_GasCC*1000*model.CapexGasCC*model.CapCC)
-    gasCC_fuel = safe_pyomo_value((model.GasPrice * model.HR) * sum(model.GenCC[h] for h in model.h))
-    gasCC_FOM = safe_pyomo_value(1000*model.FOM_GasCC*model.CapCC)
-    gasCC_VOM = safe_pyomo_value((model.GasPrice * model.HR) * sum(model.GenCC[h] for h in model.h))
+    fixedom = pd.DataFrame.from_dict(fom, orient='index', columns=['Optimal Value'])
+    fixedom = fixedom.reset_index(names=['Technology'])
+    fixedom['Run'] = 1
+    fixedom['Unit'] = '$US'
+    fixedom['Metric'] = 'FOM'
+    summary_results = pd.concat([summary_results, fixedom], ignore_index=True)
+    ## VOM
+    vom = {}
+    vom['GasCC'] = safe_pyomo_value((model.GasPrice * model.HR + model.VOM_GasCC) *sum(model.GenCC[h] for h in model.h))
+    vom['LiIon'] = safe_pyomo_value(model.StorageData['VOM', 'Li-Ion'] * sum(model.PD[h, 'Li-Ion'] for h in model.h))
+    vom['CAES'] = safe_pyomo_value(model.StorageData['VOM', 'CAES'] * sum(model.PD[h, 'CAES'] for h in model.h) )
+    vom['PHS'] = safe_pyomo_value(model.StorageData['VOM', 'PHS'] * sum(model.PD[h, 'PHS'] for h in model.h) )
+    vom['H2'] = safe_pyomo_value(model.StorageData['VOM', 'H2'] * sum(model.PD[h, 'H2'] for h in model.h) )
+    variableom = pd.DataFrame.from_dict(vom, orient='index', columns=['Optimal Value'])
+    variableom = variableom.reset_index(names=['Technology'])
+    variableom['Run'] = 1
+    variableom['Unit'] = '$US'
+    variableom['Metric'] = 'VOM'
+    summary_results = pd.concat([summary_results, variableom], ignore_index=True)
+    ## Charge power capacity
+    charge = {}
+    charge['LiIon'] = safe_pyomo_value(model.Pcha['Li-Ion'])
+    charge['CAES'] = safe_pyomo_value(model.Pcha['CAES'])
+    charge['PHS'] = safe_pyomo_value(model.Pcha['PHS'])
+    charge['H2'] = safe_pyomo_value(model.Pcha['H2'])
+    charge_power = pd.DataFrame.from_dict(charge, orient='index', columns=['Optimal Value'])
+    charge_power = charge_power.reset_index(names=['Technology'])
+    charge_power['Run'] = 1
+    charge_power['Unit'] = 'MW'
+    charge_power['Metric'] = 'Charge power capacity'
+    summary_results = pd.concat([summary_results, charge_power], ignore_index=True)
+    ## Discharge power capacity
+    dcharge = {}
+    dcharge['LiIon'] = safe_pyomo_value(model.Pdis['Li-Ion'] )
+    dcharge['CAES'] = safe_pyomo_value(model.Pdis['CAES'])
+    dcharge['PHS'] = safe_pyomo_value(model.Pdis['PHS'])
+    dcharge['H2'] = safe_pyomo_value(model.Pdis['H2'])
+    dcharge_power = pd.DataFrame.from_dict(dcharge, orient='index', columns=['Optimal Value'])
+    dcharge_power = dcharge_power.reset_index(names=['Technology'])
+    dcharge_power['Run'] = 1
+    dcharge_power['Unit'] = 'MW'
+    dcharge_power['Metric'] = 'Discharge power capacity'
+    summary_results = pd.concat([summary_results, dcharge_power], ignore_index=True)
+    ## Energy capacity
+    encap = {}
+    encap['LiIon'] = safe_pyomo_value(model.Ecap['Li-Ion'] )
+    encap['CAES'] = safe_pyomo_value(model.Ecap['CAES'])
+    encap['PHS'] = safe_pyomo_value(model.Ecap['PHS'])
+    encap['H2'] = safe_pyomo_value(model.Ecap['H2'])
+    energy_cap = pd.DataFrame.from_dict(encap, orient='index', columns=['Optimal Value'])
+    energy_cap = energy_cap.reset_index(names=['Technology'])
+    energy_cap['Run'] = 1
+    energy_cap['Unit'] = 'MW'
+    energy_cap['Metric'] = 'Energy capacity'
+    summary_results = pd.concat([summary_results, energy_cap], ignore_index=True)
+
 
     # Save generation results to CSV
     if gen_results['Hour']:

@@ -109,7 +109,7 @@ def initialize_model(data, with_resilience_constraints=False):
         model.add_component(f"CapWind_{property_name}", Param(model.w, initialize=filtered_property_dict_wind))
 
     # Define sets
-    model.h = RangeSet(1,  720)
+    model.h = RangeSet(1, 24)
     model.j = Set(initialize=['Li-Ion', 'CAES', 'PHS', 'H2'])
     model.b = Set(initialize=['Li-Ion', 'PHS'])
 
@@ -506,10 +506,10 @@ def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, num_runs=1):
 
 
 def export_results(model, case):
-    output_dir = './results_pyomo/'
+    output_dir = './results_pyomo_test/'
     os.makedirs(output_dir, exist_ok=True)
 
-    # Initialize results dictionaries
+    # Initialize results dictionaries column: [values]
     gen_results = {'Scenario':[],'Hour': [], 'Solar PV Generation (MW)': [], 'Solar PV Curtailment (MW)': [],
                    'Wind Generation (MW)': [], 'Wind Curtailment (MW)': [],
                    'Gas CC Generation (MW)': [], 'Storage Charge/Discharge (MW)': []}
@@ -517,7 +517,8 @@ def export_results(model, case):
     storage_results = {'Hour': [], 'Technology': [], 'Charging power (MW)': [],
                        'Discharging power (MW)': [], 'State of charge (MWh)': []}
 
-    summary_results = {}
+    summary_results_columns = ['Metric', 'Technology', 'Run', 'Optimal value', 'Unit']
+    summary_results = pd.DataFrame(columns=summary_results_columns)
 
     # Extract generation results
 #    for run in range(num_runs):
@@ -547,22 +548,48 @@ def export_results(model, case):
             charge_power = safe_pyomo_value(model.PC[h, j])
             discharge_power = safe_pyomo_value(model.PD[h, j])
             soc = safe_pyomo_value(model.SOC[h, j])
-
             if None not in [charge_power, discharge_power, soc]:
                 storage_results['Hour'].append(h)
                 storage_results['Technology'].append(j)
                 storage_results['Charging power (MW)'].append(charge_power)
-                storage_results['Discharging power (MW)'].append(
-                    discharge_power)
+                storage_results['Discharging power (MW)'].append(discharge_power)
                 storage_results['State of charge (MWh)'].append(soc)
 
     # Summary results (total capacities and costs)
-    total_cost = safe_pyomo_value(model.Obj())
-    total_gas_cc_capacity = safe_pyomo_value(model.CapCC)
-    total_solar_capacity = sum(safe_pyomo_value(model.Ypv[k]) * model.CapSolar_CAPEX_M[k] for k in model.k)
-    total_wind_capacity = sum(safe_pyomo_value(model.Ywind[w]) * model.CapWind_CAPEX_M[w] for w in model.w)
-    total_solar_generation = sum(safe_pyomo_value(model.GenPV[h]) or 0 for h in model.h)
-    total_wind_generation = sum(safe_pyomo_value(model.GenWind[h]) or 0 for h in model.h)
+    # Total cost
+    total_cost = pd.DataFrame.from_dict({'Total cost':[None, 1,safe_pyomo_value(model.Obj()), 'US$']}, orient='index',
+                                        columns=['Technology','Run','Optimal Value', 'Unit'])
+    total_cost = total_cost.reset_index(names='Metric')
+    summary_results = pd.concat([summary_results, total_cost], ignore_index=True)
+    # Total capacity
+    cap = {}
+    cap['GasCC'] = safe_pyomo_value(model.CapCC)
+    cap['Solar PV'] = sum(safe_pyomo_value(model.Ypv[k]) * model.CapSolar_CAPEX_M[k] for k in model.k)
+    cap['Wind'] = sum(safe_pyomo_value(model.Ywind[w]) * model.CapWind_CAPEX_M[w] for w in model.w)
+    capacities = pd.DataFrame.from_dict(cap, orient='index', columns=['Optimal Value'])
+    capacities = capacities.reset_index(names=['Technology'])
+    capacities['Run'] = 1
+    capacities['Unit'] = 'MW'
+    capacities['Metric'] = 'Capacity'
+    summary_results = pd.concat([summary_results, capacities], ignore_index=True)
+    # Generation
+    gen = {}
+    gen['GasCC'] = safe_pyomo_value(sum(model.GenCC[h] for h in model.h))
+    gen['Solar PV'] = sum(safe_pyomo_value(model.GenPV[h]) for h in model.h)
+    gen['Wind'] = sum(safe_pyomo_value(model.GenWind[h]) for h in model.h)
+    gen['Other renewables'] = safe_pyomo_value(sum(model.OtherRenewables[h]for h in model.h)) 
+    gen['Hydro'] = safe_pyomo_value(sum(model.LargeHydro[h] for h in model.h))
+    gen['Nuclear'] = safe_pyomo_value(sum(model.Nuclear[h] for h in model.h))
+    generation = pd.DataFrame.from_dict(gen, orient='index', columns=['Optimal Value'])
+    generation = generation.reset_index(names=['Technology'])
+    generation['Run'] = 1
+    generation['Unit'] = 'MWh'
+    generation['Metric'] = 'Total generation'
+    summary_results = pd.concat([summary_results, generation], ignore_index=True)
+    # CAPEX
+
+
+
     solar_capex =  sum(safe_pyomo_value((model.FCR_VRE * (1000 * model.CapSolar_CAPEX_M[k] + model.CapSolar_trans_cap_cost[k]))\
                                          * model.CapSolar_capacity[k] * model.Ypv[k]) for k in model.k)
     wind_capex =  sum(safe_pyomo_value((model.FCR_VRE * (1000 * model.CapWind_CAPEX_M[w] + model.CapWind_trans_cap_cost[w])) \
@@ -573,7 +600,6 @@ def export_results(model, case):
                                         model.StorageData['P_Capex', 'Li-Ion']*model.Pcha['Li-Ion']
                                         + 1000*(1 - model.StorageData['CostRatio', 'Li-Ion']) * \
                                         model.StorageData['P_Capex', 'Li-Ion']*model.Pdis['Li-Ion']))
-
     LiIon_energy_capex = safe_pyomo_value(model.CRF['Li-Ion']*1000*model.StorageData['E_Capex', 'Li-Ion']*model.Ecap['Li-Ion'])
     LiIon_FOM =safe_pyomo_value(1000*model.StorageData['CostRatio', 'Li-Ion'] * model.StorageData['FOM', 'Li-Ion']*model.Pcha['Li-Ion']
                                 + 1000*(1 - model.StorageData['CostRatio', 'Li-Ion']) * model.StorageData['FOM', 'Li-Ion']*model.Pdis['Li-Ion'])
@@ -608,38 +634,6 @@ def export_results(model, case):
     gasCC_FOM = safe_pyomo_value(1000*model.FOM_GasCC*model.CapCC)
     gasCC_VOM = safe_pyomo_value((model.GasPrice * model.HR) * sum(model.GenCC[h] for h in model.h))
 
-    if total_cost is not None and total_gas_cc_capacity is not None:
-        summary_results['Total cost US$'] = total_cost
-        summary_results['Total capacity of gas combined cycle units (MW)'] = total_gas_cc_capacity
-        summary_results['Total capacity of solar PV units (MW)'] = total_solar_capacity
-        summary_results['Total capacity of wind units (MW)'] = total_wind_capacity
-        summary_results['Total generation of solar PV units (MWh)'] = total_solar_generation
-        summary_results['Total generation of wind units (MWh)'] = total_wind_generation
-        summary_results['Solar Capex US$'] = solar_capex
-        summary_results['Solar FOM US$'] = solar_FOM
-        summary_results['Wind Capex US$'] = wind_capex
-        summary_results['Wind FOM US$'] = wind_FOM
-        summary_results['Li-Ion Power Capex US$'] = LiIon_power_capex
-        summary_results['Li-Ion Energy Capex US$'] = LiIon_energy_capex
-        summary_results['Li-Ion FOM US$'] = LiIon_FOM
-        summary_results['Li-Ion VOM US$'] = LiIon_VOM
-        summary_results['CAES Power Capex US$'] = caes_power_capex
-        summary_results['CAES Energy Capex US$'] = caes_energy_capex
-        summary_results['CAES FOM US$'] = caes_FOM
-        summary_results['CAES VOM US$'] = caes_VOM
-        summary_results['PHS Power Capex US$'] = phs_power_capex
-        summary_results['PHS Energy Capex US$'] = phs_energy_capex
-        summary_results['PHS FOM US$'] = phs_FOM
-        summary_results['PHS VOM US$'] = phs_VOM
-        summary_results['H2 Power Capex US$'] = H2_power_capex
-        summary_results['H2 Energy Capex US$'] = H2_energy_capex
-        summary_results['H2 FOM US$'] = H2_FOM
-        summary_results['H2 VOM US$'] = H2_VOM
-        summary_results['GasCC Capex US$'] = gasCC_capex
-        summary_results['GasCC FUEL US$'] = gasCC_fuel
-        summary_results['GasCC FOM US$'] = gasCC_FOM
-        summary_results['GasCC VOM US$'] = gasCC_VOM
-
     # Save generation results to CSV
     if gen_results['Hour']:
         with open(output_dir + f'OutputGeneration_{case}.csv', mode='w', newline='') as file:
@@ -657,11 +651,8 @@ def export_results(model, case):
                              for t in zip(*storage_results.values())])
 
     # Save summary results to CSV
-    if summary_results:
-        with open(output_dir + f'OutputSummary_{case}.csv', mode='w', newline='') as file:
-            writer = csv.DictWriter(file, fieldnames=summary_results.keys())
-            writer.writeheader()
-            writer.writerow(summary_results)
+    if len(summary_results)>0:
+        summary_results.to_csv(output_dir + f'OutputSummary_{case}.csv', index=False)
 
 # ---------------------------------------------------------------------------------
 # Main loop for handling scenarios and results exporting

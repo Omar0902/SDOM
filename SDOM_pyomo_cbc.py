@@ -597,6 +597,19 @@ def export_results(model, case):
     generation['Unit'] = 'MWh'
     generation['Metric'] = 'Total generation'
     summary_results = pd.concat([summary_results, generation], ignore_index=True)
+    ## Storage energy charging
+    stoch = {}
+    stoch['LiIon'] = safe_pyomo_value(sum(model.PC[h, 'Li-Ion'] for h in model.h))
+    stoch['CAES'] = safe_pyomo_value(sum(model.PC[h, 'CAES'] for h in model.h) )
+    stoch['PHS'] = safe_pyomo_value(sum(model.PC[h, 'PHS'] for h in model.h) )
+    stoch['H2'] = safe_pyomo_value(sum(model.PC[h, 'H2'] for h in model.h) )
+    stoch['All'] = stoch['LiIon'] + stoch['CAES'] + stoch['PHS'] + stoch['H2']
+    storage_charging = pd.DataFrame.from_dict(stoch, orient='index', columns=['Optimal Value'])
+    storage_charging = storage_charging.reset_index(names=['Technology'])
+    storage_charging['Run'] = 1
+    storage_charging['Unit'] = 'MWh'
+    storage_charging['Metric'] = 'Storage energy charging'
+    summary_results = pd.concat([summary_results, storage_charging], ignore_index=True)
     ## Demand
     dem = {}
     dem['demand'] = sum(model.Load[h] for h in model.h)

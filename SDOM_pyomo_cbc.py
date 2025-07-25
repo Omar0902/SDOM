@@ -31,6 +31,7 @@ def load_data():
     cap_wind = pd.read_csv('CapWind_2050.csv').round(5)
     cap_wind['sc_gid'] = cap_wind['sc_gid'].astype(str)
     storage_data = pd.read_csv('StorageData_2050.csv', index_col=0).round(5)
+    scalars = pd.read_csv('scalars.csv', index_col="Parameter")
     os.chdir('../')
     return {
         "solar_plants": solar_plants,
@@ -44,6 +45,7 @@ def load_data():
         "cap_solar": cap_solar,
         "cap_wind": cap_wind,
         "storage_data": storage_data,
+        "scalars": scalars,
     }
 
 
@@ -121,37 +123,37 @@ def initialize_model(data, with_resilience_constraints=False):
     model.sp = Set(initialize=storage_properties)
 
     # Scalar parameters
-    model.r = Param(initialize=0.06)  # Discount rate
-    model.GasPrice = Param(initialize=4.113894393)  # Gas prices (US$/MMBtu)
+    model.r = Param( initialize = float(data["scalars"].loc["r"].Value) )  # Discount rate
+    model.GasPrice = Param( initialize = float(data["scalars"].loc["GasPrice"].Value))  # Gas prices (US$/MMBtu)
     # Heat rate for gas combined cycle (MMBtu/MWh)
-    model.HR = Param(initialize=6.4005)
+    model.HR = Param( initialize = float(data["scalars"].loc["HR"].Value) )
     # Capex for gas combined cycle units (US$/kW)
-    model.CapexGasCC = Param(initialize=940.6078576)
+    model.CapexGasCC = Param( initialize =float(data["scalars"].loc["CapexGasCC"].Value) )
     # Fixed O&M for gas combined cycle (US$/kW-year)
-    model.FOM_GasCC = Param(initialize=13.2516707)
+    model.FOM_GasCC = Param( initialize = float(data["scalars"].loc["FOM_GasCC"].Value) )
     # Variable O&M for gas combined cycle (US$/MWh)
-    model.VOM_GasCC = Param(initialize=2.226321156)
-    model.EUE_max = Param(initialize=0, mutable=True)  # Maximum EUE (in MWh)
+    model.VOM_GasCC = Param( initialize = float(data["scalars"].loc["VOM_GasCC"].Value) )
+    model.EUE_max = Param( initialize = float(data["scalars"].loc["EUE_max"].Value), mutable=True )  # Maximum EUE (in MWh) - Maximum unserved Energy
 
     # GenMix_Target, mutable to change across multiple runs
-    model.GenMix_Target = Param(initialize=1.00, mutable=True)
+    model.GenMix_Target = Param( initialize = float(data["scalars"].loc["GenMix_Target"].Value), mutable=True)
 
     # Fixed Charge Rates (FCR) for VRE and Gas CC
     def fcr_rule(model, lifetime=30):
         return (model.r * (1 + model.r) ** lifetime) / ((1 + model.r) ** lifetime - 1)
 
-    model.FCR_VRE = Param(initialize=fcr_rule(model))
-    model.FCR_GasCC = Param(initialize=fcr_rule(model))
+    model.FCR_VRE = Param( initialize = fcr_rule( model, float(data["scalars"].loc["LifeTimeVRE"].Value) ) )
+    model.FCR_GasCC = Param( initialize = fcr_rule( model, float(data["scalars"].loc["LifeTimeGasCC"].Value) ) )
 
     # Activation factors for nuclear, hydro, and other renewables
-    model.AlphaNuclear = Param(initialize=1, mutable=True)
+    model.AlphaNuclear = Param( initialize = float(data["scalars"].loc["AlphaNuclear"].Value), mutable=True )
     # Control for large hydro generation
-    model.AlphaLargHy = Param(initialize=1)
+    model.AlphaLargHy = Param( initialize = float(data["scalars"].loc["AlphaLargHy"].Value) )
     # Control for other renewable generation
-    model.AlphaOtheRe = Param(initialize=1)
+    model.AlphaOtheRe = Param( initialize = float(data["scalars"].loc["AlphaOtheRe"].Value) )
 
     # Battery life and cycling
-    model.MaxCycles = Param(initialize=3250)
+    model.MaxCycles = Param( initialize = float(data["scalars"].loc["MaxCycles"].Value) )
 
     # Load data initialization
     load_data = data["load_data"].set_index('*Hour')['Load'].to_dict()

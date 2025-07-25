@@ -12,43 +12,7 @@ from pyomo.core import Var, Constraint
 from pyomo.environ import *
 
 
-
-
-def load_data( input_data_dir = '.\\Data\\' ):
-    #os.chdir('./Data/.')
-    solar_plants = pd.read_csv( os.path.join(input_data_dir, 'Set_k_SolarPV.csv'), header=None )[0].tolist()
-    wind_plants = pd.read_csv( os.path.join(input_data_dir, 'Set_w_Wind.csv'), header=None )[0].tolist()
-    load_data = pd.read_csv( os.path.join(input_data_dir, 'Load_hourly_2050.csv') ).round(5)
-    nuclear_data = pd.read_csv( os.path.join(input_data_dir, 'Nucl_hourly_2019.csv') ).round(5)
-    large_hydro_data = pd.read_csv( os.path.join(input_data_dir, 'lahy_hourly_2019.csv') ).round(5)
-    other_renewables_data = pd.read_csv( os.path.join(input_data_dir, 'otre_hourly_2019.csv') ).round(5)
-    cf_solar = pd.read_csv( os.path.join(input_data_dir, 'CFSolar_2050.csv') ).round(5)
-    cf_solar.columns = cf_solar.columns.astype(str)
-    cf_wind = pd.read_csv( os.path.join(input_data_dir, 'CFWind_2050.csv') ).round(5)
-    cf_wind.columns = cf_wind.columns.astype(str)
-    cap_solar = pd.read_csv( os.path.join(input_data_dir, 'CapSolar_2050.csv') ).round(5)
-    cap_solar['sc_gid'] = cap_solar['sc_gid'].astype(str)
-    cap_wind = pd.read_csv( os.path.join(input_data_dir, 'CapWind_2050.csv') ).round(5)
-    cap_wind['sc_gid'] = cap_wind['sc_gid'].astype(str)
-    storage_data = pd.read_csv( os.path.join(input_data_dir, 'StorageData_2050.csv'), index_col=0 ).round(5)
-    scalars = pd.read_csv( os.path.join(input_data_dir, 'scalars.csv'), index_col="Parameter" )
-    #os.chdir('../')
-    return {
-        "solar_plants": solar_plants,
-        "wind_plants": wind_plants,
-        "load_data": load_data,
-        "nuclear_data": nuclear_data,
-        "large_hydro_data": large_hydro_data,
-        "other_renewables_data": other_renewables_data,
-        "cf_solar": cf_solar,
-        "cf_wind": cf_wind,
-        "cap_solar": cap_solar,
-        "cap_wind": cap_wind,
-        "storage_data": storage_data,
-        "scalars": scalars,
-    }
-
-
+from src.io_manager import load_data
 # ---------------------------------------------------------------------------------
 # Model initialization
 # Safe value function for uninitialized variables/parameters

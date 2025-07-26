@@ -3,11 +3,17 @@ import pandas as pd
 import pytest
 
 from SDOM.io_manager import load_data
-def test_load_data():
+def test_load_data_folder_exist():
     test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data')
     test_data_path = os.path.abspath(test_data_path)
 
     assert os.path.exists(test_data_path)
+    
+
+
+def test_load_data_keys_and_types():
+    test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data')
+    test_data_path = os.path.abspath(test_data_path)
     
     data = load_data( test_data_path )
     data_keys = data.keys()
@@ -37,6 +43,13 @@ def test_load_data():
     assert type( data["cap_wind"] ) == pd.DataFrame
     assert type( data["storage_data"] ) == pd.DataFrame
     assert type( data["scalars"] ) == pd.DataFrame
+    
+
+def test_load_data_param_values():
+    test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data')
+    test_data_path = os.path.abspath(test_data_path)
+    
+    data = load_data( test_data_path )
     
     # Check some specific values in the scalars DataFrame
     assert abs( data["scalars"].loc["LifeTimeVRE"].Value - 30 ) <= 0.05

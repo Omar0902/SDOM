@@ -8,6 +8,7 @@ from pyomo.util.infeasible import log_infeasible_constraints
 from pyomo.core import Var, Constraint
 from pyomo.environ import *
 
+from .common.utilities import safe_pyomo_value
 
 #from io_manager import load_data, safe_pyomo_value, export_results
 # ---------------------------------------------------------------------------------
@@ -352,8 +353,6 @@ def initialize_model(data, with_resilience_constraints=False):
 
 # ---------------------------------------------------------------------------------
 # Results collection function
-
-
 def collect_results(model):
     results = {}
     results['Total_Cost'] = safe_pyomo_value(model.Obj.expr)
@@ -418,9 +417,11 @@ def collect_results(model):
 
     return results
 
+
+
+
+
 # Run solver function
-
-
 def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, num_runs=1):
     solver = SolverFactory('cbc')
     solver.options['loglevel'] = 3
@@ -466,24 +467,24 @@ def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, num_runs=1):
 # Main loop for handling scenarios and results exporting
 
 
-def main(with_resilience_constraints = False, case='test_data'):
-    data = load_data()
-    model = initialize_model(data, with_resilience_constraints=with_resilience_constraints)
+# def main(with_resilience_constraints = False, case='test_data'):
+#     data = load_data()
+#     model = initialize_model(data, with_resilience_constraints=with_resilience_constraints)
 
 
-    # Loop over each scenario combination and solve the model
-    if with_resilience_constraints:
-        best_result = run_solver(model, with_resilience_constraints=True)
-        case += '_resilience'
-    else:
-        best_result = run_solver(model)
-    if best_result:
-        export_results(model, case)
-    else:
-        print(f"Solver did not find an optimal solution for given data and with resilience constraints = {with_resilience_constraints}, skipping result export.")
+#     # Loop over each scenario combination and solve the model
+#     if with_resilience_constraints:
+#         best_result = run_solver(model, with_resilience_constraints=True)
+#         case += '_resilience'
+#     else:
+#         best_result = run_solver(model)
+#     if best_result:
+#         export_results(model, case)
+#     else:
+#         print(f"Solver did not find an optimal solution for given data and with resilience constraints = {with_resilience_constraints}, skipping result export.")
 
 
-# ---------------------------------------------------------------------------------
-# Execute the main function
-if __name__ == "__main__":
-    main()
+# # ---------------------------------------------------------------------------------
+# # Execute the main function
+# if __name__ == "__main__":
+#     main()

@@ -4,8 +4,8 @@ import pytest
 
 from SDOM.io_manager import load_data
 def test_load_data():
-    current_dir = os.getcwd()
-    test_data_path = current_dir + '\\Data'
+    test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data')
+    test_data_path = os.path.abspath(test_data_path)
 
     assert os.path.exists(test_data_path)
     

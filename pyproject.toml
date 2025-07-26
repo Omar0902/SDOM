@@ -11,9 +11,9 @@ dynamic = ["version"]
 readme = "README.md"
 
 dependencies = [
-  "numpy>2.3",
-  "pandas>2.3",
-  "pyomo>6.9",
+  "numpy>2.2",
+  "pandas>2.2",
+  "pyomo>6.8",
 ]
 
 authors = [

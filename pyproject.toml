@@ -1,0 +1,42 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "src/SDOM/__version__.py"
+
+[project]
+name = "SDOM"
+dynamic = ["version"]
+readme = "README.md"
+
+dependencies = [
+  "numpy>2.3",
+  "pandas>2.3",
+  "pyomo>6.9",
+]
+
+authors = [
+    { name = "Omar Jose Guerra Fernandez", email = "OmarJose.GuerraFernandez@nrel.gov" },
+    { name = "Mariya Koleva", email = "Mariya.Koleva@nrel.gov" },
+]
+maintainers = [
+    { name = "Omar Jose Guerra Fernandez", email = "OmarJose.GuerraFernandez@nrel.gov" },
+    { name = "Mariya Koleva", email = "Mariya.Koleva@nrel.gov" },
+    { name = "Sebastian de Jesus Manrique Machado", email = "SebastiandeJesus.Machado@nrel.gov" },
+]
+
+description = "A Python package for NREL oppen-source SDOM (Storage Deployment Optimization Model)"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+
+[project.urls]
+Homepage = "https://github.com/Omar0902/SDOM"
+Repository = "https://github.com/Omar0902/SDOM"
+Issues = "https://github.com/Omar0902/SDOM/issues"

@@ -16,6 +16,11 @@ def add_vre_variables(model):
     model.GenWind = Var(model.h, domain=NonNegativeReals,initialize=0)  # Generated wind power
     model.CurtWind = Var(model.h, domain=NonNegativeReals,initialize=0)  # Curtailment for wind power
 
+
+####################################################################################|
+# -----------------------------------= Add_costs -----------------------------------|
+####################################################################################|
+
 def add_vre_fixed_costs(model):
     """
     Add cost-related variables for variable renewable energy (VRE) to the model.
@@ -42,3 +47,7 @@ def add_vre_fixed_costs(model):
             * model.CapWind_capacity[w] * model.Ywind[w]
             for w in model.w
         ) )
+
+####################################################################################|
+# ----------------------------------- Constraints ----------------------------------|
+####################################################################################|

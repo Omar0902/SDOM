@@ -1,6 +1,9 @@
 from pyomo.core import Var, Constraint
 from pyomo.environ import *
 
+####################################################################################|
+# ------------------------------------ Variables -----------------------------------|
+####################################################################################|
 def add_storage_variables(model):
     # Charging power for storage technology j in hour h
     model.PC = Var(model.h, model.j, domain=NonNegativeReals, initialize=0)
@@ -22,6 +25,9 @@ def add_storage_variables(model):
     model.Ystorage = Var(model.j, model.h, domain=Binary, initialize=0)
 
 
+####################################################################################|
+# -----------------------------------= Add_costs -----------------------------------|
+####################################################################################|
 def add_storage_fixed_costs(model):
     """
     Add cost-related variables for storage technologies to the model.
@@ -62,3 +68,7 @@ def add_storage_variable_costs(model):
         sum( model.StorageData['VOM', j] * sum(model.PD[h, j]
                   for h in model.h) for j in model.j )
     )
+
+####################################################################################|
+# ----------------------------------- Constraints ----------------------------------|
+####################################################################################|

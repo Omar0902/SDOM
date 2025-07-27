@@ -19,29 +19,29 @@ from .models.formulations_system import objective_rule, add_system_constraints
 # Model initialization
 # Safe value function for uninitialized variables/parameters
 
-def initialize_model(data, with_resilience_constraints=False):
+def initialize_model(data, n_hours = 8760, with_resilience_constraints=False):
     model = ConcreteModel(name="SDOM_Model")
 
-    initialize_sets(model, data)
+    initialize_sets( model, data, n_hours = n_hours )
     
-    initialize_params(model, data)    
+    initialize_params( model, data )    
 
     # ----------------------------------- Variables -----------------------------------
     # Define variables
-    add_vre_variables(model)
+    add_vre_variables( model )
     
     # Capacity of backup GCC units
-    add_gascc_variables(model)
+    add_gascc_variables( model )
 
     # Resilience variables
     # How much load is unmet during hour h
-    add_resiliency_variables(model)
+    add_resiliency_variables( model )
 
     # Storage-related variables
-    add_storage_variables(model)
+    add_storage_variables( model )
 
     # -------------------------------- Objective function -------------------------------
-    model.Obj = Objective( rule=objective_rule, sense = minimize )
+    model.Obj = Objective( rule = objective_rule, sense = minimize )
 
     # ----------------------------------- Constraints -----------------------------------
     #system Constraints
@@ -65,7 +65,7 @@ def initialize_model(data, with_resilience_constraints=False):
 
 # ---------------------------------------------------------------------------------
 # Results collection function
-def collect_results(model):
+def collect_results( model ):
     results = {}
     results['Total_Cost'] = safe_pyomo_value(model.Obj.expr)
 

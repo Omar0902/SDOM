@@ -11,7 +11,7 @@ def crf_rule( model, j):
     lifetime = model.StorageData['Lifetime', j]
     return ( model.r * (1 + model.r) ** lifetime ) / ( (1 + model.r) ** lifetime - 1 )
 
-def initialize_sets(model, data):
+def initialize_sets( model, data, n_hours = 8760 ):
     """
     Initialize model sets from the provided data dictionary.
     
@@ -62,7 +62,7 @@ def initialize_sets(model, data):
     data['complete_wind_data'] = complete_wind_data
 
     # Define sets
-    model.h = RangeSet(1, 24)
+    model.h = RangeSet(1, n_hours)
     model.j = Set( initialize = STORAGE_SET_J_TECHS )
     model.b = Set( initialize = STORAGE_SET_B_TECHS )
 
@@ -96,7 +96,7 @@ def initialize_params(model, data):
         model.add_component(f"CapWind_{property_name}", Param(model.w, initialize=filtered_property_dict_wind))
 
     model.CapSolar_capacity = Param( model.k, initialize = filtered_cap_solar_dict )  
-    model.CapWind_capacity = Param(model.w, initialize=filtered_cap_wind_dict)
+    model.CapWind_capacity = Param( model.w, initialize = filtered_cap_wind_dict )
 
 
     # Scalar parameters
@@ -132,39 +132,39 @@ def initialize_params(model, data):
     # Load data initialization
     load_data = data["load_data"].set_index('*Hour')['Load'].to_dict()
     filtered_load_data = {h: load_data[h] for h in model.h if h in load_data}
-    model.Load = Param(model.h, initialize=filtered_load_data)
+    model.Load = Param( model.h, initialize = filtered_load_data )
 
     # Nuclear data initialization
     nuclear_data = data["nuclear_data"].set_index('*Hour')['Nuclear'].to_dict()
     filtered_nuclear_data = {h: nuclear_data[h] for h in model.h if h in nuclear_data}
-    model.Nuclear = Param(model.h, initialize=filtered_nuclear_data)
+    model.Nuclear = Param( model.h, initialize = filtered_nuclear_data )
 
     # Large hydro data initialization
     large_hydro_data = data["large_hydro_data"].set_index('*Hour')['LargeHydro'].to_dict()
     filtered_large_hydro_data = {h: large_hydro_data[h] for h in model.h if h in large_hydro_data}
-    model.LargeHydro = Param(model.h, initialize=filtered_large_hydro_data)
+    model.LargeHydro = Param( model.h, initialize = filtered_large_hydro_data)
 
     # Other renewables data initialization
     other_renewables_data = data["other_renewables_data"].set_index('*Hour')['OtherRenewables'].to_dict()
     filtered_other_renewables_data = {h: other_renewables_data[h] for h in model.h if h in other_renewables_data}
-    model.OtherRenewables = Param(model.h, initialize=filtered_other_renewables_data)
+    model.OtherRenewables = Param( model.h, initialize = filtered_other_renewables_data )
 
     # Solar capacity factor initialization
     cf_solar_melted = data["cf_solar"].melt(id_vars='Hour', var_name='plant', value_name='CF')
     cf_solar_filtered = cf_solar_melted[(cf_solar_melted['plant'].isin(model.k)) & (cf_solar_melted['Hour'].isin(model.h))]
     cf_solar_dict = cf_solar_filtered.set_index(['Hour', 'plant'])['CF'].to_dict()
-    model.CFSolar = Param(model.h, model.k, initialize=cf_solar_dict)
+    model.CFSolar = Param( model.h, model.k, initialize = cf_solar_dict )
 
     # Wind capacity factor initialization
     cf_wind_melted = data["cf_wind"].melt(id_vars='Hour', var_name='plant', value_name='CF')
     cf_wind_filtered = cf_wind_melted[(cf_wind_melted['plant'].isin(model.w)) & (cf_wind_melted['Hour'].isin(model.h))]
     cf_wind_dict = cf_wind_filtered.set_index(['Hour', 'plant'])['CF'].to_dict()
-    model.CFWind = Param(model.h, model.w, initialize=cf_wind_dict)
+    model.CFWind = Param( model.h, model.w, initialize = cf_wind_dict )
 
     # Storage data initialization
     storage_dict = data["storage_data"].stack().to_dict()
     storage_tuple_dict = {(prop, tech): storage_dict[(prop, tech)] for prop in STORAGE_PROPERTIES_NAMES for tech in model.j}
-    model.StorageData = Param(model.sp, model.j, initialize=storage_tuple_dict)
+    model.StorageData = Param( model.sp, model.j, initialize = storage_tuple_dict )
 
     model.CRF = Param( model.j, initialize = crf_rule ) #Capital Recovery Factor
     #model.CRF.display()

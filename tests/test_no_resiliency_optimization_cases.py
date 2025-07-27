@@ -6,14 +6,14 @@ from SDOM.io_manager import load_data, export_results
 from SDOM.optimization_main import run_solver, initialize_model
 from pyomo.environ import *
 
-def test_optimization_model_ini_case_no_resiliency():
+def test_optimization_model_ini_case_no_resiliency_24h():
 
     test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data')
     test_data_path = os.path.abspath(test_data_path)
     
     data = load_data( test_data_path )
 
-    model = initialize_model(data, with_resilience_constraints=False)
+    model = initialize_model(data, n_hours = 24, with_resilience_constraints=False)
 
     # Count constraints by type
     constraint_counts = {"equality": 0, "inequality": 0}
@@ -37,7 +37,7 @@ def test_optimization_model_res_case_no_resiliency():
     
     data = load_data( test_data_path )
 
-    model = initialize_model(data, with_resilience_constraints=False)
+    model = initialize_model( data, n_hours = 24, with_resilience_constraints = False )
 
     try:
         best_result = run_solver(model, optcr=0.0, num_runs=1)

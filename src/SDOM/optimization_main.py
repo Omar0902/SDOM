@@ -9,7 +9,10 @@ from pyomo.core import Var, Constraint
 from pyomo.environ import *
 
 from .common.utilities import safe_pyomo_value
-
+from .models.formulations_vre import add_vre_variables
+from .models.formulations_thermal import add_gascc_variables
+from .models.formulations_resiliency import add_resiliency_variables
+from .models.formulations_storage import add_storage_variables
 #from io_manager import load_data, safe_pyomo_value, export_results
 # ---------------------------------------------------------------------------------
 # Model initialization
@@ -157,51 +160,17 @@ def initialize_model(data, with_resilience_constraints=False):
     #model.CRF.display()
 
     # Define variables
-    model.GenPV = Var(model.h, domain=NonNegativeReals,initialize=0)  # Generated solar PV power
-    # Curtailment for solar PV power
-    model.CurtPV = Var(model.h, domain=NonNegativeReals, initialize=0)
-    model.GenWind = Var(model.h, domain=NonNegativeReals,initialize=0)  # Generated wind power
-    model.CurtWind = Var(model.h, domain=NonNegativeReals,initialize=0)  # Curtailment for wind power
+    add_vre_variables(model)
+    
     # Capacity of backup GCC units
-    model.CapCC = Var(domain=NonNegativeReals, initialize=0)
-    model.GenCC = Var(model.h, domain=NonNegativeReals,initialize=0)  # Generation from GCC units
+    add_gascc_variables(model)
 
     # Resilience variables
     # How much load is unmet during hour h
-    model.LoadShed = Var(model.h, domain=NonNegativeReals, initialize=0)
+    add_resiliency_variables(model)
 
     # Storage-related variables
-    # Charging power for storage technology j in hour h
-    model.PC = Var(model.h, model.j, domain=NonNegativeReals, initialize=0)
-    # Discharging power for storage technology j in hour h
-    model.PD = Var(model.h, model.j, domain=NonNegativeReals, initialize=0)
-    # State-of-charge for storage technology j in hour h
-    model.SOC = Var(model.h, model.j, domain=NonNegativeReals, initialize=0)
-    # Charging capacity for storage technology j
-    model.Pcha = Var(model.j, domain=NonNegativeReals, initialize=0)
-    # Discharging capacity for storage technology j
-    model.Pdis = Var(model.j, domain=NonNegativeReals, initialize=0)
-    # Energy capacity for storage technology j
-    model.Ecap = Var(model.j, domain=NonNegativeReals, initialize=0)
-
-    # Capacity selection variables with continuous bounds between 0 and 1
-    model.Ypv = Var(model.k, domain=NonNegativeReals, bounds=(0, 1), initialize=1)
-    model.Ywind = Var(model.w, domain=NonNegativeReals, bounds=(0, 1), initialize=1)
-
-    model.Ystorage = Var(model.j, model.h, domain=Binary, initialize=0)  # Storage selection (binary)
-
-    # Compute and set the upper bound for CapCC
-    CapCC_upper_bound_value = max(
-        value(model.Load[h]) - value(model.AlphaNuclear) *
-        value(model.Nuclear[h])
-        - value(model.AlphaLargHy) * value(model.LargeHydro[h])
-        - value(model.AlphaOtheRe) * value(model.OtherRenewables[h])
-        for h in model.h
-    )
-
-    model.CapCC.setub(CapCC_upper_bound_value)
-   # model.CapCC.setub(0)
-    #print(CapCC_upper_bound_value)
+    add_storage_variables(model)  # Storage selection (binary)
 
     # ----------------------------------- Objective function -----------------------------------
     def objective_rule(model):

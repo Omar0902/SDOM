@@ -39,7 +39,12 @@ def test_optimization_model_res_case_no_resiliency():
 
     model = initialize_model(data, with_resilience_constraints=False)
 
-    best_result = run_solver(model, optcr=0.0, num_runs=1)
+    try:
+        best_result = run_solver(model, optcr=0.0, num_runs=1)
+        assert best_result is not None
+    except Exception as e:
+        pytest.fail(f"{run_solver.__name__} failed with error: {e}")
+    
     
     assert best_result[2]['Problem'][0]["Number of constraints"] == 643
     assert best_result[2]['Problem'][0]["Number of variables"] == 628

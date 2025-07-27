@@ -17,3 +17,34 @@ def add_gascc_variables(model):
     model.CapCC.setub(CapCC_upper_bound_value)
    # model.CapCC.setub(0)
     #print(CapCC_upper_bound_value)
+
+def add_gasscc_fixed_costs(model):
+    """
+    Add cost-related variables for gas combined cycle (GCC) to the model.
+    
+    Parameters:
+    model: The optimization model to which GCC cost variables will be added.
+    
+    Returns:
+    Costs sum for gas combined cycle, including capital and fixed O&M costs.
+    """
+    return (
+        # Gas CC Capex and Fixed O&M
+        model.FCR_GasCC*1000*model.CapexGasCC*model.CapCC
+        + 1000*model.FOM_GasCC*model.CapCC
+    )
+
+def add_gasscc_variable_costs(model):
+    """
+    Add variable costs for gas combined cycle (GCC) to the model.
+
+    Parameters:
+    model: The optimization model to which GCC variable costs will be added.
+
+    Returns:
+    Variable costs sum for gas combined cycle, including fuel costs.
+    """
+    return (
+        (model.GasPrice * model.HR + model.VOM_GasCC) *
+            sum(model.GenCC[h] for h in model.h)
+    )

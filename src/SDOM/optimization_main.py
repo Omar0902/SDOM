@@ -13,6 +13,7 @@ from .models.formulations_vre import add_vre_variables
 from .models.formulations_thermal import add_gascc_variables
 from .models.formulations_resiliency import add_resiliency_variables
 from .models.formulations_storage import add_storage_variables
+from .models.formulations_system import objective_rule
 #from io_manager import load_data, safe_pyomo_value, export_results
 # ---------------------------------------------------------------------------------
 # Model initialization
@@ -170,60 +171,10 @@ def initialize_model(data, with_resilience_constraints=False):
     add_resiliency_variables(model)
 
     # Storage-related variables
-    add_storage_variables(model)  # Storage selection (binary)
+    add_storage_variables(model)
 
     # ----------------------------------- Objective function -----------------------------------
-    def objective_rule(model):
-        # Annual Fixed Costs
-        fixed_costs = (
-            # Solar PV Capex and Fixed O&M
-            sum(
-                (model.FCR_VRE * (1000 * \
-                 model.CapSolar_CAPEX_M[k] + model.CapSolar_trans_cap_cost[k]) + 1000*model.CapSolar_FOM_M[k])
-                * model.CapSolar_capacity[k] * model.Ypv[k]
-                for k in model.k
-            )
-            +
-            # Wind Capex and Fixed O&M
-            sum(
-                (model.FCR_VRE * (1000 * \
-                 model.CapWind_CAPEX_M[w] + model.CapWind_trans_cap_cost[w]) + 1000*model.CapWind_FOM_M[w])
-                * model.CapWind_capacity[w] * model.Ywind[w]
-                for w in model.w
-            )
-            +
-            # Storage Capex and Fixed O&M
-            sum(
-                model.CRF[j]*(
-                    1000*model.StorageData['CostRatio', j] * \
-                    model.StorageData['P_Capex', j]*model.Pcha[j]
-                    + 1000*(1 - model.StorageData['CostRatio', j]) * \
-                    model.StorageData['P_Capex', j]*model.Pdis[j]
-                    + 1000*model.StorageData['E_Capex', j]*model.Ecap[j]
-                )
-                + 1000*model.StorageData['CostRatio', j] * \
-                model.StorageData['FOM', j]*model.Pcha[j]
-                + 1000*(1 - model.StorageData['CostRatio', j]) * \
-                model.StorageData['FOM', j]*model.Pdis[j]
-                for j in model.j
-            )
-            +
-            # Gas CC Capex and Fixed O&M
-            model.FCR_GasCC*1000*model.CapexGasCC*model.CapCC
-            + 1000*model.FOM_GasCC*model.CapCC
-        )
-
-        # Variable Costs (Gas CC Fuel & VOM, Storage VOM)
-        variable_costs = (
-            (model.GasPrice * model.HR + model.VOM_GasCC) *
-            sum(model.GenCC[h] for h in model.h)
-            + sum(model.StorageData['VOM', j] * sum(model.PD[h, j]
-                  for h in model.h) for j in model.j)
-        )
-
-        return fixed_costs + variable_costs
-
-    model.Obj = Objective(rule=objective_rule, sense=minimize)
+    model.Obj = Objective( rule=objective_rule, sense = minimize )
 
     # ----------------------------------- Constraints -----------------------------------
     # Energy supply demand

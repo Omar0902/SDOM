@@ -12,15 +12,12 @@ from .common.utilities import safe_pyomo_value
 from .models.formulations_vre import add_vre_variables, add_vre_balance_constraints
 from .models.formulations_thermal import add_gascc_variables
 from .models.formulations_resiliency import add_resiliency_variables, add_resiliency_constraints
-from .models.formulations_storage import add_storage_variables
+from .models.formulations_storage import add_storage_variables, add_storage_constraints
 from .models.formulations_system import objective_rule, add_system_constraints
 #from io_manager import load_data, safe_pyomo_value, export_results
 # ---------------------------------------------------------------------------------
 # Model initialization
 # Safe value function for uninitialized variables/parameters
-
-
-
 
 
 def initialize_model(data, with_resilience_constraints=False):
@@ -187,49 +184,9 @@ def initialize_model(data, with_resilience_constraints=False):
     #VRE balance constraints
     add_vre_balance_constraints( model )
 
-    # Ensure that the charging and discharging power do not exceed storage limits
-    model.ChargSt= Constraint(model.h, model.j, rule=lambda m, h, j: m.PC[h, j] <= m.StorageData['Max_P', j] * m.Ystorage[j, h])
-    model.DischargeSt = Constraint(model.h, model.j, rule=lambda m, h, j: m.PD[h, j] <= m.StorageData['Max_P', j] * (1 - m.Ystorage[j, h]))
-
-    # Hourly capacity bounds
-    model.MaxHourlyCharging = Constraint(model.h, model.j, rule= lambda m,h,j: m.PC[h, j] <= m.Pcha[j])
-    model.MaxHourlyDischarging = Constraint(model.h, model.j, rule= lambda m,h,j: m.PD[h, j] <= m.Pdis[j])
-
-    # Limit state of charge of storage by its capacity
-    model.MaxSOC = Constraint(model.h, model.j, rule=lambda m, h, j: m.SOC[h,j]<= m.Ecap[j])
-
-    # State-Of-Charge Balance -
-    def soc_balance_rule(model, h, j):
-        if h > 1: 
-            return model.SOC[h, j] == model.SOC[h-1, j] \
-                + sqrt(model.StorageData['Eff', j]) * model.PC[h, j] \
-                - model.PD[h, j] / sqrt(model.StorageData['Eff', j])
-        else:
-            # cyclical or initial condition
-            return model.SOC[h, j] == model.SOC[max(model.h), j] \
-                + sqrt(model.StorageData['Eff', j]) * model.PC[h, j] \
-                - model.PD[h, j] / sqrt(model.StorageData['Eff', j])
-    model.SOCBalance = Constraint(model.h, model.j, rule=soc_balance_rule)
-
-
-    # - Constraints on the maximum charging (Pcha) and discharging (Pdis) power for each technology
-    model.MaxPcha = Constraint( model.j, rule=lambda m, j: m.Pcha[j] <= m.StorageData['Max_P', j])
-    model.MaxPdis = Constraint(model.j, rule=lambda m, j: m.Pdis[j] <= m.StorageData['Max_P', j])
-
-    # Charge and discharge rates are equal -
-    model.PchaPdis = Constraint(model.b, rule=lambda m, j: m.Pcha[j] == m.Pdis[j])
-
-    # Max and min energy capacity constraints (handle uninitialized variables)
-    model.MinEcap = Constraint(model.j, rule= lambda m,j: m.Ecap[j] >= m.StorageData['Min_Duration', j] * m.Pdis[j] / sqrt(m.StorageData['Eff', j]))
-    model.MaxEcap = Constraint(model.j, rule= lambda m,j: m.Ecap[j] <= m.StorageData['Max_Duration', j] * m.Pdis[j] / sqrt(m.StorageData['Eff', j]))
-
-    # Capacity of the backup generation
-    model.BackupGen = Constraint(model.h, rule= lambda m,h: m.CapCC >= m.GenCC[h])
-
-    # Max cycle year
-    def max_cycle_year_rule(model):
-        return sum(model.PD[h, 'Li-Ion'] for h in model.h) <= (model.MaxCycles / model.StorageData['Lifetime', 'Li-Ion']) * model.Ecap['Li-Ion']
-    model.MaxCycleYear = Constraint(rule=max_cycle_year_rule)
+    #Storage constraints
+    add_storage_constraints( model )
+    
 
     # Build a model size report
     #all_objects = muppy.get_objects()

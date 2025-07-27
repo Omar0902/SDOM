@@ -51,3 +51,25 @@ def add_vre_fixed_costs(model):
 ####################################################################################|
 # ----------------------------------- Constraints ----------------------------------|
 ####################################################################################|
+# - Solar balance : generation + curtailed generation = capacity factor * capacity
+def solar_balance_rule(model, h):
+    return model.GenPV[h] + model.CurtPV[h] == sum(model.CFSolar[h, k] * model.CapSolar_capacity[k] * model.Ypv[k] for k in model.k)
+
+# - Wind balance : generation + curtailed generation = capacity factor * capacity 
+def wind_balance_rule(model, h):
+    return model.GenWind[h] + model.CurtWind[h] == sum(model.CFWind[h, w] * model.CapWind_capacity[w] * model.Ywind[w] for w in model.w)
+
+def add_vre_balance_constraints(model):
+    """
+    Add constraints related to variable renewable energy (VRE) to the model.
+    
+    Parameters:
+    model: The optimization model to which VRE constraints will be added.
+    
+    Returns:
+    None
+    """
+    # Solar balance constraint
+    model.SolarBal = Constraint(model.h, rule=solar_balance_rule)
+    # Wind balance constraint
+    model.WindBal = Constraint(model.h, rule=wind_balance_rule)

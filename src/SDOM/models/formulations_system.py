@@ -58,3 +58,19 @@ def supply_balance_rule(model, h):
 def genmix_share_rule(model):
     return sum(model.GenCC[h] for h in model.h) <= (1 - model.GenMix_Target)*sum(model.Load[h] + sum(model.PC[h, j] for j in model.j)
                         - sum(model.PD[h, j] for j in model.j) for h in model.h)
+
+def add_system_constraints(model):
+    """
+    Adds system constraints to the optimization model.
+    
+    Parameters:
+    model: The optimization model to which system constraints will be added.
+    
+    Returns:
+    None
+    """
+    # Supply balance constraint
+    model.SupplyBalance = Constraint(model.h, rule=supply_balance_rule)
+
+    # Generation mix share constraint
+    model.GenMix_Share = Constraint(rule=genmix_share_rule)

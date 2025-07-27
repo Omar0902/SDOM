@@ -22,3 +22,16 @@ def pcls_constraint_rule( model ):
 # EUE - Expected Unserved Energy - Constraint : Resilience
 def max_eue_constraint_rule( model ):
     return sum( model.LoadShed[h] for h in model.h ) <= model.EUE_max
+
+def add_resiliency_constraints( model ):
+    """
+    Add resiliency-related constraints to the model.
+    
+    Parameters:
+    model: The optimization model to which resiliency constraints will be added.
+    
+    Returns:
+    None
+    """
+    model.PCLS_Constraint = Constraint( rule = pcls_constraint_rule )
+    model.MaxEUE_Constraint = Constraint( rule = max_eue_constraint_rule )

@@ -9,11 +9,11 @@ from pyomo.core import Var, Constraint
 from pyomo.environ import *
 
 from .common.utilities import safe_pyomo_value
-from .models.formulations_vre import add_vre_variables
+from .models.formulations_vre import add_vre_variables, add_vre_balance_constraints
 from .models.formulations_thermal import add_gascc_variables
-from .models.formulations_resiliency import add_resiliency_variables, pcls_constraint_rule, max_eue_constraint_rule
+from .models.formulations_resiliency import add_resiliency_variables, add_resiliency_constraints
 from .models.formulations_storage import add_storage_variables
-from .models.formulations_system import objective_rule, supply_balance_rule, genmix_share_rule
+from .models.formulations_system import objective_rule, add_system_constraints
 #from io_manager import load_data, safe_pyomo_value, export_results
 # ---------------------------------------------------------------------------------
 # Model initialization
@@ -178,24 +178,14 @@ def initialize_model(data, with_resilience_constraints=False):
 
     # ----------------------------------- Constraints -----------------------------------
     #system Constraints
-    model.SupplyBalance = Constraint( model.h, rule = supply_balance_rule )
-    model.GenMix_Share = Constraint( rule = genmix_share_rule )# Generation mix share constraint
+    add_system_constraints( model )    
 
     #resiliency Constraints
     if with_resilience_constraints:
-        model.PCLS_Constraint = Constraint( rule = pcls_constraint_rule )
-        model.MaxEUE_Constraint = Constraint( rule = max_eue_constraint_rule )
+        add_resiliency_constraints( model )
   
-    
-    # - Solar balance : generation + curtailed generation = capacity factor * capacity
-    def solar_balance_rule(model, h):
-        return model.GenPV[h] + model.CurtPV[h] == sum(model.CFSolar[h, k] * model.CapSolar_capacity[k] * model.Ypv[k] for k in model.k)
-    model.SolarBal = Constraint(model.h, rule=solar_balance_rule)
-
-    # - Wind balance : generation + curtailed generation = capacity factor * capacity 
-    def wind_balance_rule(model, h):
-        return model.GenWind[h] + model.CurtWind[h] == sum(model.CFWind[h, w] * model.CapWind_capacity[w] * model.Ywind[w] for w in model.w)
-    model.WindBal = Constraint(model.h, rule=wind_balance_rule)
+    #VRE balance constraints
+    add_vre_balance_constraints( model )
 
     # Ensure that the charging and discharging power do not exceed storage limits
     model.ChargSt= Constraint(model.h, model.j, rule=lambda m, h, j: m.PC[h, j] <= m.StorageData['Max_P', j] * m.Ystorage[j, h])

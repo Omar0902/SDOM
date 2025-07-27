@@ -40,3 +40,21 @@ def objective_rule(model):
 
     return fixed_costs + variable_costs
 
+
+####################################################################################|
+# ----------------------------------- Constraints ----------------------------------|
+####################################################################################|
+# Energy supply demand
+def supply_balance_rule(model, h):
+    return (
+        model.Load[h] + sum(model.PC[h, j] for j in model.j) - sum(model.PD[h, j] for j in model.j)
+        - model.AlphaNuclear * model.Nuclear[h] - model.AlphaLargHy * model.LargeHydro[h] - model.AlphaOtheRe * model.OtherRenewables[h]
+        - model.GenPV[h] - model.GenWind[h]
+        - model.GenCC[h] == 0
+    )
+
+# Generation mix target
+# Limit on generation from NG
+def genmix_share_rule(model):
+    return sum(model.GenCC[h] for h in model.h) <= (1 - model.GenMix_Target)*sum(model.Load[h] + sum(model.PC[h, j] for j in model.j)
+                        - sum(model.PD[h, j] for j in model.j) for h in model.h)

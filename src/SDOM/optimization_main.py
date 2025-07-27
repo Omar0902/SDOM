@@ -11,9 +11,9 @@ from pyomo.environ import *
 from .common.utilities import safe_pyomo_value
 from .models.formulations_vre import add_vre_variables
 from .models.formulations_thermal import add_gascc_variables
-from .models.formulations_resiliency import add_resiliency_variables
+from .models.formulations_resiliency import add_resiliency_variables, pcls_constraint_rule, max_eue_constraint_rule
 from .models.formulations_storage import add_storage_variables
-from .models.formulations_system import objective_rule
+from .models.formulations_system import objective_rule, supply_balance_rule, genmix_share_rule
 #from io_manager import load_data, safe_pyomo_value, export_results
 # ---------------------------------------------------------------------------------
 # Model initialization
@@ -177,40 +177,16 @@ def initialize_model(data, with_resilience_constraints=False):
     model.Obj = Objective( rule=objective_rule, sense = minimize )
 
     # ----------------------------------- Constraints -----------------------------------
-    # Energy supply demand
-    def supply_balance_rule(model, h):
-        return (
-            model.Load[h] + sum(model.PC[h, j] for j in model.j) - sum(model.PD[h, j] for j in model.j)
-            - model.AlphaNuclear * model.Nuclear[h] - model.AlphaLargHy * model.LargeHydro[h] - model.AlphaOtheRe * model.OtherRenewables[h]
-            - model.GenPV[h] - model.GenWind[h]
-            - model.GenCC[h] == 0
-        ) 
-    model.SupplyBalance = Constraint(model.h, rule=supply_balance_rule)
+    #system Constraints
+    model.SupplyBalance = Constraint( model.h, rule = supply_balance_rule )
+    model.GenMix_Share = Constraint( rule = genmix_share_rule )# Generation mix share constraint
 
-
-    # PCLS - Percentage of Critical Load Served - Constraint : Resilience
-    critical_load_percentage = 1  # 10% of the total load
-    PCLS_target = 0.9  # 90% of the total load
-
-    def pcls_constraint_rule(model):
-        return sum(model.Load[h] - model.LoadShed[h] for h in model.h) \
-            >= PCLS_target * sum(model.Load[h] for h in model.h) * critical_load_percentage
+    #resiliency Constraints
     if with_resilience_constraints:
-        model.PCLS_Constraint = Constraint(rule=pcls_constraint_rule)
-
-    # EUE - Expected Unserved Energy - Constraint : Resilience
-    def max_eue_constraint_rule(model):
-        return sum(model.LoadShed[h] for h in model.h) <= model.EUE_max
-    if with_resilience_constraints:
-        model.MaxEUE_Constraint = Constraint(rule=max_eue_constraint_rule)
-
-    # Generation mix target
-    # Limit on generation from NG
-    def genmix_share_rule(model):
-        return sum(model.GenCC[h] for h in model.h) <= (1 - model.GenMix_Target)*sum(model.Load[h] + sum(model.PC[h, j] for j in model.j)
-                           - sum(model.PD[h, j] for j in model.j) for h in model.h)
-    model.GenMix_Share = Constraint(rule=genmix_share_rule)
-
+        model.PCLS_Constraint = Constraint( rule = pcls_constraint_rule )
+        model.MaxEUE_Constraint = Constraint( rule = max_eue_constraint_rule )
+  
+    
     # - Solar balance : generation + curtailed generation = capacity factor * capacity
     def solar_balance_rule(model, h):
         return model.GenPV[h] + model.CurtPV[h] == sum(model.CFSolar[h, k] * model.CapSolar_capacity[k] * model.Ypv[k] for k in model.k)

@@ -130,12 +130,10 @@ def collect_results( model ):
     return results
 
 
-
-
-
 # Run solver function
-def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, num_runs=1):
-    solver = SolverFactory('cbc')
+def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, num_runs=1, cbc_executable_path=None):
+    
+    solver = SolverFactory('cbc', executable=cbc_executable_path) if cbc_executable_path else SolverFactory('cbc')
     solver.options['loglevel'] = 3
     solver.options['mip_rel_gap'] = optcr
     solver.options['tee'] = True

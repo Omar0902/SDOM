@@ -1,3 +1,4 @@
+import logging
 import pandas as pd
 import os
 import csv
@@ -28,7 +29,7 @@ def load_data( input_data_dir = '.\\Data\\' ):
         - All numeric data is rounded to 5 decimal places.
         - Some columns are explicitly converted to string type for consistency.
     """
-
+    logging.info("Loading SDOM input data...")
     #os.chdir('./Data/.')
     solar_plants = pd.read_csv( os.path.join(input_data_dir, 'Set_k_SolarPV.csv'), header=None )[0].tolist()
     wind_plants = pd.read_csv( os.path.join(input_data_dir, 'Set_w_Wind.csv'), header=None )[0].tolist()
@@ -97,7 +98,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     - Results are only written if relevant data is available (e.g., non-empty results).
     """
 
-    
+    logging.info("Exporting SDOM results...")
     os.makedirs(output_dir, exist_ok=True)
 
     # Initialize results dictionaries column: [values]

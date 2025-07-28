@@ -19,31 +19,35 @@ from .models.formulations_system import objective_rule, add_system_constraints
 # Model initialization
 # Safe value function for uninitialized variables/parameters
 
-def initialize_model(data, n_hours = 8760, with_resilience_constraints=False):
-    model = ConcreteModel(name="SDOM_Model")
+def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, model_name="SDOM_Model"):
+    logging.info("Instantiating SDOM Pyomo optimization model...")
+    model = ConcreteModel(name=model_name)
 
+    logging.info("Initializing model sets and parameters...")
     initialize_sets( model, data, n_hours = n_hours )
     
     initialize_params( model, data )    
 
     # ----------------------------------- Variables -----------------------------------
-    # Define variables
+    logging.info("Adding variables to the model...")
+    # Define VRE (wind/solar variables
     add_vre_variables( model )
     
     # Capacity of backup GCC units
     add_gascc_variables( model )
 
     # Resilience variables
-    # How much load is unmet during hour h
     add_resiliency_variables( model )
 
     # Storage-related variables
     add_storage_variables( model )
 
     # -------------------------------- Objective function -------------------------------
+    logging.info("Adding objective function to the model...")
     model.Obj = Objective( rule = objective_rule, sense = minimize )
 
     # ----------------------------------- Constraints -----------------------------------
+    logging.info("Adding constraints to the model...")
     #system Constraints
     add_system_constraints( model )    
 
@@ -66,6 +70,7 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False):
 # ---------------------------------------------------------------------------------
 # Results collection function
 def collect_results( model ):
+    logging.info("Collecting SDOM results...")
     results = {}
     results['Total_Cost'] = safe_pyomo_value(model.Obj.expr)
 
@@ -132,14 +137,13 @@ def collect_results( model ):
 
 # Run solver function
 def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, num_runs=1, cbc_executable_path=None):
-    
+    logging.info("Starting to solve SDOM model...")
     solver = SolverFactory('cbc', executable=cbc_executable_path) if cbc_executable_path else SolverFactory('cbc')
     solver.options['loglevel'] = 3
     solver.options['mip_rel_gap'] = optcr
     solver.options['tee'] = True
     solver.options['keepfiles'] = True
     solver.options['logfile'] = log_file_path
-    logging.basicConfig(level=logging.INFO)
 
     results_over_runs = []
     best_result = None
@@ -149,7 +153,7 @@ def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, num_runs=1, c
         target_value = 0.95 + 0.05 * (run + 1)
         model.GenMix_Target.set_value(target_value)
 
-        print(f"Running optimization for GenMix_Target = {target_value:.2f}")
+        logging.info(f"Running optimization for GenMix_Target = {target_value:.2f}")
         result = solver.solve(model, 
                               #, tee=True, keepfiles = True, #working_dir='C:/Users/mkoleva/Documents/Masha/Projects/LDES_Demonstration/CBP/TEA/Results/solver_log.txt'
                              )
@@ -164,10 +168,9 @@ def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, num_runs=1, c
                 best_objective_value = run_results['Total_Cost']
                 best_result = run_results
         else:
-            print(f"Solver did not find an optimal solution for GenMix_Target = {target_value:.2f}.")
+            logging.warning(f"Solver did not find an optimal solution for GenMix_Target = {target_value:.2f}.")
             # Log infeasible constraints for debugging
-            print("Logging infeasible constraints...")
-            logging.basicConfig(level=logging.INFO)
+            logging.warning("Logging infeasible constraints...")
             log_infeasible_constraints(model)
 
     return results_over_runs, best_result, result

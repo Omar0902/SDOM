@@ -2,10 +2,33 @@ import pandas as pd
 import os
 import csv
 from .common.utilities import safe_pyomo_value
-
+from pyomo.environ import *
 
 
 def load_data( input_data_dir = '.\\Data\\' ):
+    """
+    Loads the required SDOM datasets from CSV files located in the specified input directory.
+    Parameters:
+        input_data_dir (str): Path to the directory containing the input CSV files. Defaults to '.\\Data\\'.
+    Returns:
+        dict: A dictionary containing the following keys and their corresponding loaded data:
+            - "solar_plants" (list): List of solar plant identifiers.
+            - "wind_plants" (list): List of wind plant identifiers.
+            - "load_data" (pd.DataFrame): Hourly load data for the year 2050.
+            - "nuclear_data" (pd.DataFrame): Hourly nuclear generation data for 2019.
+            - "large_hydro_data" (pd.DataFrame): Hourly large hydro generation data for 2019.
+            - "other_renewables_data" (pd.DataFrame): Hourly other renewables generation data for 2019.
+            - "cf_solar" (pd.DataFrame): Solar capacity factors for 2050.
+            - "cf_wind" (pd.DataFrame): Wind capacity factors for 2050.
+            - "cap_solar" (pd.DataFrame): Solar plant capacities for 2050.
+            - "cap_wind" (pd.DataFrame): Wind plant capacities for 2050.
+            - "storage_data" (pd.DataFrame): Storage data for 2050, indexed by the first column.
+            - "scalars" (pd.DataFrame): Scalar parameters, indexed by the "Parameter" column.
+    Notes:
+        - All numeric data is rounded to 5 decimal places.
+        - Some columns are explicitly converted to string type for consistency.
+    """
+
     #os.chdir('./Data/.')
     solar_plants = pd.read_csv( os.path.join(input_data_dir, 'Set_k_SolarPV.csv'), header=None )[0].tolist()
     wind_plants = pd.read_csv( os.path.join(input_data_dir, 'Set_w_Wind.csv'), header=None )[0].tolist()
@@ -46,8 +69,35 @@ def load_data( input_data_dir = '.\\Data\\' ):
 # Export results to CSV files
 # ---------------------------------------------------------------------------------
 
-def export_results(model, case):
-    output_dir = './results_pyomo/'
+def export_results( model, case, output_dir = './results_pyomo/' ):
+    """
+    Exports optimization results from a Pyomo model to CSV files.
+    This function extracts generation, storage, and summary results from the provided Pyomo model instance,
+    organizes them into dictionaries and pandas DataFrames, and writes them to CSV files in the specified output directory.
+    Parameters
+    ----------
+    model : pyomo.environ.ConcreteModel
+        The Pyomo model instance containing the optimization results.
+    case : str or int
+        Identifier for the current simulation case or scenario. Used in output filenames.
+    output_dir : str, optional
+        Directory path where the output CSV files will be saved. Defaults to './results_pyomo/'.
+    Outputs
+    -------
+    OutputGeneration_{case}.csv : CSV file
+        Contains hourly generation and curtailment results for each technology and scenario.
+    OutputStorage_{case}.csv : CSV file
+        Contains hourly storage operation results (charging, discharging, state of charge) for each storage technology.
+    OutputSummary_{case}.csv : CSV file
+        Contains summary metrics including total cost, capacities, generation, demand, CAPEX, OPEX, and other key results.
+    Notes
+    -----
+    - The function assumes the model contains specific variables and sets (e.g., GenPV, CurtPV, GenWind, PC, PD, SOC, etc.).
+    - The function creates the output directory if it does not exist.
+    - Results are only written if relevant data is available (e.g., non-empty results).
+    """
+
+    
     os.makedirs(output_dir, exist_ok=True)
 
     # Initialize results dictionaries column: [values]

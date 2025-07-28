@@ -20,6 +20,26 @@ from .models.formulations_system import objective_rule, add_system_constraints
 # Safe value function for uninitialized variables/parameters
 
 def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, model_name="SDOM_Model"):
+    """
+    Initializes and configures a Pyomo optimization model for the SDOM framework.
+    This function sets up the model structure, including sets, parameters, variables, 
+    objective function, and constraints for power system optimization. It supports 
+    optional resilience constraints and allows customization of the model name and 
+    simulation horizon.
+    Args:
+        data (dict): Input data required for model initialization, including system 
+            parameters, time series, and technology characteristics.
+        n_hours (int, optional): Number of hours to simulate (default is 8760, 
+            representing a full year).
+        with_resilience_constraints (bool, optional): If True, adds resilience-related 
+            constraints to the model (default is False).
+        model_name (str, optional): Name to assign to the Pyomo model instance 
+            (default is "SDOM_Model").
+    Returns:
+        ConcreteModel: A fully initialized Pyomo ConcreteModel object ready for 
+            optimization.
+    """
+
     logging.info("Instantiating SDOM Pyomo optimization model...")
     model = ConcreteModel(name=model_name)
 
@@ -70,6 +90,46 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
 # ---------------------------------------------------------------------------------
 # Results collection function
 def collect_results( model ):
+    """
+    Collects and computes results from a Pyomo optimization model for an energy system.
+    This function extracts key results from the provided Pyomo model instance, including total costs,
+    installed capacities, generation, dispatch, and detailed cost breakdowns for various technologies
+    (solar PV, wind, gas, and multiple storage types such as Li-Ion, CAES, PHS, and H2).
+    The results are returned as a dictionary with descriptive keys.
+    Parameters
+    ----------
+    model : pyomo.core.base.PyomoModel.ConcreteModel
+        The Pyomo model instance containing the optimization results and parameters.
+    Returns
+    -------
+    results : dict
+        A dictionary containing the following keys and their corresponding computed values:
+            - 'Total_Cost': Total objective value of the model.
+            - 'Total_CapCC': Installed capacity of gas combined cycle.
+            - 'Total_CapPV': Total installed capacity of solar PV.
+            - 'Total_CapWind': Total installed capacity of wind.
+            - 'Total_CapScha': Installed charging power capacity for each storage type.
+            - 'Total_CapSdis': Installed discharging power capacity for each storage type.
+            - 'Total_EcapS': Installed energy capacity for each storage type.
+            - 'Total_GenPV': Total generation from solar PV.
+            - 'Total_GenWind': Total generation from wind.
+            - 'Total_GenS': Total storage discharge for each storage type.
+            - 'SolarPVGen': Hourly solar PV generation.
+            - 'WindGen': Hourly wind generation.
+            - 'GenGasCC': Hourly gas combined cycle generation.
+            - 'SolarCapex', 'WindCapex': Annualized capital expenditures for solar and wind.
+            - 'SolarFOM', 'WindFOM': Fixed O&M costs for solar and wind.
+            - 'LiIonPowerCapex', 'LiIonEnergyCapex', 'LiIonFOM', 'LiIonVOM': Cost breakdowns for Li-Ion storage.
+            - 'CAESPowerCapex', 'CAESEnergyCapex', 'CAESFOM', 'CAESVOM': Cost breakdowns for CAES storage.
+            - 'PHSPowerCapex', 'PHSEnergyCapex', 'CAESFOM', 'CAESVOM': Cost breakdowns for PHS storage.
+            - 'H2PowerCapex', 'H2EnergyCapex', 'H2FOM', 'H2VOM': Cost breakdowns for H2 storage.
+            - 'GasCCCapex', 'GasCCFuel', 'GasCCFOM', 'GasCCVOM': Cost breakdowns for gas combined cycle.
+    Notes
+    -----
+    - The function assumes the existence of a helper function `safe_pyomo_value` to safely extract values from Pyomo variables.
+    - The model is expected to have specific sets and parameters (e.g., model.k, model.w, model.j, model.h, and various cost parameters).
+    """
+
     logging.info("Collecting SDOM results...")
     results = {}
     results['Total_Cost'] = safe_pyomo_value(model.Obj.expr)
@@ -116,9 +176,9 @@ def collect_results( model ):
                                 + 1000*(1 - model.StorageData['CostRatio', 'PHS']) * model.StorageData['P_Capex', 'PHS']*model.Pdis['PHS'])
     results['PHSEnergyCapex'] = model.CRF['PHS']*1000*model.StorageData['E_Capex', 'PHS']*model.Ecap['PHS']
 
-    results['CAESFOM'] = 1000*model.StorageData['CostRatio', 'PHS'] * model.StorageData['FOM', 'PHS']*model.Pcha['PHS']\
+    results['PHSFOM'] = 1000*model.StorageData['CostRatio', 'PHS'] * model.StorageData['FOM', 'PHS']*model.Pcha['PHS']\
                         + 1000*(1 - model.StorageData['CostRatio', 'PHS']) * model.StorageData['FOM', 'PHS']*model.Pdis['PHS']
-    results['CAESVOM'] = model.StorageData['VOM', 'PHS'] * sum(model.PD[h, 'PHS'] for h in model.h) 
+    results['PHSVOM'] = model.StorageData['VOM', 'PHS'] * sum(model.PD[h, 'PHS'] for h in model.h) 
     
     results['H2PowerCapex'] = model.CRF['H2']*(1000*model.StorageData['CostRatio', 'H2'] * model.StorageData['P_Capex', 'H2']*model.Pcha['H2']
                         + 1000*(1 - model.StorageData['CostRatio', 'H2']) * model.StorageData['P_Capex', 'H2']*model.Pdis['H2'])
@@ -137,6 +197,21 @@ def collect_results( model ):
 
 # Run solver function
 def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, num_runs=1, cbc_executable_path=None):
+    """
+    Solves the given optimization model using the CBC solver, optionally running multiple times with varying target values.
+    Args:
+        model: The Pyomo optimization model to be solved. The model must have an attribute 'GenMix_Target' that can be set.
+        log_file_path (str, optional): Path to the solver log file. Defaults to './solver_log.txt'.
+        optcr (float, optional): The relative MIP gap (optimality criterion) for the solver. Defaults to 0.0.
+        num_runs (int, optional): Number of optimization runs to perform, each with a different 'GenMix_Target' value. Defaults to 1.
+        cbc_executable_path (str, optional): Path to the CBC solver executable. If None, uses the default CBC solver.
+    Returns:
+        tuple: A tuple containing:
+            - results_over_runs (list): List of dictionaries with results from each run, including 'GenMix_Target' and other collected results.
+            - best_result (dict or None): The result dictionary with the lowest 'Total_Cost' found across all runs, or None if no optimal solution was found.
+            - result (SolverResults): The Pyomo solver results object from the last run.
+    """
+
     logging.info("Starting to solve SDOM model...")
     solver = SolverFactory('cbc', executable=cbc_executable_path) if cbc_executable_path else SolverFactory('cbc')
     solver.options['loglevel'] = 3
@@ -150,7 +225,7 @@ def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, num_runs=1, c
     best_objective_value = float('inf')
 
     for run in range(num_runs):
-        target_value = 0.95 + 0.05 * (run + 1)
+        target_value = 0.95 + 0.05 * (run + 1) # REVIEW THIS. DO WE NEED THIS FOR LOOP?
         model.GenMix_Target.set_value(target_value)
 
         logging.info(f"Running optimization for GenMix_Target = {target_value:.2f}")
@@ -174,30 +249,3 @@ def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, num_runs=1, c
             log_infeasible_constraints(model)
 
     return results_over_runs, best_result, result
-
-
-# ---------------------------------------------------------------------------------
-# Main loop for handling scenarios and results exporting
-
-
-# def main(with_resilience_constraints = False, case='test_data'):
-#     data = load_data()
-#     model = initialize_model(data, with_resilience_constraints=with_resilience_constraints)
-
-
-#     # Loop over each scenario combination and solve the model
-#     if with_resilience_constraints:
-#         best_result = run_solver(model, with_resilience_constraints=True)
-#         case += '_resilience'
-#     else:
-#         best_result = run_solver(model)
-#     if best_result:
-#         export_results(model, case)
-#     else:
-#         print(f"Solver did not find an optimal solution for given data and with resilience constraints = {with_resilience_constraints}, skipping result export.")
-
-
-# # ---------------------------------------------------------------------------------
-# # Execute the main function
-# if __name__ == "__main__":
-#     main()

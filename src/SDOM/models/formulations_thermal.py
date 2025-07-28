@@ -1,5 +1,24 @@
 from pyomo.core import Var, Constraint
 from pyomo.environ import *
+from .models_utils import fcr_rule
+
+####################################################################################|
+# ----------------------------------- Parameters -----------------------------------|
+####################################################################################|
+def add_gascc_parameters(model, data):
+
+    model.GasPrice = Param( initialize = float(data["scalars"].loc["GasPrice"].Value))  # Gas prices (US$/MMBtu)
+    # Heat rate for gas combined cycle (MMBtu/MWh)
+    model.HR = Param( initialize = float(data["scalars"].loc["HR"].Value) )
+    # Capex for gas combined cycle units (US$/kW)
+    model.CapexGasCC = Param( initialize =float(data["scalars"].loc["CapexGasCC"].Value) )
+    # Fixed O&M for gas combined cycle (US$/kW-year)
+    model.FOM_GasCC = Param( initialize = float(data["scalars"].loc["FOM_GasCC"].Value) )
+    # Variable O&M for gas combined cycle (US$/MWh)
+    model.VOM_GasCC = Param( initialize = float(data["scalars"].loc["VOM_GasCC"].Value) )
+
+    model.FCR_GasCC = Param( initialize = fcr_rule( model, float(data["scalars"].loc["LifeTimeGasCC"].Value) ) )
+
 
 ####################################################################################|
 # ------------------------------------ Variables -----------------------------------|

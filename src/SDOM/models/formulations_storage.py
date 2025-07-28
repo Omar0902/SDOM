@@ -1,5 +1,18 @@
 from pyomo.core import Var, Constraint
 from pyomo.environ import *
+from ..constants import STORAGE_PROPERTIES_NAMES
+
+####################################################################################|
+# ----------------------------------- Parameters -----------------------------------|
+####################################################################################|
+
+def add_storage_parameters(model, data):
+    # Battery life and cycling
+    model.MaxCycles = Param( initialize = float(data["scalars"].loc["MaxCycles"].Value) )
+    # Storage data initialization
+    storage_dict = data["storage_data"].stack().to_dict()
+    storage_tuple_dict = {(prop, tech): storage_dict[(prop, tech)] for prop in STORAGE_PROPERTIES_NAMES for tech in model.j}
+    model.StorageData = Param( model.sp, model.j, initialize = storage_tuple_dict )
 
 ####################################################################################|
 # ------------------------------------ Variables -----------------------------------|
@@ -26,7 +39,7 @@ def add_storage_variables(model):
 
 
 ####################################################################################|
-# -----------------------------------= Add_costs -----------------------------------|
+# ----------------------------------- Add_costs -----------------------------------|
 ####################################################################################|
 def add_storage_fixed_costs(model):
     """

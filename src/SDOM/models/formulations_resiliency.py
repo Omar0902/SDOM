@@ -1,5 +1,6 @@
 from pyomo.core import Var, Constraint
 from pyomo.environ import *
+from ..constants import CRITICAL_LOAD_PERCENTAGE, PCLS_TARGET
 
 ####################################################################################|
 # ----------------------------------- Parameters -----------------------------------|
@@ -20,11 +21,9 @@ def add_resiliency_variables( model ):
 # ----------------------------------- Constraints ----------------------------------|
 ####################################################################################|
 def pcls_constraint_rule( model ):
-    # PCLS - Percentage of Critical Load Served - Constraint : Resilience
-    critical_load_percentage = 1  # 10% of the total load
-    PCLS_target = 0.9  # 90% of the total load
+    
     return sum( model.Load[h] - model.LoadShed[h] for h in model.h ) \
-        >= PCLS_target * sum( model.Load[h] for h in model.h ) * critical_load_percentage
+        >= PCLS_TARGET * sum( model.Load[h] for h in model.h ) * CRITICAL_LOAD_PERCENTAGE
 
 # EUE - Expected Unserved Energy - Constraint : Resilience
 def max_eue_constraint_rule( model ):

@@ -26,7 +26,7 @@ maintainers = [
     { name = "Sebastian de Jesus Manrique Machado", email = "SebastiandeJesus.Machado@nrel.gov" },
 ]
 
-description = "A Python package for NREL oppen-source SDOM (Storage Deployment Optimization Model)"
+description = "A Python package for NREL open-source SDOM (Storage Deployment Optimization Model)"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 classifiers = [

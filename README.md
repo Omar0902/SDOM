@@ -1,5 +1,26 @@
-# Storage Deployment Optimization Model (SDOM) 🔋
-SDOM is an NREL open-source high-resolution grid planning framework designed to optimize the deployment and operation of energy storage technologies across diverse temporal and spatial scales. It is particularly suited for evaluating long-duration and seasonal storage applications, as well as the complementarity among variable renewable energy (VRE) sources.
+# Storage Deployment Optimization Model (SDOM)
+SDOM (Storage Deployment Optimization Model) is an open-source, high-resolution grid capacity-expansion framework developed by NREL. It’s purpose-built to optimize the deployment and operation of energy storage technologies, leveraging hourly temporal resolution and granular spatial representation of Variable Renewable Energy (VRE) sources such as solar and wind.
+
+SDOM is particularly well-suited for figure out the required capacity to meet a carbon-free generation mix target by:
+- 📆 Evaluating long-duration and seasonal storage technologies
+- 🌦 Analyzing complementarity and synergies among diverse VRE resources
+- 📉 Assessing curtailment and operational strategies under various grid scenarios
+
+# How SDOM Works
+🔍 At its core, SDOM models the gap between electricity demand and fixed generation:
+
+Inputs include time series data for:
+- Load profiles
+- Fixed generation (e.g., large hydropower, nuclear, and other must-run renewables)
+
+Outputs include:
+- The optimal technology portfolio capacity (PV solar, wind, storage types, thermal capacity) to reliably meet demand.
+- Dispatch profiles for each technology, highlighting how resources are operated hour-by-hour
+- Insights on operational metrics like VRE curtailment, storage cycling, and thermal usage
+
+An illustrative figure below shows the flow from inputs to optimization results, enabling exploration of storage needs under varying renewable integration levels.
+
+![Illustration about how SDOM works](SDOM_illustration.png)
 
 ## Table of contents
 - [KEY FEATURES](#key-features)
@@ -11,6 +32,13 @@ SDOM is an NREL open-source high-resolution grid planning framework designed to 
 
 # Key Features
 ⚙️
+
+- **Accurate Representation of Storage Technologies Diversity:** SDOM is strongly focused in providing a framework able to represent different storage technologies by:
+  - Representation of short, long an seassonal storage technologies,
+  -  Including charging/discharging capacity decoupling,
+  -  Optimization of both energy and power capacity,
+  -  Full temporal cronology.
+
 - **Temporal Resolution:** Hourly simulations over a full year enable precise modeling of storage dynamics and renewable generation variability.
 
 - **Spatial Resolution:** Fine-grained representation of VRE sources (e.g., solar, wind) captures geographic diversity and enhances system fidelity.
@@ -18,10 +46,11 @@ SDOM is an NREL open-source high-resolution grid planning framework designed to 
 - **Copper Plate Modeling:** SDOM Model neglects transmission constraints to keep the model tractable from the computational standpoint. Future SDOM releases should include inter-regional transmission constraints.
 
 - **Fixed Generation Profiles:** Nuclear, hydropower, and other non-variable renewables (e.g., biomass, geothermal) are treated as fixed inputs using year-long time series data.
+  - Currently its beeing developed a modeling approach to include a Hydro modeling considering Monthly energy budgets in order to be able to represent the hydro flexibility.
 
 - **System Optimization Objective:** Minimizes total system cost—including capital, fixed/variable O&M, and fuel costs—while satisfying user-defined carbon-free or renewable energy targets.
 
-- **Modeling approach:** Formulated as a Mixed-Integer Linear Programming (MILP) model to allow rigorous optimization of discrete investment and operational decisions.
+- **Modeling approach:** Formulated as a Mixed-Integer Linear Programming (MILP) model to allow rigorous optimization of investment and capacity decisions.
 
 - **Platforms:** 
   - SDOM was originally developed in GAMS (https://github.com/NREL/SDOM). 

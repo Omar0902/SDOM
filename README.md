@@ -1,14 +1,16 @@
 # Storage Deployment Optimization Model (SDOM) 🔋
-SDOM is a high-resolution grid planning framework designed to optimize the deployment and operation of energy storage technologies across diverse temporal and spatial scales. It is particularly suited for evaluating long-duration and seasonal storage applications, as well as the complementarity among variable renewable energy (VRE) sources.
+SDOM is an NREL open-source high-resolution grid planning framework designed to optimize the deployment and operation of energy storage technologies across diverse temporal and spatial scales. It is particularly suited for evaluating long-duration and seasonal storage applications, as well as the complementarity among variable renewable energy (VRE) sources.
 
 ## Table of contents
-- [Key Features ⚙️](#key-features-️)
-- [Optimization Scope 📉](#optimization-scope-)
-- [Notes on Model Expansion](#notes-on-model-expansion)
-- [PUBLICATIONS AND USE CASES OF SDOM 📄](#publications-and-use-cases-of-sdom-)
+- [KEY FEATURES](#key-features)
+  - [OPTIMIZATION SCOPE](#optimization-scope)
+  - [NOTES ON MODEL EXPANSION](#notes-on-model-expansion)
+- [PUBLICATIONS AND USE CASES OF SDOM](#publications-and-use-cases-of-sdom)
+- [SDOM EXAMPLE (Demonstration script)](#sdom-example-(demonstration-script))
 - [CONTRIBUTING GUIDELINES](#contributing-guidelines)
 
-# Key Features ⚙️
+# Key Features
+⚙️
 - **Temporal Resolution:** Hourly simulations over a full year enable precise modeling of storage dynamics and renewable generation variability.
 
 - **Spatial Resolution:** Fine-grained representation of VRE sources (e.g., solar, wind) captures geographic diversity and enhances system fidelity.
@@ -23,13 +25,17 @@ SDOM is a high-resolution grid planning framework designed to optimize the deplo
 
 - **Platforms:** SDOM was originally developed in GAMS (https://github.com/NREL/SDOM). In order offer a full open-source solution also was developed this python package.
 
-## Optimization Scope 📉
+- **Solver Compatibility:** Currently the SDOM python version is only compatible with [open-source CBC solver](https://www.coin-or.org/Cbc/cbcuserguide.html). In this repo the [windows executable for cbc](./cbc.exe) is provided. You will need to provide the path of cbc solver to run SDOM as illustrated in our [script demonstration](#sdom-example-(demonstration-script))
+
+## Optimization Scope
+📉
 SDOM performs cost minimization across a 1-year operation window using a copper plate assumption—i.e., no internal transmission constraints—making it computationally efficient while capturing major cost drivers. Conventional generators are used as balancing resources, and storage technologies serve to meet carbon or renewable penetration goals.
 
 ## Notes on Model Expansion
 While SDOM currently supports a 1-year horizon, multiyear analyses could provide deeper insights into how interannual variability affects storage needs. Chronological, simulation-based approaches are better suited for this but present significant computational challenges—especially at hourly resolution. Extending SDOM to support multiyear optimization is left as future work.
 
-# PUBLICATIONS AND USE CASES OF SDOM 📄
+# PUBLICATIONS AND USE CASES OF SDOM
+📄
 - **Original SDOM paper**:
   - [Guerra, O. J., Eichman, J., & Denholm, P. (2021). Optimal energy storage portfolio for high and ultrahigh carbon-free and renewable power systems. *Energy Environ. Sci.*, 14(10), 5132-5146. https://doi.org/10.1039/D1EE01835C.](https://pubs.rsc.org/en/content/articlelanding/2021/ee/d1ee01835c)
   - [NREL media relations (2021). Energy Storage Ecosystem Offers Lowest-Cost Path to 100% Renewable Power.](https://www.nrel.gov/news/detail/program/2021/energy-storage-ecosystem-offers-lowest-cost-path-to-100-renewable-power)
@@ -42,8 +48,10 @@ While SDOM currently supports a 1-year horizon, multiyear analyses could provide
 - **Webinar video**:
  - [Guerra, O. J., et al. (2022). Optimizing Energy Storage for Ultra High Renewable Electricity Systems. Conference for Colorado Renewable Energy society.](https://www.youtube.com/watch?v=SYTnN6Z65kI) 
 
-# CONTRIBUTING GUIDELINES
+# SDOM EXAMPLE (Demonstration script)
 
+# CONTRIBUTING GUIDELINES
+💻
 ## General Guidelines
 
 - Follow [PEP 8](https://www.python.org/dev/peps/pep-0008/) for code style and formatting.

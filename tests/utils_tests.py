@@ -27,14 +27,7 @@ def get_optimization_problem_info( best_result ):
     return None
 
 def get_optimization_problem_solution_info( best_result ):
-    best_result[2]['Solver'][0]["Termination condition"] == "optimal"
-
-    # assert abs( best_result[1]["Total_Cost"] - 3285154847.471892 ) <= 10 
-    # assert abs( best_result[1]["Total_CapWind"] - 24907.852743827232 ) <= 1
-    # assert abs(  best_result[1]["Total_CapScha"]["Li-Ion"] - 1254.8104 ) <= 1
-    # assert abs(  best_result[1]["Total_CapScha"]["CAES"] -1340.7415 ) <= 1
-    # assert abs( best_result[1]["Total_CapScha"]["PHS"] - 0.0 ) <= 1
-    # assert abs( best_result[1]["Total_CapScha"]["H2"] - 0.0 ) <= 1
+    
     if best_result:
         return {
             "Termination condition": best_result[2]['Solver'][0]["Termination condition"],

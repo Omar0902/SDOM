@@ -49,6 +49,7 @@ While SDOM currently supports a 1-year horizon, multiyear analyses could provide
  - [Guerra, O. J., et al. (2022). Optimizing Energy Storage for Ultra High Renewable Electricity Systems. Conference for Colorado Renewable Energy society.](https://www.youtube.com/watch?v=SYTnN6Z65kI) 
 
 # SDOM EXAMPLE (Demonstration script)
+Please see an [SDOM demo script on this github repo.](https://github.com/SebastianManriqueM/pySDOM_demo)
 
 # CONTRIBUTING GUIDELINES
 💻

@@ -6,7 +6,17 @@ SDOM is particularly well-suited for figure out the required capacity to meet a 
 - 🌦 Analyzing complementarity and synergies among diverse VRE resources
 - 📉 Assessing curtailment and operational strategies under various grid scenarios
 
-# How SDOM Works
+## Table of contents
+- [HOW SDOM WORKS?](#how-sdom-works)
+- [KEY FEATURES](#key-features)
+  - [OPTIMIZATION SCOPE](#optimization-scope)
+  - [NOTES ON MODEL EXPANSION](#notes-on-model-expansion)
+- [PUBLICATIONS AND USE CASES OF SDOM](#publications-and-use-cases-of-sdom)
+- [SDOM EXAMPLE (Demonstration script)](#sdom-example-(demonstration-script))
+- [CONTRIBUTING GUIDELINES](#contributing-guidelines)
+
+
+# How SDOM Works?
 🔍 At its core, SDOM models the gap between electricity demand and fixed generation:
 
 Inputs include time series data for:
@@ -21,14 +31,6 @@ Outputs include:
 An illustrative figure below shows the flow from inputs to optimization results, enabling exploration of storage needs under varying renewable integration levels.
 
 ![Illustration about how SDOM works](SDOM_illustration.png)
-
-## Table of contents
-- [KEY FEATURES](#key-features)
-  - [OPTIMIZATION SCOPE](#optimization-scope)
-  - [NOTES ON MODEL EXPANSION](#notes-on-model-expansion)
-- [PUBLICATIONS AND USE CASES OF SDOM](#publications-and-use-cases-of-sdom)
-- [SDOM EXAMPLE (Demonstration script)](#sdom-example-(demonstration-script))
-- [CONTRIBUTING GUIDELINES](#contributing-guidelines)
 
 # Key Features
 ⚙️

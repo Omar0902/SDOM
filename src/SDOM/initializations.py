@@ -98,5 +98,6 @@ def initialize_params(model, data):
     # GenMix_Target, mutable to change across multiple runs
     model.GenMix_Target = Param( initialize = float(data["scalars"].loc["GenMix_Target"].Value), mutable=True)
     model.CRF = Param( model.j, initialize = crf_rule ) #Capital Recovery Factor
-    model.EUE_max = Param( initialize = float(data["scalars"].loc["EUE_max"].Value), mutable=True )  # Maximum EUE (in MWh) - Maximum unserved Energy
+    
+    add_resiliency_parameters(model, data)
     #model.CRF.display()

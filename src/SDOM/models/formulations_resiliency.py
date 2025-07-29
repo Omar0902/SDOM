@@ -4,7 +4,8 @@ from pyomo.environ import *
 ####################################################################################|
 # ----------------------------------- Parameters -----------------------------------|
 ####################################################################################|
-
+def add_resiliency_parameters(model, data):
+    model.EUE_max = Param( initialize = float(data["scalars"].loc["EUE_max"].Value), mutable=True )  # Maximum EUE (in MWh) - Maximum unserved Energy
 
 
 ####################################################################################|

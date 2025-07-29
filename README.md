@@ -80,7 +80,7 @@ While SDOM currently supports a 1-year horizon, multiyear analyses could provide
   - [Guerra, O. J., et al. (2023). Accelerated Energy Storage Deployment in RELAC Countries. *National Renewable Energy Laboratory (NREL)*.](https://research-hub.nrel.gov/en/publications/accelerated-energy-storage-deployment-in-relac-countries)
 
 - **Webinar video**:
- - [Guerra, O. J., et al. (2022). Optimizing Energy Storage for Ultra High Renewable Electricity Systems. Conference for Colorado Renewable Energy society.](https://www.youtube.com/watch?v=SYTnN6Z65kI) 
+  - [Guerra, O. J., et al. (2022). Optimizing Energy Storage for Ultra High Renewable Electricity Systems. Conference for Colorado Renewable Energy society.](https://www.youtube.com/watch?v=SYTnN6Z65kI) 
 
 # SDOM EXAMPLE (Demonstration script)
 Please see an [SDOM demo script on this github repo.](https://github.com/SebastianManriqueM/pySDOM_demo)

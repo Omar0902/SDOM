@@ -10,7 +10,7 @@ from pyomo.core import Var, Constraint
 from pyomo.environ import *
 
 
-from src.io_manager import load_data, safe_pyomo_value, export_results
+from SDOM.io_manager import load_data, safe_pyomo_value, export_results
 # ---------------------------------------------------------------------------------
 # Model initialization
 # Safe value function for uninitialized variables/parameters

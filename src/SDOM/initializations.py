@@ -8,6 +8,7 @@ from .models.formulations_hydro import add_large_hydro_parameters
 from .models.formulations_other_renewables import add_other_renewables_parameters
 from .models.formulations_load import add_load_parameters
 from .models.formulations_storage import add_storage_parameters
+from .models.formulations_resiliency import add_resiliency_parameters
 from .models.models_utils import crf_rule
 
 def initialize_sets( model, data, n_hours = 8760 ):

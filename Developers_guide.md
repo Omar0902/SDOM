@@ -57,7 +57,7 @@ Installed 9 packages in 1.60s
  + tzdata==2025.2
 ```
 
-- Also, install pytests.py to be able to run the tests locally:
+- Also, install [pytests.py](https://docs.pytest.org/en/stable/) to be able to run the tests locally:
 ```powershell
 uv pip install pytest
 ```

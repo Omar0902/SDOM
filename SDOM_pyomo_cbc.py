@@ -1,17 +1,13 @@
 
 from pyomo.environ import *
-import pandas as pd
-import csv
-import os
+
 import logging
 import math
 #import matplotlib.pyplot as plt
 from pyomo.opt import SolverFactory, SolverStatus, TerminationCondition
-from pyomo.opt import SolverResults
 from pyomo.environ import value
 from pyomo.environ import Binary
 from pyomo.util.infeasible import log_infeasible_constraints
-from pyomo.environ import TransformationFactory
 from pyomo.core import Var, Constraint
 from pyomo.core.expr.visitor import identify_variables
 from pyomo.util.model_size import build_model_size_report
@@ -65,15 +61,10 @@ def load_data():
 # Safe value function for uninitialized variables/parameters
 
 
-def safe_pyomo_value(var):
-    """Return the value of a variable or expression if it is initialized, else return None."""
-    try:
-        return value(var) if var is not None else None
-    except ValueError:
-        return None
 
 
-def initialize_model(data):
+
+def initialize_model(data, with_resilience_constraints=False):
     model = ConcreteModel(name="SDOM_Model")
 
     # Solar plant ID alignment
@@ -82,24 +73,18 @@ def initialize_model(data):
     common_solar_plants = list(set(solar_plants_cf) & set(solar_plants_cap))
 
     # Filter solar data and initialize model set
-    complete_solar_data = data["cap_solar"][data["cap_solar"]
-                                            ['sc_gid'].astype(str).isin(common_solar_plants)]
-    complete_solar_data = complete_solar_data.dropna(
-        subset=['CAPEX_M', 'trans_cap_cost', 'FOM_M', 'capacity'])
-    common_solar_plants_filtered = complete_solar_data['sc_gid'].astype(
-        str).tolist()
+    complete_solar_data = data["cap_solar"][data["cap_solar"]['sc_gid'].astype(str).isin(common_solar_plants)]
+    complete_solar_data = complete_solar_data.dropna(subset=['CAPEX_M', 'trans_cap_cost', 'FOM_M', 'capacity'])
+    common_solar_plants_filtered = complete_solar_data['sc_gid'].astype(str).tolist()
     model.k = Set(initialize=common_solar_plants_filtered)
 
     # Load the solar capacities
-    cap_solar_dict = complete_solar_data.set_index('sc_gid')[
-        'capacity'].to_dict()
+    cap_solar_dict = complete_solar_data.set_index('sc_gid')['capacity'].to_dict()
 
     # Filter the dictionary to ensure only valid keys are included
     default_capacity_value = 0.0
-    filtered_cap_solar_dict = {k: cap_solar_dict.get(
-        k, default_capacity_value) for k in model.k}
-    model.CapSolar_capacity = Param(
-        model.k, initialize=filtered_cap_solar_dict)
+    filtered_cap_solar_dict = {k: cap_solar_dict.get(k, default_capacity_value) for k in model.k}
+    model.CapSolar_capacity = Param(model.k, initialize=filtered_cap_solar_dict)
 
     # Wind plant ID alignment
     wind_plants_cf = data['cf_wind'].columns[1:].astype(str).tolist()
@@ -107,44 +92,27 @@ def initialize_model(data):
     common_wind_plants = list(set(wind_plants_cf) & set(wind_plants_cap))
 
     # Filter wind data and initialize model set
-    complete_wind_data = data["cap_wind"][data["cap_wind"]
-                                          ['sc_gid'].astype(str).isin(common_wind_plants)]
-    complete_wind_data = complete_wind_data.dropna(
-        subset=['CAPEX_M', 'trans_cap_cost', 'FOM_M', 'capacity'])
-    common_wind_plants_filtered = complete_wind_data['sc_gid'].astype(
-        str).tolist()
+    complete_wind_data = data["cap_wind"][data["cap_wind"]['sc_gid'].astype(str).isin(common_wind_plants)]
+    complete_wind_data = complete_wind_data.dropna(subset=['CAPEX_M', 'trans_cap_cost', 'FOM_M', 'capacity'])
+    common_wind_plants_filtered = complete_wind_data['sc_gid'].astype(str).tolist()
     model.w = Set(initialize=common_wind_plants_filtered)
 
     # Load the wind capacities
-    cap_wind_dict = complete_wind_data.set_index(
-        'sc_gid')['capacity'].to_dict()
+    cap_wind_dict = complete_wind_data.set_index('sc_gid')['capacity'].to_dict()
 
     # Filter the dictionary to ensure only valid keys are included
-    filtered_cap_wind_dict = {w: cap_wind_dict.get(
-        w, default_capacity_value) for w in model.w}
+    filtered_cap_wind_dict = {w: cap_wind_dict.get(w, default_capacity_value) for w in model.w}
     model.CapWind_capacity = Param(model.w, initialize=filtered_cap_wind_dict)
 
-    # Initialize solar parameters, with default values for missing data
+    # Initialize solar and wind parameters, with default values for missing data
     for property_name in ['trans_cap_cost', 'CAPEX_M', 'FOM_M']:
-        property_dict = complete_solar_data.set_index(
-            'sc_gid')[property_name].to_dict()
-
+        property_dict_solar = complete_solar_data.set_index('sc_gid')[property_name].to_dict()
+        property_dict_wind = complete_wind_data.set_index('sc_gid')[property_name].to_dict()
         default_value = 0.0
-        filtered_property_dict = {k: property_dict.get(
-            k, default_value) for k in model.k}
-        model.add_component(f"CapSolar_{property_name}", Param(
-            model.k, initialize=filtered_property_dict))
-
-    # Initialize wind parameters, with default values for missing data
-    for property_name in ['trans_cap_cost', 'CAPEX_M', 'FOM_M']:
-        property_dict = complete_wind_data.set_index(
-            'sc_gid')[property_name].to_dict()
-
-        default_value = 0.0
-        filtered_property_dict = {k: property_dict.get(
-            k, default_value) for k in model.w}
-        model.add_component(f"CapWind_{property_name}", Param(
-            model.w, initialize=filtered_property_dict))
+        filtered_property_dict_solar = {k: property_dict_solar.get(k, default_value) for k in model.k}
+        filtered_property_dict_wind = {w: property_dict_wind.get(w, default_value) for w in model.w}
+        model.add_component(f"CapSolar_{property_name}", Param(model.k, initialize=filtered_property_dict_solar))
+        model.add_component(f"CapWind_{property_name}", Param(model.w, initialize=filtered_property_dict_wind))
 
     # Define sets
     model.h = RangeSet(1, 24)
@@ -157,37 +125,37 @@ def initialize_model(data):
     model.sp = Set(initialize=storage_properties)
 
     # Scalar parameters
-    model.r = Param(initialize=0.06)  # Discount rate
-    model.GasPrice = Param(initialize=4.113894393)  # Gas prices (US$/MMBtu)
+    model.r = Param( initialize = float(data["scalars"].loc["r"].Value) )  # Discount rate
+    model.GasPrice = Param( initialize = float(data["scalars"].loc["GasPrice"].Value))  # Gas prices (US$/MMBtu)
     # Heat rate for gas combined cycle (MMBtu/MWh)
-    model.HR = Param(initialize=6.4005)
+    model.HR = Param( initialize = float(data["scalars"].loc["HR"].Value) )
     # Capex for gas combined cycle units (US$/kW)
-    model.CapexGasCC = Param(initialize=940.6078576)
+    model.CapexGasCC = Param( initialize =float(data["scalars"].loc["CapexGasCC"].Value) )
     # Fixed O&M for gas combined cycle (US$/kW-year)
-    model.FOM_GasCC = Param(initialize=13.2516707)
+    model.FOM_GasCC = Param( initialize = float(data["scalars"].loc["FOM_GasCC"].Value) )
     # Variable O&M for gas combined cycle (US$/MWh)
-    model.VOM_GasCC = Param(initialize=2.226321156)
-    model.EUE_max = Param(initialize=0, mutable=True)  # Maximum EUE (in MWh)
+    model.VOM_GasCC = Param( initialize = float(data["scalars"].loc["VOM_GasCC"].Value) )
+    model.EUE_max = Param( initialize = float(data["scalars"].loc["EUE_max"].Value), mutable=True )  # Maximum EUE (in MWh) - Maximum unserved Energy
 
     # GenMix_Target, mutable to change across multiple runs
-    model.GenMix_Target = Param(initialize=1.00, mutable=True)
+    model.GenMix_Target = Param( initialize = float(data["scalars"].loc["GenMix_Target"].Value), mutable=True)
 
     # Fixed Charge Rates (FCR) for VRE and Gas CC
     def fcr_rule(model, lifetime=30):
         return (model.r * (1 + model.r) ** lifetime) / ((1 + model.r) ** lifetime - 1)
 
-    model.FCR_VRE = Param(initialize=fcr_rule(model))
-    model.FCR_GasCC = Param(initialize=fcr_rule(model))
+    model.FCR_VRE = Param( initialize = fcr_rule( model, float(data["scalars"].loc["LifeTimeVRE"].Value) ) )
+    model.FCR_GasCC = Param( initialize = fcr_rule( model, float(data["scalars"].loc["LifeTimeGasCC"].Value) ) )
 
     # Activation factors for nuclear, hydro, and other renewables
-    model.AlphaNuclear = Param(initialize=1, mutable=True)
+    model.AlphaNuclear = Param( initialize = float(data["scalars"].loc["AlphaNuclear"].Value), mutable=True )
     # Control for large hydro generation
-    model.AlphaLargHy = Param(initialize=1)
+    model.AlphaLargHy = Param( initialize = float(data["scalars"].loc["AlphaLargHy"].Value) )
     # Control for other renewable generation
-    model.AlphaOtheRe = Param(initialize=1)
+    model.AlphaOtheRe = Param( initialize = float(data["scalars"].loc["AlphaOtheRe"].Value) )
 
     # Battery life and cycling
-    model.MaxCycles = Param(initialize=3250)
+    model.MaxCycles = Param( initialize = float(data["scalars"].loc["MaxCycles"].Value) )
 
     # Load data initialization
     load_data = data["load_data"].set_index('*Hour')['Load'].to_dict()
@@ -196,47 +164,34 @@ def initialize_model(data):
 
     # Nuclear data initialization
     nuclear_data = data["nuclear_data"].set_index('*Hour')['Nuclear'].to_dict()
-    filtered_nuclear_data = {h: nuclear_data[h]
-                             for h in model.h if h in nuclear_data}
+    filtered_nuclear_data = {h: nuclear_data[h] for h in model.h if h in nuclear_data}
     model.Nuclear = Param(model.h, initialize=filtered_nuclear_data)
 
     # Large hydro data initialization
-    large_hydro_data = data["large_hydro_data"].set_index(
-        '*Hour')['LargeHydro'].to_dict()
-    filtered_large_hydro_data = {
-        h: large_hydro_data[h] for h in model.h if h in large_hydro_data}
+    large_hydro_data = data["large_hydro_data"].set_index('*Hour')['LargeHydro'].to_dict()
+    filtered_large_hydro_data = {h: large_hydro_data[h] for h in model.h if h in large_hydro_data}
     model.LargeHydro = Param(model.h, initialize=filtered_large_hydro_data)
 
     # Other renewables data initialization
-    other_renewables_data = data["other_renewables_data"].set_index(
-        '*Hour')['OtherRenewables'].to_dict()
-    filtered_other_renewables_data = {
-        h: other_renewables_data[h] for h in model.h if h in other_renewables_data}
-    model.OtherRenewables = Param(
-        model.h, initialize=filtered_other_renewables_data)
+    other_renewables_data = data["other_renewables_data"].set_index('*Hour')['OtherRenewables'].to_dict()
+    filtered_other_renewables_data = {h: other_renewables_data[h] for h in model.h if h in other_renewables_data}
+    model.OtherRenewables = Param(model.h, initialize=filtered_other_renewables_data)
 
     # Solar capacity factor initialization
-    cf_solar_melted = data["cf_solar"].melt(
-        id_vars='Hour', var_name='plant', value_name='CF')
-    cf_solar_filtered = cf_solar_melted[
-        (cf_solar_melted['plant'].isin(model.k)) & (cf_solar_melted['Hour'].isin(model.h))]
-    cf_solar_dict = cf_solar_filtered.set_index(['Hour', 'plant'])[
-        'CF'].to_dict()
+    cf_solar_melted = data["cf_solar"].melt(id_vars='Hour', var_name='plant', value_name='CF')
+    cf_solar_filtered = cf_solar_melted[(cf_solar_melted['plant'].isin(model.k)) & (cf_solar_melted['Hour'].isin(model.h))]
+    cf_solar_dict = cf_solar_filtered.set_index(['Hour', 'plant'])['CF'].to_dict()
     model.CFSolar = Param(model.h, model.k, initialize=cf_solar_dict)
 
     # Wind capacity factor initialization
-    cf_wind_melted = data["cf_wind"].melt(
-        id_vars='Hour', var_name='plant', value_name='CF')
-    cf_wind_filtered = cf_wind_melted[
-        (cf_wind_melted['plant'].isin(model.w)) & (cf_wind_melted['Hour'].isin(model.h))]
-    cf_wind_dict = cf_wind_filtered.set_index(
-        ['Hour', 'plant'])['CF'].to_dict()
+    cf_wind_melted = data["cf_wind"].melt(id_vars='Hour', var_name='plant', value_name='CF')
+    cf_wind_filtered = cf_wind_melted[(cf_wind_melted['plant'].isin(model.w)) & (cf_wind_melted['Hour'].isin(model.h))]
+    cf_wind_dict = cf_wind_filtered.set_index(['Hour', 'plant'])['CF'].to_dict()
     model.CFWind = Param(model.h, model.w, initialize=cf_wind_dict)
 
     # Storage data initialization
     storage_dict = data["storage_data"].stack().to_dict()
-    storage_tuple_dict = {(prop, tech): storage_dict[(
-        prop, tech)] for prop in storage_properties for tech in model.j}
+    storage_tuple_dict = {(prop, tech): storage_dict[(prop, tech)] for prop in storage_properties for tech in model.j}
     model.StorageData = Param(model.sp, model.j, initialize=storage_tuple_dict)
 
     # Capital recovery factor for storage
@@ -247,21 +202,18 @@ def initialize_model(data):
     #model.CRF.display()
 
     # Define variables
-    model.GenPV = Var(model.h, domain=NonNegativeReals,
-                      initialize=0)  # Generated solar PV power
+    model.GenPV = Var(model.h, domain=NonNegativeReals,initialize=0)  # Generated solar PV power
     # Curtailment for solar PV power
     model.CurtPV = Var(model.h, domain=NonNegativeReals, initialize=0)
-    model.GenWind = Var(model.h, domain=NonNegativeReals,
-                        initialize=0)  # Generated wind power
-    model.CurtWind = Var(model.h, domain=NonNegativeReals,
-                         initialize=0)  # Curtailment for wind power
+    model.GenWind = Var(model.h, domain=NonNegativeReals,initialize=0)  # Generated wind power
+    model.CurtWind = Var(model.h, domain=NonNegativeReals,initialize=0)  # Curtailment for wind power
     # Capacity of backup GCC units
     model.CapCC = Var(domain=NonNegativeReals, initialize=0)
-    model.GenCC = Var(model.h, domain=NonNegativeReals,
-                      initialize=0)  # Generation from GCC units
+    model.GenCC = Var(model.h, domain=NonNegativeReals,initialize=0)  # Generation from GCC units
+
+    # Resilience variables
     # How much load is unmet during hour h
-    model.LoadShed = Var(model.h, domain=NonNegativeReals, initialize=0, bounds=(0,0))
-    model.EUE = Var(domain=NonNegativeReals, bounds=(0,0))  # Expected Unserved Energy
+    model.LoadShed = Var(model.h, domain=NonNegativeReals, initialize=0)
 
     # Storage-related variables
     # Charging power for storage technology j in hour h
@@ -278,27 +230,10 @@ def initialize_model(data):
     model.Ecap = Var(model.j, domain=NonNegativeReals, initialize=0)
 
     # Capacity selection variables with continuous bounds between 0 and 1
-    model.Ypv = Var(model.k, domain=NonNegativeReals,
-                    bounds=(0, 1), initialize=1)
-    model.Ywind = Var(model.w, domain=NonNegativeReals,
-                      bounds=(0, 1), initialize=1)
+    model.Ypv = Var(model.k, domain=NonNegativeReals, bounds=(0, 1), initialize=1)
+    model.Ywind = Var(model.w, domain=NonNegativeReals, bounds=(0, 1), initialize=1)
 
-    model.Ystorage = Var(model.j, model.h, domain=Binary,
-                         initialize=0)  # Storage selection (binary)
-
-    for pv in model.Ypv:
-        if model.Ypv[pv].value is None:
-            model.Ypv[pv].set_value(0)  # Initialize to 0 if not already set
-
-    for wind in model.Ywind:
-        if model.Ywind[wind].value is None:
-            # Initialize to 0 if not already set
-            model.Ywind[wind].set_value(0)
-
-    for s in model.Ystorage:
-        if model.Ystorage[s].value is None:
-            # Initialize to 0 if not already set
-            model.Ystorage[s].set_value(0)
+    model.Ystorage = Var(model.j, model.h, domain=Binary, initialize=0)  # Storage selection (binary)
 
     # Compute and set the upper bound for CapCC
     CapCC_upper_bound_value = max(
@@ -313,7 +248,7 @@ def initialize_model(data):
    # model.CapCC.setub(0)
     #print(CapCC_upper_bound_value)
 
-    # Define the objective function ---------------------------------------------
+    # ----------------------------------- Objective function -----------------------------------
     def objective_rule(model):
         # Annual Fixed Costs
         fixed_costs = (
@@ -366,88 +301,65 @@ def initialize_model(data):
 
     model.Obj = Objective(rule=objective_rule, sense=minimize)
 
-    # Define constraints ---------------------------------------------------------
-    # Ensure that the total supply (load, charging) matches the generation (solar, wind, gas, discharging).
+    # ----------------------------------- Constraints -----------------------------------
+    # Energy supply demand
     def supply_balance_rule(model, h):
         return (
-            model.Load[h]
-            + sum(model.PC[h, j] for j in model.j)
-            - model.AlphaNuclear * model.Nuclear[h]
-            - model.AlphaLargHy * model.LargeHydro[h]
-            - model.AlphaOtheRe * model.OtherRenewables[h]
-            - model.GenPV[h]
-            - model.GenWind[h]
-            - sum(model.PD[h, j] for j in model.j)
+            model.Load[h] + sum(model.PC[h, j] for j in model.j) - sum(model.PD[h, j] for j in model.j)
+            - model.AlphaNuclear * model.Nuclear[h] - model.AlphaLargHy * model.LargeHydro[h] - model.AlphaOtheRe * model.OtherRenewables[h]
+            - model.GenPV[h] - model.GenWind[h]
             - model.GenCC[h] == 0
         ) 
-
     model.SupplyBalance = Constraint(model.h, rule=supply_balance_rule)
 
-    # Define critical load as part of the load for essential services
-    critical_load_percentage = 1  # 10% of the total load
-    total_critical_load = sum(
-        value(model.Load[h]) for h in model.h) * critical_load_percentage
 
-    # PCLS (Percentage of Critical Load Served) Constraint:
+    # PCLS - Percentage of Critical Load Served - Constraint : Resilience
+    critical_load_percentage = 1  # 10% of the total load
     PCLS_target = 0.9  # 90% of the total load
 
     def pcls_constraint_rule(model):
         return sum(model.Load[h] - model.LoadShed[h] for h in model.h) \
-            >= PCLS_target * total_critical_load
+            >= PCLS_target * sum(model.Load[h] for h in model.h) * critical_load_percentage
+    if with_resilience_constraints:
+        model.PCLS_Constraint = Constraint(rule=pcls_constraint_rule)
 
-    model.PCLS_Constraint = Constraint(rule=pcls_constraint_rule)
+    # EUE - Expected Unserved Energy - Constraint : Resilience
+    def max_eue_constraint_rule(model):
+        return sum(model.LoadShed[h] for h in model.h) <= model.EUE_max
+    if with_resilience_constraints:
+        model.MaxEUE_Constraint = Constraint(rule=max_eue_constraint_rule)
 
-    # EUE Constraint:
-    def eue_constraint_rule(model):
-        return model.EUE == sum(model.LoadShed[h] for h in model.h)
-    model.EUE_Constraint = Constraint(rule=eue_constraint_rule)
-
-    model.MaxEUE_Constraint = Constraint(expr=model.EUE <= model.EUE_max)
-
-    # Ensure that the total generation from gas does not exceed the GenMix_Target percentage
+    # Generation mix target
+    # Limit on generation from NG
     def genmix_share_rule(model):
-#        total_gas = sum(model.GenCC[h] for h in model.h)
-#        total_demand = sum(model.Load[h]
-#                           + sum(model.PC[h, j] for j in model.j)
-#                           - sum(model.PD[h, j] for j in model.j)
-#                           for h in model.h)
-        return sum(model.GenCC[h] for h in model.h) <= (1 - model.GenMix_Target)*sum(model.Load[h]
-                           + sum(model.PC[h, j] for j in model.j)
-                           - sum(model.PD[h, j] for j in model.j)
-                           for h in model.h)
-
+        return sum(model.GenCC[h] for h in model.h) <= (1 - model.GenMix_Target)*sum(model.Load[h] + sum(model.PC[h, j] for j in model.j)
+                           - sum(model.PD[h, j] for j in model.j) for h in model.h)
     model.GenMix_Share = Constraint(rule=genmix_share_rule)
 
-    # Ensure the solar generation and curtailment match the available solar capacity for each hour
+    # - Solar balance : generation + curtailed generation = capacity factor * capacity
     def solar_balance_rule(model, h):
         return model.GenPV[h] + model.CurtPV[h] == sum(model.CFSolar[h, k] * model.CapSolar_capacity[k] * model.Ypv[k] for k in model.k)
-
     model.SolarBal = Constraint(model.h, rule=solar_balance_rule)
 
-    # Ensure the wind generation and curtailment match the available wind capacity for each hour.
+    # - Wind balance : generation + curtailed generation = capacity factor * capacity 
     def wind_balance_rule(model, h):
         return model.GenWind[h] + model.CurtWind[h] == sum(model.CFWind[h, w] * model.CapWind_capacity[w] * model.Ywind[w] for w in model.w)
-
     model.WindBal = Constraint(model.h, rule=wind_balance_rule)
 
-    # Ensure the backup generation can generate enough electricity when needed
-    def backup_gen_rule(model, h):
-#        if model.GenCC[h].value is None or model.CapCC.value is None:
-#            return Constraint.Skip
-#        else:
-        return model.CapCC >= model.GenCC[h]
+    # Ensure that the charging and discharging power do not exceed storage limits
+    model.ChargSt= Constraint(model.h, model.j, rule=lambda m, h, j: m.PC[h, j] <= m.StorageData['Max_P', j] * m.Ystorage[j, h])
+    model.DischargeSt = Constraint(model.h, model.j, rule=lambda m, h, j: m.PD[h, j] <= m.StorageData['Max_P', j] * (1 - m.Ystorage[j, h]))
 
-    model.BackupGen = Constraint(model.h, rule=backup_gen_rule)
+    # Hourly capacity bounds
+    model.MaxHourlyCharging = Constraint(model.h, model.j, rule= lambda m,h,j: m.PC[h, j] <= m.Pcha[j])
+    model.MaxHourlyDischarging = Constraint(model.h, model.j, rule= lambda m,h,j: m.PD[h, j] <= m.Pdis[j])
 
-    # Keep track of the state of charge for storage across time - charging and discharging
-    def max_soc_rule(model, h, j):
-        return model.SOC[h, j] <= model.Ecap[j]
+    # Limit state of charge of storage by its capacity
+    model.MaxSOC = Constraint(model.h, model.j, rule=lambda m, h, j: m.SOC[h,j]<= m.Ecap[j])
 
-    model.MaxSOC = Constraint(model.h, model.j, rule=max_soc_rule)
-
-    # SOC Balance
+    # State-Of-Charge Balance -
     def soc_balance_rule(model, h, j):
-        if h > 1:
+        if h > 1: 
             return model.SOC[h, j] == model.SOC[h-1, j] \
                 + sqrt(model.StorageData['Eff', j]) * model.PC[h, j] \
                 - model.PD[h, j] / sqrt(model.StorageData['Eff', j])
@@ -456,51 +368,22 @@ def initialize_model(data):
             return model.SOC[h, j] == model.SOC[max(model.h), j] \
                 + sqrt(model.StorageData['Eff', j]) * model.PC[h, j] \
                 - model.PD[h, j] / sqrt(model.StorageData['Eff', j])
-
     model.SOCBalance = Constraint(model.h, model.j, rule=soc_balance_rule)
 
-    # Ensure that the charging and discharging power do not exceed storage limits
-    model.MaxChargePower = Constraint(
-        model.h, model.j, rule=lambda m, h, j: m.PC[h, j] <= m.StorageData['Max_P', j] * m.Ystorage[j, h])
-    model.MaxDischargePower = Constraint(
-        model.h, model.j, rule=lambda m, h, j: m.PD[h, j] <= m.StorageData['Max_P', j] * (1 - m.Ystorage[j, h]))
 
-    # Constraints on the maximum charging (Pcha) and discharging (Pdis) power for each technology
-    model.MaxPcha = Constraint(
-        model.j, rule=lambda m, j: m.Pcha[j] <= m.StorageData['Max_P', j])
-    model.MaxPdis = Constraint(
-        model.j, rule=lambda m, j: m.Pdis[j] <= m.StorageData['Max_P', j])
+    # - Constraints on the maximum charging (Pcha) and discharging (Pdis) power for each technology
+    model.MaxPcha = Constraint( model.j, rule=lambda m, j: m.Pcha[j] <= m.StorageData['Max_P', j])
+    model.MaxPdis = Constraint(model.j, rule=lambda m, j: m.Pdis[j] <= m.StorageData['Max_P', j])
 
-    model.PchaPdis = Constraint(
-        model.b, rule=lambda m, j: m.Pcha[j] == m.Pdis[j])
-
-    # Hourly capacity bounds
-    def max_hourly_charging_rule(m, h, j):
-        return m.PC[h, j] <= m.Pcha[j]
-    model.MaxHourlyCharging = Constraint(
-        model.h, model.j, rule=max_hourly_charging_rule)
-
-    def max_hourly_discharging_rule(m, h, j):
-        return m.PD[h, j] <= m.Pdis[j]
-    model.MaxHourlyDischarging = Constraint(
-        model.h, model.j, rule=max_hourly_discharging_rule)
+    # Charge and discharge rates are equal -
+    model.PchaPdis = Constraint(model.b, rule=lambda m, j: m.Pcha[j] == m.Pdis[j])
 
     # Max and min energy capacity constraints (handle uninitialized variables)
-    def min_ecap_rule(model, j):
-        if model.StorageData['Eff', j] <= 0:
-            return Constraint.Skip
-        else:
-            return model.Ecap[j] >= model.StorageData['Min_Duration', j] \
-                * model.Pdis[j] / sqrt(model.StorageData['Eff', j])
-    model.MinEcap = Constraint(model.j, rule=min_ecap_rule)
+    model.MinEcap = Constraint(model.j, rule= lambda m,j: m.Ecap[j] >= m.StorageData['Min_Duration', j] * m.Pdis[j] / sqrt(m.StorageData['Eff', j]))
+    model.MaxEcap = Constraint(model.j, rule= lambda m,j: m.Ecap[j] <= m.StorageData['Max_Duration', j] * m.Pdis[j] / sqrt(m.StorageData['Eff', j]))
 
-    def max_ecap_rule(model, j):
-        if model.StorageData['Eff', j] <= 0:
-            return Constraint.Skip
-        else:
-            return model.Ecap[j] <= model.StorageData['Max_Duration', j] \
-                * model.Pdis[j] / sqrt(model.StorageData['Eff', j])
-    model.MaxEcap = Constraint(model.j, rule=max_ecap_rule)
+    # Capacity of the backup generation
+    model.BackupGen = Constraint(model.h, rule= lambda m,h: m.CapCC >= m.GenCC[h])
 
     # Max cycle year
     def max_cycle_year_rule(model):
@@ -523,108 +406,60 @@ def collect_results(model):
 
     # Capacity and generation results
     results['Total_CapCC'] = safe_pyomo_value(model.CapCC)
-    results['Total_CapPV'] = sum(safe_pyomo_value(
-        model.Ypv[k]) * model.CapSolar_CAPEX_M[k] for k in model.k)
-    results['Total_CapWind'] = sum(safe_pyomo_value(
-        model.Ywind[w]) * model.CapWind_CAPEX_M[w] for w in model.w)
-    results['Total_CapScha'] = {
-        j: safe_pyomo_value(model.Pcha[j]) for j in model.j}
-    results['Total_CapSdis'] = {
-        j: safe_pyomo_value(model.Pdis[j]) for j in model.j}
-    results['Total_EcapS'] = {
-        j: safe_pyomo_value(model.Ecap[j]) for j in model.j}
+    results['Total_CapPV'] = sum(safe_pyomo_value(model.Ypv[k]) * model.CapSolar_CAPEX_M[k] for k in model.k)
+    results['Total_CapWind'] = sum(safe_pyomo_value(model.Ywind[w]) * model.CapWind_CAPEX_M[w] for w in model.w)
+    results['Total_CapScha'] = {j: safe_pyomo_value(model.Pcha[j]) for j in model.j}
+    results['Total_CapSdis'] = {j: safe_pyomo_value(model.Pdis[j]) for j in model.j}
+    results['Total_EcapS'] = {j: safe_pyomo_value(model.Ecap[j]) for j in model.j}
 
     # Generation and dispatch results
-    results['Total_GenPV'] = sum(
-        safe_pyomo_value(model.GenPV[h]) for h in model.h)
-    results['Total_GenWind'] = sum(
-        safe_pyomo_value(model.GenWind[h]) for h in model.h)
-    results['Total_GenS'] = {j: sum(safe_pyomo_value(
-        model.PD[h, j]) for h in model.h) for j in model.j}
+    results['Total_GenPV'] = sum(safe_pyomo_value(model.GenPV[h]) for h in model.h)
+    results['Total_GenWind'] = sum(safe_pyomo_value(model.GenWind[h]) for h in model.h)
+    results['Total_GenS'] = {j: sum(safe_pyomo_value(model.PD[h, j]) for h in model.h) for j in model.j}
 
-    results['SolarPVGen'] = {h: safe_pyomo_value(
-        model.GenPV[h]) for h in model.h}
-    results['WindGen'] = {h: safe_pyomo_value(
-        model.GenWind[h]) for h in model.h}
-    results['GenGasCC'] = {h: safe_pyomo_value(
-        model.GenCC[h]) for h in model.h}
+    results['SolarPVGen'] = {h: safe_pyomo_value(model.GenPV[h]) for h in model.h}
+    results['WindGen'] = {h: safe_pyomo_value(model.GenWind[h]) for h in model.h}
+    results['GenGasCC'] = {h: safe_pyomo_value(model.GenCC[h]) for h in model.h}
     
-    results['SolarCapex'] = sum(
-         (model.FCR_VRE * (1000 * \
-          model.CapSolar_CAPEX_M[k] + model.CapSolar_trans_cap_cost[k])) * model.CapSolar_capacity[k] * model.Ypv[k]
-         for k in model.k
-         )
-    results['WindCapex'] =  sum(
-         (model.FCR_VRE * (1000 * \
-         model.CapWind_CAPEX_M[w] + model.CapWind_trans_cap_cost[w])) * model.CapWind_capacity[w] * model.Ywind[w]
-         for w in model.w
-         )        
-    results['SolarFOM'] = sum(
-         (model.FCR_VRE * 1000*model.CapSolar_FOM_M[k]) * model.CapSolar_capacity[k] * model.Ypv[k]
-         for k in model.k
-         )
-    results['WindFOM'] =  sum(
-         (model.FCR_VRE * 1000*model.CapWind_FOM_M[w]) * model.CapWind_capacity[w] * model.Ywind[w]
-         for w in model.w
-         )
-    results['LiIonPowerCapex'] = model.CRF['Li-Ion']*(
-                        1000*model.StorageData['CostRatio', 'Li-Ion'] * \
-                        model.StorageData['P_Capex', 'Li-Ion']*model.Pcha['Li-Ion']
-                        + 1000*(1 - model.StorageData['CostRatio', 'Li-Ion']) * \
-                        model.StorageData['P_Capex', 'Li-Ion']*model.Pdis['Li-Ion'])
+    results['SolarCapex'] = sum((model.FCR_VRE * (1000 * model.CapSolar_CAPEX_M[k] + model.CapSolar_trans_cap_cost[k])) \
+                                * model.CapSolar_capacity[k] * model.Ypv[k] for k in model.k)
+    results['WindCapex'] =  sum((model.FCR_VRE * (1000 * model.CapWind_CAPEX_M[w] + model.CapWind_trans_cap_cost[w])) \
+                                * model.CapWind_capacity[w] * model.Ywind[w] for w in model.w)
+    results['SolarFOM'] = sum((model.FCR_VRE * 1000*model.CapSolar_FOM_M[k]) * model.CapSolar_capacity[k] * model.Ypv[k] for k in model.k)
+    results['WindFOM'] =  sum((model.FCR_VRE * 1000*model.CapWind_FOM_M[w]) * model.CapWind_capacity[w] * model.Ywind[w] for w in model.w)
 
+    results['LiIonPowerCapex'] = model.CRF['Li-Ion']*(1000*model.StorageData['CostRatio', 'Li-Ion'] * model.StorageData['P_Capex', 'Li-Ion']*model.Pcha['Li-Ion']
+                        + 1000*(1 - model.StorageData['CostRatio', 'Li-Ion']) * model.StorageData['P_Capex', 'Li-Ion']*model.Pdis['Li-Ion'])
     results['LiIonEnergyCapex'] = model.CRF['Li-Ion']*1000*model.StorageData['E_Capex', 'Li-Ion']*model.Ecap['Li-Ion']
-
-    results['LiIonFOM'] = 1000*model.StorageData['CostRatio', 'Li-Ion'] * model.StorageData['FOM', 'Li-Ion']*model.Pcha['Li-Ion']
-    + 1000*(1 - model.StorageData['CostRatio', 'Li-Ion']) * model.StorageData['FOM', 'Li-Ion']*model.Pdis['Li-Ion']
-
+    results['LiIonFOM'] = 1000*model.StorageData['CostRatio', 'Li-Ion'] * model.StorageData['FOM', 'Li-Ion']*model.Pcha['Li-Ion'] \
+                        + 1000*(1 - model.StorageData['CostRatio', 'Li-Ion']) * model.StorageData['FOM', 'Li-Ion']*model.Pdis['Li-Ion']
     results['LiIonVOM'] = model.StorageData['VOM', 'Li-Ion'] * sum(model.PD[h, 'Li-Ion'] for h in model.h) 
     
-    results['CAESPowerCapex'] = model.CRF['CAES']*(
-                        1000*model.StorageData['CostRatio', 'CAES'] * \
-                        model.StorageData['P_Capex', 'CAES']*model.Pcha['CAES']
-                        + 1000*(1 - model.StorageData['CostRatio', 'CAES']) * \
-                        model.StorageData['P_Capex', 'CAES']*model.Pdis['CAES'])
-
+    results['CAESPowerCapex'] = model.CRF['CAES']*(1000*model.StorageData['CostRatio', 'CAES'] * model.StorageData['P_Capex', 'CAES']*model.Pcha['CAES']\
+                                + 1000*(1 - model.StorageData['CostRatio', 'CAES']) * model.StorageData['P_Capex', 'CAES']*model.Pdis['CAES'])
     results['CAESEnergyCapex'] = model.CRF['CAES']*1000*model.StorageData['E_Capex', 'CAES']*model.Ecap['CAES']
-
-    results['CAESFOM'] = 1000*model.StorageData['CostRatio', 'CAES'] * model.StorageData['FOM', 'CAES']*model.Pcha['CAES']
-    + 1000*(1 - model.StorageData['CostRatio', 'CAES']) * model.StorageData['FOM', 'CAES']*model.Pdis['CAES']
-
+    results['CAESFOM'] = 1000*model.StorageData['CostRatio', 'CAES'] * model.StorageData['FOM', 'CAES']*model.Pcha['CAES']\
+                        + 1000*(1 - model.StorageData['CostRatio', 'CAES']) * model.StorageData['FOM', 'CAES']*model.Pdis['CAES']
     results['CAESVOM'] = model.StorageData['VOM', 'CAES'] * sum(model.PD[h, 'CAES'] for h in model.h) 
     
-    results['PHSPowerCapex'] = model.CRF['PHS']*(
-                        1000*model.StorageData['CostRatio', 'PHS'] * \
-                        model.StorageData['P_Capex', 'PHS']*model.Pcha['PHS']
-                        + 1000*(1 - model.StorageData['CostRatio', 'PHS']) * \
-                        model.StorageData['P_Capex', 'PHS']*model.Pdis['PHS'])
-
+    results['PHSPowerCapex'] = model.CRF['PHS']*(1000*model.StorageData['CostRatio', 'PHS'] * model.StorageData['P_Capex', 'PHS']*model.Pcha['PHS']
+                                + 1000*(1 - model.StorageData['CostRatio', 'PHS']) * model.StorageData['P_Capex', 'PHS']*model.Pdis['PHS'])
     results['PHSEnergyCapex'] = model.CRF['PHS']*1000*model.StorageData['E_Capex', 'PHS']*model.Ecap['PHS']
 
-    results['CAESFOM'] = 1000*model.StorageData['CostRatio', 'PHS'] * model.StorageData['FOM', 'PHS']*model.Pcha['PHS']
-    + 1000*(1 - model.StorageData['CostRatio', 'PHS']) * model.StorageData['FOM', 'PHS']*model.Pdis['PHS']
-
+    results['CAESFOM'] = 1000*model.StorageData['CostRatio', 'PHS'] * model.StorageData['FOM', 'PHS']*model.Pcha['PHS']\
+                        + 1000*(1 - model.StorageData['CostRatio', 'PHS']) * model.StorageData['FOM', 'PHS']*model.Pdis['PHS']
     results['CAESVOM'] = model.StorageData['VOM', 'PHS'] * sum(model.PD[h, 'PHS'] for h in model.h) 
     
-    results['H2PowerCapex'] = model.CRF['H2']*(
-                        1000*model.StorageData['CostRatio', 'H2'] * \
-                        model.StorageData['P_Capex', 'H2']*model.Pcha['H2']
-                        + 1000*(1 - model.StorageData['CostRatio', 'H2']) * \
-                        model.StorageData['P_Capex', 'H2']*model.Pdis['H2'])
-
+    results['H2PowerCapex'] = model.CRF['H2']*(1000*model.StorageData['CostRatio', 'H2'] * model.StorageData['P_Capex', 'H2']*model.Pcha['H2']
+                        + 1000*(1 - model.StorageData['CostRatio', 'H2']) * model.StorageData['P_Capex', 'H2']*model.Pdis['H2'])
     results['H2EnergyCapex'] = model.CRF['H2']*1000*model.StorageData['E_Capex', 'H2']*model.Ecap['H2']
-
-    results['H2FOM'] = 1000*model.StorageData['CostRatio', 'H2'] * model.StorageData['FOM', 'H2']*model.Pcha['H2']
-    + 1000*(1 - model.StorageData['CostRatio', 'H2']) * model.StorageData['FOM', 'H2']*model.Pdis['H2']
-
+    results['H2FOM'] = 1000*model.StorageData['CostRatio', 'H2'] * model.StorageData['FOM', 'H2']*model.Pcha['H2']\
+                    + 1000*(1 - model.StorageData['CostRatio', 'H2']) * model.StorageData['FOM', 'H2']*model.Pdis['H2']
     results['H2VOM'] = model.StorageData['VOM', 'H2'] * sum(model.PD[h, 'H2'] for h in model.h) 
         
     results['GasCCCapex'] = model.FCR_GasCC*1000*model.CapexGasCC*model.CapCC
-
     results['GasCCFuel'] = (model.GasPrice * model.HR) * sum(model.GenCC[h] for h in model.h)
-
     results['GasCCFOM'] = 1000*model.FOM_GasCC*model.CapCC
-
     results['GasCCVOM'] = (model.GasPrice * model.HR) * sum(model.GenCC[h] for h in model.h)
 
     return results
@@ -640,12 +475,9 @@ def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, num_runs=1):
     #solver = SolverFactory('scip')
     solver.options['loglevel'] = 3
     solver.options['mip_rel_gap'] = optcr
-#    solver.options['threads'] = 6
     solver.options['tee'] = True
     solver.options['keepfiles'] = True
     solver.options['logfile'] = log_file_path
-#l    solver.options['warmstart'] = True
-#    solver.options['load_solution'] = False
     logging.basicConfig(level=logging.INFO)
 
     results_over_runs = []
@@ -659,25 +491,20 @@ def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, num_runs=1):
         print(f"Running optimization for GenMix_Target = {target_value:.2f}")
         result = solver.solve(model, 
                               #, tee=True, keepfiles = True, #working_dir='C:/Users/mkoleva/Documents/Masha/Projects/LDES_Demonstration/CBP/TEA/Results/solver_log.txt'
-
                              )
         
-       # result = opt.solve(model)
-
         if (result.solver.status == SolverStatus.ok) and (result.solver.termination_condition == TerminationCondition.optimal):
             # If the solution is optimal, collect the results
             print("Optimal solution found")
             run_results = collect_results(model)
             run_results['GenMix_Target'] = target_value
             results_over_runs.append(run_results)
-
             # Update the best result if it found a better one
             if 'Total_Cost' in run_results and run_results['Total_Cost'] < best_objective_value:
                 best_objective_value = run_results['Total_Cost']
                 best_result = run_results
         else:
             print(f"Solver did not find an optimal solution for GenMix_Target = {target_value:.2f}.")
-
             # Log infeasible constraints for debugging
             print("Logging infeasible constraints...")
             logging.basicConfig(level=logging.INFO)
@@ -890,33 +717,21 @@ def export_results(model, iso_name, case):
 # Main loop for handling scenarios and results exporting
 
 
-def main():
+def main(with_resilience_constraints = False, case='test_data'):
     data = load_data()
-    model = initialize_model(data)
+    model = initialize_model(data, with_resilience_constraints=with_resilience_constraints)
 
-    # iso = ['CAISO', 'ERCOT', 'ISONE', 'MISO', 'NYISO', 'PJM', 'SPP']
-    iso = ['CAISO']
-    nuclear = ['1']
-    target = ['1.00']
-
-    # nuclear = ['0', '1']
-    # target = ['0.00', '0.75', '0.80', '0.85', '0.90', '0.95', '1.00']
 
     # Loop over each scenario combination and solve the model
-    for j in iso:
-        for i in nuclear:
-            for k in target:
-                case = f"{j}_Nuclear_{i}_Target_{k}"
-                print(f"Solving for {case}...")
-
-                #results_over_runs, 
-                best_result = run_solver(model)
-
-                if best_result:
-                    print(f"Best result for {case}: {best_result}")
-                    export_results(model, j, case)
-                else:
-                    print(f"Solver did not find an optimal solution for {case}, skipping result export.")
+    if with_resilience_constraints:
+        best_result = run_solver(model, with_resilience_constraints=True)
+        case += '_resilience'
+    else:
+        best_result = run_solver(model)
+    if best_result:
+        export_results(model, case)
+    else:
+        print(f"Solver did not find an optimal solution for given data and with resilience constraints = {with_resilience_constraints}, skipping result export.")
 
 
 # ---------------------------------------------------------------------------------

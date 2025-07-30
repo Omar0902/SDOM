@@ -43,23 +43,29 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
     logging.info("Instantiating SDOM Pyomo optimization model...")
     model = ConcreteModel(name=model_name)
 
-    logging.info("Initializing model sets and parameters...")
+    logging.info("Initializing model sets...")
     initialize_sets( model, data, n_hours = n_hours )
     
+    logging.info("Initializing model parameters...")
     initialize_params( model, data )    
 
     # ----------------------------------- Variables -----------------------------------
     logging.info("Adding variables to the model...")
     # Define VRE (wind/solar variables
+    logging.debug("--Adding VRE variables...")
     add_vre_variables( model )
     
     # Capacity of backup GCC units
+    logging.debug("Adding gas combined cycle variables...")
     add_gascc_variables( model )
 
     # Resilience variables
-    add_resiliency_variables( model )
+    if with_resilience_constraints:
+        logging.debug("--Adding resiliency variables...")
+        add_resiliency_variables( model )
 
     # Storage-related variables
+    logging.debug("--Adding storage variables...")
     add_storage_variables( model )
 
     # -------------------------------- Objective function -------------------------------
@@ -69,16 +75,20 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
     # ----------------------------------- Constraints -----------------------------------
     logging.info("Adding constraints to the model...")
     #system Constraints
+    logging.debug("--Adding system constraints...")
     add_system_constraints( model )    
 
     #resiliency Constraints
     if with_resilience_constraints:
+        logging.debug("--Adding resiliency constraints...")
         add_resiliency_constraints( model )
   
     #VRE balance constraints
+    logging.debug("--Adding VRE balance constraints...")
     add_vre_balance_constraints( model )
 
     #Storage constraints
+    logging.debug("--Adding storage constraints...")
     add_storage_constraints( model )
     
     # Build a model size report
@@ -135,6 +145,7 @@ def collect_results( model ):
     results['Total_Cost'] = safe_pyomo_value(model.Obj.expr)
 
     # Capacity and generation results
+    logging.debug("Collecting capacity results...")
     results['Total_CapCC'] = safe_pyomo_value(model.CapCC)
     results['Total_CapPV'] = sum(safe_pyomo_value(model.Ypv[k]) * model.CapSolar_CAPEX_M[k] for k in model.k)
     results['Total_CapWind'] = sum(safe_pyomo_value(model.Ywind[w]) * model.CapWind_CAPEX_M[w] for w in model.w)
@@ -143,6 +154,7 @@ def collect_results( model ):
     results['Total_EcapS'] = {j: safe_pyomo_value(model.Ecap[j]) for j in model.j}
 
     # Generation and dispatch results
+    logging.debug("Collecting generation dispatch results...")
     results['Total_GenPV'] = sum(safe_pyomo_value(model.GenPV[h]) for h in model.h)
     results['Total_GenWind'] = sum(safe_pyomo_value(model.GenWind[h]) for h in model.h)
     results['Total_GenS'] = {j: sum(safe_pyomo_value(model.PD[h, j]) for h in model.h) for j in model.j}
@@ -158,6 +170,7 @@ def collect_results( model ):
     results['SolarFOM'] = sum((model.FCR_VRE * 1000*model.CapSolar_FOM_M[k]) * model.CapSolar_capacity[k] * model.Ypv[k] for k in model.k)
     results['WindFOM'] =  sum((model.FCR_VRE * 1000*model.CapWind_FOM_M[w]) * model.CapWind_capacity[w] * model.Ywind[w] for w in model.w)
 
+    logging.debug("Collecting storage results...")
     results['LiIonPowerCapex'] = model.CRF['Li-Ion']*(1000*model.StorageData['CostRatio', 'Li-Ion'] * model.StorageData['P_Capex', 'Li-Ion']*model.Pcha['Li-Ion']
                         + 1000*(1 - model.StorageData['CostRatio', 'Li-Ion']) * model.StorageData['P_Capex', 'Li-Ion']*model.Pdis['Li-Ion'])
     results['LiIonEnergyCapex'] = model.CRF['Li-Ion']*1000*model.StorageData['E_Capex', 'Li-Ion']*model.Ecap['Li-Ion']

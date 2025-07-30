@@ -102,6 +102,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     os.makedirs(output_dir, exist_ok=True)
 
     # Initialize results dictionaries column: [values]
+    logging.debug("--Initializing results dictionaries...")
     gen_results = {'Scenario':[],'Hour': [], 'Solar PV Generation (MW)': [], 'Solar PV Curtailment (MW)': [],
                    'Wind Generation (MW)': [], 'Wind Curtailment (MW)': [],
                    'Gas CC Generation (MW)': [], 'Storage Charge/Discharge (MW)': []}
@@ -114,6 +115,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
 
     # Extract generation results
 #    for run in range(num_runs):
+    logging.debug("--Extracting generation results...")
     for h in model.h:
         solar_gen = safe_pyomo_value(model.GenPV[h])
         solar_curt = safe_pyomo_value(model.CurtPV[h])
@@ -135,6 +137,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
         gen_results['Scenario'].append(case)
 
     # Extract storage results
+    logging.debug("--Extracting storage results...")
     for h in model.h:
         for j in model.j:
             charge_power = safe_pyomo_value(model.PC[h, j])
@@ -151,6 +154,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
 
     # Summary results (total capacities and costs)
     ## Total cost
+    logging.debug("--Extracting summary results...")
     total_cost = pd.DataFrame.from_dict({'Total cost':[None, 1,safe_pyomo_value(model.Obj()), '$US']}, orient='index',
                                         columns=['Technology','Run','Optimal Value', 'Unit'])
     total_cost = total_cost.reset_index(names='Metric')
@@ -401,8 +405,9 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     cycles['Metric'] = 'Equivalent number of cycles'
     summary_results = pd.concat([summary_results, cycles], ignore_index=True)
 
-
+    logging.info("Exporting csv files containing SDOM results...")
     # Save generation results to CSV
+    logging.debug("--Saving generation results to CSV...")
     if gen_results['Hour']:
         with open(output_dir + f'OutputGeneration_{case}.csv', mode='w', newline='') as file:
             writer = csv.DictWriter(file, fieldnames=gen_results.keys())
@@ -411,6 +416,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
                              for t in zip(*gen_results.values())])
 
     # Save storage results to CSV
+    logging.debug("--Saving storage results to CSV...")
     if storage_results['Hour']:
         with open(output_dir + f'OutputStorage_{case}.csv', mode='w', newline='') as file:
             writer = csv.DictWriter(file, fieldnames=storage_results.keys())
@@ -419,5 +425,6 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
                              for t in zip(*storage_results.values())])
 
     # Save summary results to CSV
+    logging.debug("--Saving summary results to CSV...")
     if len(summary_results)>0:
         summary_results.to_csv(output_dir + f'OutputSummary_{case}.csv', index=False)

@@ -1,4 +1,4 @@
-
+import logging
 from pyomo.environ import *
 from .constants import STORAGE_PROPERTIES_NAMES, STORAGE_SET_J_TECHS, STORAGE_SET_B_TECHS
 from .models.formulations_vre import add_vre_parameters
@@ -19,7 +19,6 @@ def initialize_sets( model, data, n_hours = 8760 ):
         model: The optimization model instance to initialize.
         data: A dictionary containing model parameters and data.
     """
-
    # Solar plant ID alignment
     solar_plants_cf = data['cf_solar'].columns[1:].astype(str).tolist()
     solar_plants_cap = data['cap_solar']['sc_gid'].astype(str).tolist()
@@ -81,24 +80,32 @@ def initialize_params(model, data):
         filtered_cap_solar_dict
     """
     model.r = Param( initialize = float(data["scalars"].loc["r"].Value) )  # Discount rate
-    
+
+    logging.debug("--Initializing VRE parameters...")
     add_vre_parameters(model, data)
 
+    logging.debug("--Initializing gas combined cycle parameters...")
     add_gascc_parameters(model,data)
 
+    logging.debug("--Initializing load parameters...")
     add_load_parameters(model, data)
 
+    logging.debug("--Initializing nuclear parameters...")
     add_nuclear_parameters(model, data)
 
+    logging.debug("--Initializing large hydro parameters...")
     add_large_hydro_parameters(model, data)
 
+    logging.debug("--Initializing other renewables parameters...")
     add_other_renewables_parameters(model, data)
 
+    logging.debug("--Initializing storage parameters...")
     add_storage_parameters(model, data)
 
     # GenMix_Target, mutable to change across multiple runs
     model.GenMix_Target = Param( initialize = float(data["scalars"].loc["GenMix_Target"].Value), mutable=True)
     model.CRF = Param( model.j, initialize = crf_rule ) #Capital Recovery Factor
     
+    logging.debug("--Initializing resiliency parameters...")
     add_resiliency_parameters(model, data)
     #model.CRF.display()

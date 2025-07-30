@@ -2,8 +2,11 @@ import logging
 import pandas as pd
 import os
 import csv
-from .common.utilities import safe_pyomo_value
+
 from pyomo.environ import *
+
+from .common.utilities import safe_pyomo_value, check_file_exists
+from .constants import INPUT_CSV_NAMES
 
 
 def load_data( input_data_dir = '.\\Data\\' ):
@@ -31,22 +34,57 @@ def load_data( input_data_dir = '.\\Data\\' ):
     """
     logging.info("Loading SDOM input data...")
     #os.chdir('./Data/.')
-    solar_plants = pd.read_csv( os.path.join(input_data_dir, 'Set_k_SolarPV.csv'), header=None )[0].tolist()
-    wind_plants = pd.read_csv( os.path.join(input_data_dir, 'Set_w_Wind.csv'), header=None )[0].tolist()
-    load_data = pd.read_csv( os.path.join(input_data_dir, 'Load_hourly_2050.csv') ).round(5)
-    nuclear_data = pd.read_csv( os.path.join(input_data_dir, 'Nucl_hourly_2019.csv') ).round(5)
-    large_hydro_data = pd.read_csv( os.path.join(input_data_dir, 'lahy_hourly_2019.csv') ).round(5)
-    other_renewables_data = pd.read_csv( os.path.join(input_data_dir, 'otre_hourly_2019.csv') ).round(5)
-    cf_solar = pd.read_csv( os.path.join(input_data_dir, 'CFSolar_2050.csv') ).round(5)
-    cf_solar.columns = cf_solar.columns.astype(str)
-    cf_wind = pd.read_csv( os.path.join(input_data_dir, 'CFWind_2050.csv') ).round(5)
-    cf_wind.columns = cf_wind.columns.astype(str)
-    cap_solar = pd.read_csv( os.path.join(input_data_dir, 'CapSolar_2050.csv') ).round(5)
-    cap_solar['sc_gid'] = cap_solar['sc_gid'].astype(str)
-    cap_wind = pd.read_csv( os.path.join(input_data_dir, 'CapWind_2050.csv') ).round(5)
-    cap_wind['sc_gid'] = cap_wind['sc_gid'].astype(str)
-    storage_data = pd.read_csv( os.path.join(input_data_dir, 'StorageData_2050.csv'), index_col=0 ).round(5)
-    scalars = pd.read_csv( os.path.join(input_data_dir, 'scalars.csv'), index_col="Parameter" )
+    input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["solar_plants"])
+    if check_file_exists(input_file_path, "solar plants ids"):
+        solar_plants = pd.read_csv( input_file_path, header=None )[0].tolist()
+    
+    input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["wind_plants"])
+    if check_file_exists(input_file_path, "wind plants ids"):
+        wind_plants = pd.read_csv( input_file_path, header=None )[0].tolist()
+
+    input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["load_data"])
+    if check_file_exists(input_file_path, "load data"):
+        load_data = pd.read_csv( input_file_path ).round(5)
+
+    input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["nuclear_data"])
+    if check_file_exists(input_file_path, "nuclear data"):
+        nuclear_data = pd.read_csv( input_file_path ).round(5)
+
+    input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["large_hydro_data"])
+    if check_file_exists(input_file_path, "large hydro data"):
+        large_hydro_data = pd.read_csv( input_file_path ).round(5)
+
+    input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["other_renewables_data"])
+    if check_file_exists(input_file_path, "other renewables data"):
+        other_renewables_data = pd.read_csv( input_file_path ).round(5)
+    
+    input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["cf_solar"])
+    if check_file_exists(input_file_path, "Capacity factors for pv solar"):
+        cf_solar = pd.read_csv( input_file_path ).round(5)
+        cf_solar.columns = cf_solar.columns.astype(str)
+
+    input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["cf_wind"])
+    if check_file_exists(input_file_path, "Capacity factors for wind"):
+        cf_wind = pd.read_csv( input_file_path ).round(5)
+        cf_wind.columns = cf_wind.columns.astype(str)
+    
+    input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["cap_solar"])
+    if check_file_exists(input_file_path, "Capex information for solar"):
+        cap_solar = pd.read_csv( input_file_path ).round(5)
+        cap_solar['sc_gid'] = cap_solar['sc_gid'].astype(str)
+    
+    input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["cap_wind"])
+    if check_file_exists(input_file_path, "Capex information for wind"):
+        cap_wind = pd.read_csv( input_file_path ).round(5)
+        cap_wind['sc_gid'] = cap_wind['sc_gid'].astype(str)
+    
+    input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["storage_data"])
+    if check_file_exists(input_file_path, "Storage data"):
+        storage_data = pd.read_csv( input_file_path, index_col=0 ).round(5)
+
+    input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["scalars"])
+    if check_file_exists(input_file_path, "scalars"):
+        scalars = pd.read_csv( input_file_path, index_col="Parameter" )
     #os.chdir('../')
     return {
         "solar_plants": solar_plants,

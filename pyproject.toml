@@ -3,10 +3,10 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.version]
-path = "src/SDOM/__version__.py"
+path = "src/sdom/__version__.py"
 
 [project]
-name = "SDOM"
+name = "sdom"
 dynamic = ["version"]
 readme = "README.md"
 
@@ -40,3 +40,6 @@ classifiers = [
 Homepage = "https://github.com/Omar0902/SDOM"
 Repository = "https://github.com/Omar0902/SDOM"
 Issues = "https://github.com/Omar0902/SDOM/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sdom"]

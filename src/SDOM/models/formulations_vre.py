@@ -1,5 +1,5 @@
 from pyomo.core import Var, Constraint
-from pyomo.environ import *
+from pyomo.environ import Param, NonNegativeReals
 from ..constants import VRE_PROPERTIES_NAMES, MW_TO_KW
 from .models_utils import fcr_rule
 

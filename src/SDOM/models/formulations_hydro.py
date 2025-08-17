@@ -1,5 +1,4 @@
-from pyomo.core import Var, Constraint
-from pyomo.environ import *
+from pyomo.environ import Param
 
 ####################################################################################|
 # ----------------------------------- Parameters -----------------------------------|

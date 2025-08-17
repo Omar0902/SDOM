@@ -1,4 +1,4 @@
-from pyomo.environ import *
+from pyomo.environ import Constraint
 
 def get_n_eq_ineq_constraints(model):
     # Count constraints by type

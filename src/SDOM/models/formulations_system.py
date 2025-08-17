@@ -1,5 +1,5 @@
-from pyomo.core import Var, Constraint
-from pyomo.environ import *
+from pyomo.core import Constraint
+
 
 from .formulations_vre import add_vre_fixed_costs
 from .formulations_thermal import add_gasscc_fixed_costs, add_gasscc_variable_costs

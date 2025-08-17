@@ -1,5 +1,5 @@
 from pyomo.core import Var, Constraint
-from pyomo.environ import *
+from pyomo.environ import Param, NonNegativeReals
 from ..constants import CRITICAL_LOAD_PERCENTAGE, PCLS_TARGET
 
 ####################################################################################|

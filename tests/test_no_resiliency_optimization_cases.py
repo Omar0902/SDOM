@@ -1,9 +1,9 @@
 import os
 import pytest
 
-from SDOM.io_manager import load_data, export_results
-from SDOM.optimization_main import run_solver, initialize_model
-from pyomo.environ import *
+from sdom.io_manager import load_data, export_results
+from sdom.optimization_main import run_solver, initialize_model
+
 
 from utils_tests import get_n_eq_ineq_constraints, get_optimization_problem_info, get_optimization_problem_solution_info
 

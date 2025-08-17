@@ -29,6 +29,7 @@ def test_load_data_keys_and_types():
     assert "cap_wind" in data_keys
     assert "storage_data" in data_keys
     assert "STORAGE_SET_J_TECHS" in data_keys
+    assert "STORAGE_SET_B_TECHS" in data_keys
     assert "scalars" in data_keys
 
     assert type( data["solar_plants"] ) == list
@@ -43,6 +44,7 @@ def test_load_data_keys_and_types():
     assert type( data["cap_wind"] ) == pd.DataFrame
     assert type( data["storage_data"] ) == pd.DataFrame
     assert type( data["STORAGE_SET_J_TECHS"] ) == list
+    assert type( data["STORAGE_SET_B_TECHS"] ) == list
     assert type( data["scalars"] ) == pd.DataFrame
     
 

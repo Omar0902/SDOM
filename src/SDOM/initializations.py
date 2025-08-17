@@ -62,10 +62,11 @@ def initialize_sets( model, data, n_hours = 8760 ):
 
     # Define sets
     model.h = RangeSet(1, n_hours)
-    logging.info(f"Storage technologies being considered: {data['STORAGE_SET_J_TECHS']}")
+    
     model.j = Set( initialize = data['STORAGE_SET_J_TECHS'] )
-    #model.b = Set( within=model.j, initialize = data['STORAGE_SET_B_TECHS'] )
-    model.b = Set( within=model.j, initialize = STORAGE_SET_B_TECHS )
+    model.b = Set( within=model.j, initialize = data['STORAGE_SET_B_TECHS'] )
+    logging.info(f"Storage technologies being considered: {list(model.j)}")
+    logging.info(f"Storage technologies with coupled charge/discharge power: {list(model.b)}")
 
     # Initialize storage properties
     model.sp = Set( initialize = STORAGE_PROPERTIES_NAMES )

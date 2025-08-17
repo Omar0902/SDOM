@@ -81,6 +81,8 @@ def load_data( input_data_dir = '.\\Data\\' ):
     input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["storage_data"])
     if check_file_exists(input_file_path, "Storage data"):
         storage_data = pd.read_csv( input_file_path, index_col=0 ).round(5)
+        storage_set_j_techs = storage_data.columns[0:].astype(str).tolist()
+        #storage_set_b_techs = storage_data.columns[ storage_data.loc["Coupled"] == True ].astype( str ).tolist()
 
     input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["scalars"])
     if check_file_exists(input_file_path, "scalars"):
@@ -98,6 +100,8 @@ def load_data( input_data_dir = '.\\Data\\' ):
         "cap_solar": cap_solar,
         "cap_wind": cap_wind,
         "storage_data": storage_data,
+        "STORAGE_SET_J_TECHS": storage_set_j_techs,
+        "STORAGE_SET_B_TECHS": [],#storage_set_b_techs,
         "scalars": scalars,
     }
     

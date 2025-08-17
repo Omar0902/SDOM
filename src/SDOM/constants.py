@@ -33,8 +33,8 @@ STORAGE_PROPERTIES_NAMES = ['P_Capex', 'E_Capex', 'Eff', 'Min_Duration',
                           'Max_Duration', 'Max_P', 'FOM', 'VOM', 'Lifetime', 'CostRatio']
 
 #TODO this set is the col names of the StorageData_2050.csv file
-STORAGE_SET_J_TECHS = ['Li-Ion', 'CAES', 'PHS', 'H2']
-STORAGE_SET_B_TECHS = ['Li-Ion', 'PHS'] #TODO INCLUDE DECOUPLED STORAGE FLAG IN THE CSV FILE
+#STORAGE_SET_J_TECHS = ['Li-Ion', 'CAES', 'PHS', 'H2'] - THIS WAS REPLACED BY "data["STORAGE_SET_J_TECHS"]" whic reads the cols of storage_data
+STORAGE_SET_B_TECHS = ['Li-Ion', 'PHS'] #TODO INCLUDE COUPLED STORAGE FLAG IN THE CSV FILE
 
 #RESILIENCY CONSTANTS HARD-CODED
 # PCLS - Percentage of Critical Load Served - Constraint : Resilience

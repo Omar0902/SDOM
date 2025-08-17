@@ -1,6 +1,6 @@
 import logging
 from pyomo.environ import Param, Set, RangeSet
-from .constants import STORAGE_PROPERTIES_NAMES, STORAGE_SET_J_TECHS, STORAGE_SET_B_TECHS
+from .constants import STORAGE_PROPERTIES_NAMES, STORAGE_SET_B_TECHS
 from .models.formulations_vre import add_vre_parameters
 from .models.formulations_thermal import add_gascc_parameters
 from .models.formulations_nuclear import add_nuclear_parameters
@@ -62,8 +62,10 @@ def initialize_sets( model, data, n_hours = 8760 ):
 
     # Define sets
     model.h = RangeSet(1, n_hours)
-    model.j = Set( initialize = STORAGE_SET_J_TECHS )
-    model.b = Set( initialize = STORAGE_SET_B_TECHS )
+    logging.info(f"Storage technologies being considered: {data['STORAGE_SET_J_TECHS']}")
+    model.j = Set( initialize = data['STORAGE_SET_J_TECHS'] )
+    #model.b = Set( within=model.j, initialize = data['STORAGE_SET_B_TECHS'] )
+    model.b = Set( within=model.j, initialize = STORAGE_SET_B_TECHS )
 
     # Initialize storage properties
     model.sp = Set( initialize = STORAGE_PROPERTIES_NAMES )

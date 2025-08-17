@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 
-from sdom.io_manager import load_data
+from sdom import load_data
 def test_load_data_folder_exist():
     test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data')
     test_data_path = os.path.abspath(test_data_path)
@@ -28,6 +28,7 @@ def test_load_data_keys_and_types():
     assert "cap_solar" in data_keys
     assert "cap_wind" in data_keys
     assert "storage_data" in data_keys
+    assert "STORAGE_SET_J_TECHS" in data_keys
     assert "scalars" in data_keys
 
     assert type( data["solar_plants"] ) == list
@@ -41,6 +42,7 @@ def test_load_data_keys_and_types():
     assert type( data["cap_solar"] ) == pd.DataFrame
     assert type( data["cap_wind"] ) == pd.DataFrame
     assert type( data["storage_data"] ) == pd.DataFrame
+    assert type( data["STORAGE_SET_J_TECHS"] ) == list
     assert type( data["scalars"] ) == pd.DataFrame
     
 

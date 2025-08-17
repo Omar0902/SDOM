@@ -5,7 +5,7 @@ import csv
 
 from pyomo.environ import sqrt
 
-from .common.utilities import safe_pyomo_value, check_file_exists
+from .common.utilities import safe_pyomo_value, check_file_exists, compare_lists
 from .constants import INPUT_CSV_NAMES, MW_TO_KW
 
 
@@ -33,57 +33,74 @@ def load_data( input_data_dir = '.\\Data\\' ):
         - Some columns are explicitly converted to string type for consistency.
     """
     logging.info("Loading SDOM input data...")
-    #os.chdir('./Data/.')
-    input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["solar_plants"])
-    if check_file_exists(input_file_path, "solar plants ids"):
-        solar_plants = pd.read_csv( input_file_path, header=None )[0].tolist()
     
-    input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["wind_plants"])
-    if check_file_exists(input_file_path, "wind plants ids"):
-        wind_plants = pd.read_csv( input_file_path, header=None )[0].tolist()
-
-    input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["load_data"])
-    if check_file_exists(input_file_path, "load data"):
-        load_data = pd.read_csv( input_file_path ).round(5)
-
-    input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["nuclear_data"])
-    if check_file_exists(input_file_path, "nuclear data"):
-        nuclear_data = pd.read_csv( input_file_path ).round(5)
-
-    input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["large_hydro_data"])
-    if check_file_exists(input_file_path, "large hydro data"):
-        large_hydro_data = pd.read_csv( input_file_path ).round(5)
-
-    input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["other_renewables_data"])
-    if check_file_exists(input_file_path, "other renewables data"):
-        other_renewables_data = pd.read_csv( input_file_path ).round(5)
+    logging.debug("- Trying to load VRE data...")
+    # THE SET CSV FILES WERE REMOVED
+    # input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["solar_plants"])
+    # if check_file_exists(input_file_path, "solar plants ids"):
+    #     solar_plants = pd.read_csv( input_file_path, header=None )[0].tolist()
+    
+    # input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["wind_plants"])
+    # if check_file_exists(input_file_path, "wind plants ids"):
+    #     wind_plants = pd.read_csv( input_file_path, header=None )[0].tolist()
     
     input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["cf_solar"])
     if check_file_exists(input_file_path, "Capacity factors for pv solar"):
         cf_solar = pd.read_csv( input_file_path ).round(5)
         cf_solar.columns = cf_solar.columns.astype(str)
+        solar_plants = cf_solar.columns[1:].tolist()
+        logging.debug( f"-- It were loaded a total of {len( solar_plants )} solar plants profiles." )
+    
 
     input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["cf_wind"])
     if check_file_exists(input_file_path, "Capacity factors for wind"):
         cf_wind = pd.read_csv( input_file_path ).round(5)
         cf_wind.columns = cf_wind.columns.astype(str)
-    
+        wind_plants = cf_wind.columns[1:].tolist()
+        logging.debug( f"-- It were loaded a total of {len( wind_plants )} wind plants profiles." )
+
     input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["cap_solar"])
     if check_file_exists(input_file_path, "Capex information for solar"):
         cap_solar = pd.read_csv( input_file_path ).round(5)
         cap_solar['sc_gid'] = cap_solar['sc_gid'].astype(str)
-    
+        solar_plants_capex = cap_solar['sc_gid'].tolist()
+        compare_lists(solar_plants, solar_plants_capex, text_comp="solar plants", list_names=["CF", "Capex"])
+
     input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["cap_wind"])
     if check_file_exists(input_file_path, "Capex information for wind"):
         cap_wind = pd.read_csv( input_file_path ).round(5)
         cap_wind['sc_gid'] = cap_wind['sc_gid'].astype(str)
-    
+        wind_plants_capex = cap_wind['sc_gid'].tolist()
+        compare_lists(wind_plants, wind_plants_capex, text_comp="wind plants", list_names=["CF", "Capex"])
+
+    logging.debug("- Trying to load demand data...")
+    input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["load_data"])
+    if check_file_exists(input_file_path, "load data"):
+        load_data = pd.read_csv( input_file_path ).round(5)
+
+    logging.debug("- Trying to load nuclear data...")
+    input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["nuclear_data"])
+    if check_file_exists(input_file_path, "nuclear data"):
+        nuclear_data = pd.read_csv( input_file_path ).round(5)
+
+    logging.debug("- Trying to load large hydro data...")
+    input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["large_hydro_data"])
+    if check_file_exists(input_file_path, "large hydro data"):
+        large_hydro_data = pd.read_csv( input_file_path ).round(5)
+
+    logging.debug("- Trying to load other renewables data...")
+    input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["other_renewables_data"])
+    if check_file_exists(input_file_path, "other renewables data"):
+        other_renewables_data = pd.read_csv( input_file_path ).round(5)
+
+    logging.debug("- Trying to load storage data...")
     input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["storage_data"])
     if check_file_exists(input_file_path, "Storage data"):
         storage_data = pd.read_csv( input_file_path, index_col=0 ).round(5)
         storage_set_j_techs = storage_data.columns[0:].astype(str).tolist()
         storage_set_b_techs = storage_data.columns[ storage_data.loc["Coupled"] == 1 ].astype( str ).tolist()
 
+    logging.debug("- Trying to load scalars data...")
     input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["scalars"])
     if check_file_exists(input_file_path, "scalars"):
         scalars = pd.read_csv( input_file_path, index_col="Parameter" )

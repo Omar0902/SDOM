@@ -126,17 +126,15 @@ def add_storage_constraints( model ):
     model.SOCBalance = Constraint(model.h, model.j, rule=soc_balance_rule)
 
     # - Constraints on the maximum charging (Pcha) and discharging (Pdis) power for each technology
-    model.MaxPcha = Constraint( model.j, rule=lambda m, j: m.Pcha[j] <= m.StorageData['Max_P', j])
-    model.MaxPdis = Constraint(model.j, rule=lambda m, j: m.Pdis[j] <= m.StorageData['Max_P', j])
+    model.MaxPcha = Constraint( model.j, rule=lambda m, j: m.Pcha[j] <= m.StorageData['Max_P', j] )
+    model.MaxPdis = Constraint( model.j, rule=lambda m, j: m.Pdis[j] <= m.StorageData['Max_P', j] )
 
     # Charge and discharge rates are equal -
-    model.PchaPdis = Constraint(model.b, rule=lambda m, j: m.Pcha[j] == m.Pdis[j])
+    model.PchaPdis = Constraint( model.b, rule=lambda m, j: m.Pcha[j] == m.Pdis[j] )
 
     # Max and min energy capacity constraints (handle uninitialized variables)
     model.MinEcap = Constraint(model.j, rule= lambda m,j: m.Ecap[j] >= m.StorageData['Min_Duration', j] * m.Pdis[j] / sqrt(m.StorageData['Eff', j]))
     model.MaxEcap = Constraint(model.j, rule= lambda m,j: m.Ecap[j] <= m.StorageData['Max_Duration', j] * m.Pdis[j] / sqrt(m.StorageData['Eff', j]))
 
-    # Capacity of the backup generation
-    model.BackupGen = Constraint(model.h, rule= lambda m,h: m.CapCC >= m.GenCC[h])
 
     model.MaxCycleYear = Constraint(rule=max_cycle_year_rule)

@@ -6,7 +6,7 @@ from pyomo.environ import ConcreteModel, Objective, minimize
 from .initializations import initialize_sets, initialize_params
 from .common.utilities import safe_pyomo_value
 from .models.formulations_vre import add_vre_variables, add_vre_balance_constraints
-from .models.formulations_thermal import add_gascc_variables
+from .models.formulations_thermal import add_gascc_variables, add_thermal_constraints
 from .models.formulations_resiliency import add_resiliency_variables, add_resiliency_constraints
 from .models.formulations_storage import add_storage_variables, add_storage_constraints
 from .models.formulations_system import objective_rule, add_system_constraints
@@ -77,7 +77,7 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
 
     #resiliency Constraints
     if with_resilience_constraints:
-        logging.debug("--Adding resiliency constraints...")
+        logging.debug("-- Adding resiliency constraints...")
         add_resiliency_constraints( model )
   
     #VRE balance constraints
@@ -85,8 +85,11 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
     add_vre_balance_constraints( model )
 
     #Storage constraints
-    logging.debug("--Adding storage constraints...")
+    logging.debug("-- Adding storage constraints...")
     add_storage_constraints( model )
+
+    logging.debug("-- Adding thermal generation constraints...")
+    add_thermal_constraints( model )
     
     # Build a model size report
     #all_objects = muppy.get_objects()

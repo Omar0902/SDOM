@@ -1,4 +1,4 @@
-from pyomo.core import Var
+from pyomo.core import Var, Constraint
 from pyomo.environ import Param, value, NonNegativeReals
 from .models_utils import fcr_rule
 from ..constants import MW_TO_KW
@@ -41,6 +41,17 @@ def add_gascc_variables(model):
     model.CapCC.setub(CapCC_upper_bound_value)
    # model.CapCC.setub(0)
     #print(CapCC_upper_bound_value)
+
+
+####################################################################################|
+# ----------------------------------- Constraints ----------------------------------|
+####################################################################################|
+
+def add_thermal_constraints( model ):
+    # Capacity of the backup generation
+    model.BackupGen = Constraint( model.h, rule = lambda m,h: m.CapCC >= m.GenCC[h] )
+
+
 
 ####################################################################################|
 # -----------------------------------= Add_costs -----------------------------------|

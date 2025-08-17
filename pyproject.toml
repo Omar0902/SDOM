@@ -3,6 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.version]
+source = "regex"
 path = "src/sdom/__version__.py"
 
 [project]

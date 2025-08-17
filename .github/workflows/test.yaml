@@ -25,11 +25,18 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: 📦 Install dependencies
+      - name: 📦 Upgrade pip and install build tools
         run: |
-          python -m pip install --upgrade pip
-          pip install pytest
-          pip install . 
+          python -m pip install --upgrade pip --no-cache-dir
+          pip install build hatch pytest --no-cache-dir
+
+      - name: 🧪 Validate metadata and build wheel
+        run: |
+          python -m build --wheel
+
+      - name: 📥 Install package
+        run: |
+          pip install .
 
       - name: ▶️ Run tests
         run: |

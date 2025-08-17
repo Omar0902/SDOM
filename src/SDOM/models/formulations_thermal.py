@@ -1,6 +1,7 @@
 from pyomo.core import Var, Constraint
 from pyomo.environ import *
 from .models_utils import fcr_rule
+from ..constants import MW_TO_KW
 
 ####################################################################################|
 # ----------------------------------- Parameters -----------------------------------|
@@ -56,8 +57,8 @@ def add_gasscc_fixed_costs(model):
     """
     return (
         # Gas CC Capex and Fixed O&M
-        model.FCR_GasCC*1000*model.CapexGasCC*model.CapCC
-        + 1000*model.FOM_GasCC*model.CapCC
+        model.FCR_GasCC*MW_TO_KW*model.CapexGasCC*model.CapCC
+        + MW_TO_KW*model.FOM_GasCC*model.CapCC
     )
 
 def add_gasscc_variable_costs(model):

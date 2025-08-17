@@ -1,5 +1,9 @@
 # INCLUDE HERE ALL THE CONSTATS AND USE UPPER CASE NAMES
 
+MW_TO_KW = 1000.0
+
+
+
 INPUT_CSV_NAMES = {
     'solar_plants': 'Set_k_SolarPV.csv', #TODO this set should be optional since are col names CFSolar_2050.csv
     'wind_plants': 'Set_w_Wind.csv', #TODO this set should be optional since are col names CFWind_2050.csv

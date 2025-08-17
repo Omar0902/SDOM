@@ -15,6 +15,8 @@ from .models.formulations_thermal import add_gascc_variables
 from .models.formulations_resiliency import add_resiliency_variables, add_resiliency_constraints
 from .models.formulations_storage import add_storage_variables, add_storage_constraints
 from .models.formulations_system import objective_rule, add_system_constraints
+
+from .constants import MW_TO_KW
 # ---------------------------------------------------------------------------------
 # Model initialization
 # Safe value function for uninitialized variables/parameters
@@ -52,16 +54,16 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
     # ----------------------------------- Variables -----------------------------------
     logging.info("Adding variables to the model...")
     # Define VRE (wind/solar variables
-    logging.debug("--Adding VRE variables...")
+    logging.debug("-- Adding VRE variables...")
     add_vre_variables( model )
     
     # Capacity of backup GCC units
-    logging.debug("Adding gas combined cycle variables...")
+    logging.debug("-- Adding gas combined cycle variables...")
     add_gascc_variables( model )
 
     # Resilience variables
     if with_resilience_constraints:
-        logging.debug("--Adding resiliency variables...")
+        logging.debug("-- Adding resiliency variables...")
         add_resiliency_variables( model )
 
     # Storage-related variables
@@ -75,7 +77,7 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
     # ----------------------------------- Constraints -----------------------------------
     logging.info("Adding constraints to the model...")
     #system Constraints
-    logging.debug("--Adding system constraints...")
+    logging.debug("-- Adding system constraints...")
     add_system_constraints( model )    
 
     #resiliency Constraints
@@ -84,7 +86,7 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
         add_resiliency_constraints( model )
   
     #VRE balance constraints
-    logging.debug("--Adding VRE balance constraints...")
+    logging.debug("-- Adding VRE balance constraints...")
     add_vre_balance_constraints( model )
 
     #Storage constraints
@@ -163,46 +165,46 @@ def collect_results( model ):
     results['WindGen'] = {h: safe_pyomo_value(model.GenWind[h]) for h in model.h}
     results['GenGasCC'] = {h: safe_pyomo_value(model.GenCC[h]) for h in model.h}
     
-    results['SolarCapex'] = sum((model.FCR_VRE * (1000 * model.CapSolar_CAPEX_M[k] + model.CapSolar_trans_cap_cost[k])) \
+    results['SolarCapex'] = sum((model.FCR_VRE * (MW_TO_KW * model.CapSolar_CAPEX_M[k] + model.CapSolar_trans_cap_cost[k])) \
                                 * model.CapSolar_capacity[k] * model.Ypv[k] for k in model.k)
-    results['WindCapex'] =  sum((model.FCR_VRE * (1000 * model.CapWind_CAPEX_M[w] + model.CapWind_trans_cap_cost[w])) \
+    results['WindCapex'] =  sum((model.FCR_VRE * (MW_TO_KW * model.CapWind_CAPEX_M[w] + model.CapWind_trans_cap_cost[w])) \
                                 * model.CapWind_capacity[w] * model.Ywind[w] for w in model.w)
-    results['SolarFOM'] = sum((model.FCR_VRE * 1000*model.CapSolar_FOM_M[k]) * model.CapSolar_capacity[k] * model.Ypv[k] for k in model.k)
-    results['WindFOM'] =  sum((model.FCR_VRE * 1000*model.CapWind_FOM_M[w]) * model.CapWind_capacity[w] * model.Ywind[w] for w in model.w)
+    results['SolarFOM'] = sum((model.FCR_VRE * MW_TO_KW*model.CapSolar_FOM_M[k]) * model.CapSolar_capacity[k] * model.Ypv[k] for k in model.k)
+    results['WindFOM'] =  sum((model.FCR_VRE * MW_TO_KW*model.CapWind_FOM_M[w]) * model.CapWind_capacity[w] * model.Ywind[w] for w in model.w)
 
     logging.debug("Collecting storage results...")
-    results['LiIonPowerCapex'] = model.CRF['Li-Ion']*(1000*model.StorageData['CostRatio', 'Li-Ion'] * model.StorageData['P_Capex', 'Li-Ion']*model.Pcha['Li-Ion']
-                        + 1000*(1 - model.StorageData['CostRatio', 'Li-Ion']) * model.StorageData['P_Capex', 'Li-Ion']*model.Pdis['Li-Ion'])
-    results['LiIonEnergyCapex'] = model.CRF['Li-Ion']*1000*model.StorageData['E_Capex', 'Li-Ion']*model.Ecap['Li-Ion']
-    results['LiIonFOM'] = 1000*model.StorageData['CostRatio', 'Li-Ion'] * model.StorageData['FOM', 'Li-Ion']*model.Pcha['Li-Ion'] \
-                        + 1000*(1 - model.StorageData['CostRatio', 'Li-Ion']) * model.StorageData['FOM', 'Li-Ion']*model.Pdis['Li-Ion']
+    results['LiIonPowerCapex'] = model.CRF['Li-Ion']*(MW_TO_KW*model.StorageData['CostRatio', 'Li-Ion'] * model.StorageData['P_Capex', 'Li-Ion']*model.Pcha['Li-Ion']
+                        + MW_TO_KW*(1 - model.StorageData['CostRatio', 'Li-Ion']) * model.StorageData['P_Capex', 'Li-Ion']*model.Pdis['Li-Ion'])
+    results['LiIonEnergyCapex'] = model.CRF['Li-Ion']*MW_TO_KW*model.StorageData['E_Capex', 'Li-Ion']*model.Ecap['Li-Ion']
+    results['LiIonFOM'] = MW_TO_KW*model.StorageData['CostRatio', 'Li-Ion'] * model.StorageData['FOM', 'Li-Ion']*model.Pcha['Li-Ion'] \
+                        + MW_TO_KW*(1 - model.StorageData['CostRatio', 'Li-Ion']) * model.StorageData['FOM', 'Li-Ion']*model.Pdis['Li-Ion']
     results['LiIonVOM'] = model.StorageData['VOM', 'Li-Ion'] * sum(model.PD[h, 'Li-Ion'] for h in model.h) 
     
-    results['CAESPowerCapex'] = model.CRF['CAES']*(1000*model.StorageData['CostRatio', 'CAES'] * model.StorageData['P_Capex', 'CAES']*model.Pcha['CAES']\
-                                + 1000*(1 - model.StorageData['CostRatio', 'CAES']) * model.StorageData['P_Capex', 'CAES']*model.Pdis['CAES'])
-    results['CAESEnergyCapex'] = model.CRF['CAES']*1000*model.StorageData['E_Capex', 'CAES']*model.Ecap['CAES']
-    results['CAESFOM'] = 1000*model.StorageData['CostRatio', 'CAES'] * model.StorageData['FOM', 'CAES']*model.Pcha['CAES']\
-                        + 1000*(1 - model.StorageData['CostRatio', 'CAES']) * model.StorageData['FOM', 'CAES']*model.Pdis['CAES']
+    results['CAESPowerCapex'] = model.CRF['CAES']*(MW_TO_KW*model.StorageData['CostRatio', 'CAES'] * model.StorageData['P_Capex', 'CAES']*model.Pcha['CAES']\
+                                + MW_TO_KW*(1 - model.StorageData['CostRatio', 'CAES']) * model.StorageData['P_Capex', 'CAES']*model.Pdis['CAES'])
+    results['CAESEnergyCapex'] = model.CRF['CAES']*MW_TO_KW*model.StorageData['E_Capex', 'CAES']*model.Ecap['CAES']
+    results['CAESFOM'] = MW_TO_KW*model.StorageData['CostRatio', 'CAES'] * model.StorageData['FOM', 'CAES']*model.Pcha['CAES']\
+                        + MW_TO_KW*(1 - model.StorageData['CostRatio', 'CAES']) * model.StorageData['FOM', 'CAES']*model.Pdis['CAES']
     results['CAESVOM'] = model.StorageData['VOM', 'CAES'] * sum(model.PD[h, 'CAES'] for h in model.h) 
     
-    results['PHSPowerCapex'] = model.CRF['PHS']*(1000*model.StorageData['CostRatio', 'PHS'] * model.StorageData['P_Capex', 'PHS']*model.Pcha['PHS']
-                                + 1000*(1 - model.StorageData['CostRatio', 'PHS']) * model.StorageData['P_Capex', 'PHS']*model.Pdis['PHS'])
-    results['PHSEnergyCapex'] = model.CRF['PHS']*1000*model.StorageData['E_Capex', 'PHS']*model.Ecap['PHS']
+    results['PHSPowerCapex'] = model.CRF['PHS']*(MW_TO_KW*model.StorageData['CostRatio', 'PHS'] * model.StorageData['P_Capex', 'PHS']*model.Pcha['PHS']
+                                + MW_TO_KW*(1 - model.StorageData['CostRatio', 'PHS']) * model.StorageData['P_Capex', 'PHS']*model.Pdis['PHS'])
+    results['PHSEnergyCapex'] = model.CRF['PHS']*MW_TO_KW*model.StorageData['E_Capex', 'PHS']*model.Ecap['PHS']
 
-    results['PHSFOM'] = 1000*model.StorageData['CostRatio', 'PHS'] * model.StorageData['FOM', 'PHS']*model.Pcha['PHS']\
-                        + 1000*(1 - model.StorageData['CostRatio', 'PHS']) * model.StorageData['FOM', 'PHS']*model.Pdis['PHS']
+    results['PHSFOM'] = MW_TO_KW*model.StorageData['CostRatio', 'PHS'] * model.StorageData['FOM', 'PHS']*model.Pcha['PHS']\
+                        + MW_TO_KW*(1 - model.StorageData['CostRatio', 'PHS']) * model.StorageData['FOM', 'PHS']*model.Pdis['PHS']
     results['PHSVOM'] = model.StorageData['VOM', 'PHS'] * sum(model.PD[h, 'PHS'] for h in model.h) 
     
-    results['H2PowerCapex'] = model.CRF['H2']*(1000*model.StorageData['CostRatio', 'H2'] * model.StorageData['P_Capex', 'H2']*model.Pcha['H2']
-                        + 1000*(1 - model.StorageData['CostRatio', 'H2']) * model.StorageData['P_Capex', 'H2']*model.Pdis['H2'])
-    results['H2EnergyCapex'] = model.CRF['H2']*1000*model.StorageData['E_Capex', 'H2']*model.Ecap['H2']
-    results['H2FOM'] = 1000*model.StorageData['CostRatio', 'H2'] * model.StorageData['FOM', 'H2']*model.Pcha['H2']\
-                    + 1000*(1 - model.StorageData['CostRatio', 'H2']) * model.StorageData['FOM', 'H2']*model.Pdis['H2']
+    results['H2PowerCapex'] = model.CRF['H2']*(MW_TO_KW*model.StorageData['CostRatio', 'H2'] * model.StorageData['P_Capex', 'H2']*model.Pcha['H2']
+                        + MW_TO_KW*(1 - model.StorageData['CostRatio', 'H2']) * model.StorageData['P_Capex', 'H2']*model.Pdis['H2'])
+    results['H2EnergyCapex'] = model.CRF['H2']*MW_TO_KW*model.StorageData['E_Capex', 'H2']*model.Ecap['H2']
+    results['H2FOM'] = MW_TO_KW*model.StorageData['CostRatio', 'H2'] * model.StorageData['FOM', 'H2']*model.Pcha['H2']\
+                    + MW_TO_KW*(1 - model.StorageData['CostRatio', 'H2']) * model.StorageData['FOM', 'H2']*model.Pdis['H2']
     results['H2VOM'] = model.StorageData['VOM', 'H2'] * sum(model.PD[h, 'H2'] for h in model.h) 
         
-    results['GasCCCapex'] = model.FCR_GasCC*1000*model.CapexGasCC*model.CapCC
+    results['GasCCCapex'] = model.FCR_GasCC*MW_TO_KW*model.CapexGasCC*model.CapCC
     results['GasCCFuel'] = (model.GasPrice * model.HR) * sum(model.GenCC[h] for h in model.h)
-    results['GasCCFOM'] = 1000*model.FOM_GasCC*model.CapCC
+    results['GasCCFOM'] = MW_TO_KW*model.FOM_GasCC*model.CapCC
     results['GasCCVOM'] = (model.GasPrice * model.HR) * sum(model.GenCC[h] for h in model.h)
 
     return results

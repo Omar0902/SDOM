@@ -1,6 +1,6 @@
 from pyomo.core import Var, Constraint
 from pyomo.environ import *
-from ..constants import STORAGE_PROPERTIES_NAMES
+from ..constants import STORAGE_PROPERTIES_NAMES, MW_TO_KW
 
 ####################################################################################|
 # ----------------------------------- Parameters -----------------------------------|
@@ -54,15 +54,15 @@ def add_storage_fixed_costs(model):
     return ( # Storage Capex and Fixed O&M
             sum(
                 model.CRF[j]*(
-                    1000*model.StorageData['CostRatio', j] * \
+                    MW_TO_KW * model.StorageData['CostRatio', j] * \
                     model.StorageData['P_Capex', j]*model.Pcha[j]
-                    + 1000*(1 - model.StorageData['CostRatio', j]) * \
+                    + MW_TO_KW *(1 - model.StorageData['CostRatio', j]) * \
                     model.StorageData['P_Capex', j]*model.Pdis[j]
-                    + 1000*model.StorageData['E_Capex', j]*model.Ecap[j]
+                    + MW_TO_KW *model.StorageData['E_Capex', j]*model.Ecap[j]
                 )
-                + 1000*model.StorageData['CostRatio', j] * \
+                + MW_TO_KW *model.StorageData['CostRatio', j] * \
                 model.StorageData['FOM', j]*model.Pcha[j]
-                + 1000*(1 - model.StorageData['CostRatio', j]) * \
+                + MW_TO_KW *(1 - model.StorageData['CostRatio', j]) * \
                 model.StorageData['FOM', j]*model.Pdis[j]
                 for j in model.j
             ) )

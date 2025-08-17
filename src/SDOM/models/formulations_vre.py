@@ -1,6 +1,6 @@
 from pyomo.core import Var, Constraint
 from pyomo.environ import *
-from ..constants import VRE_PROPERTIES_NAMES
+from ..constants import VRE_PROPERTIES_NAMES, MW_TO_KW
 from .models_utils import fcr_rule
 
 ####################################################################################|
@@ -74,16 +74,16 @@ def add_vre_fixed_costs(model):
     # Solar PV Capex and Fixed O&M
     return ( 
         sum(
-        (model.FCR_VRE * (1000 * \
-            model.CapSolar_CAPEX_M[k] + model.CapSolar_trans_cap_cost[k]) + 1000*model.CapSolar_FOM_M[k])
+        (model.FCR_VRE * (MW_TO_KW * \
+            model.CapSolar_CAPEX_M[k] + model.CapSolar_trans_cap_cost[k]) + MW_TO_KW*model.CapSolar_FOM_M[k])
         * model.CapSolar_capacity[k] * model.Ypv[k]
         for k in model.k
         )
         +
         # Wind Capex and Fixed O&M
         sum(
-            (model.FCR_VRE * (1000 * \
-                model.CapWind_CAPEX_M[w] + model.CapWind_trans_cap_cost[w]) + 1000*model.CapWind_FOM_M[w])
+            (model.FCR_VRE * (MW_TO_KW * \
+                model.CapWind_CAPEX_M[w] + model.CapWind_trans_cap_cost[w]) + MW_TO_KW*model.CapWind_FOM_M[w])
             * model.CapWind_capacity[w] * model.Ywind[w]
             for w in model.w
         ) )

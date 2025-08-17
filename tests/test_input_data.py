@@ -1,8 +1,7 @@
 import os
 import pandas as pd
-import pytest
 
-from SDOM.io_manager import load_data
+from sdom.io_manager import load_data
 def test_load_data_folder_exist():
     test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data')
     test_data_path = os.path.abspath(test_data_path)

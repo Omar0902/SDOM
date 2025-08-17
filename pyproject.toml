@@ -5,9 +5,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sdom"
-dynamic = ["version"]
-readme = "README.md"
 version = "0.0.2"
+readme = "README.md"
 
 dependencies = [
   "numpy>2.2",

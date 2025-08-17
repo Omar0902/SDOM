@@ -2,7 +2,16 @@
 
 MW_TO_KW = 1000.0
 
-
+#---------------- -------------------- --------------|
+#---------------- LOGGING COLOR CONFIG --------------|
+#---------------- -------------------- --------------|
+LOG_COLORS = {
+        'INFO': '\033[92m',    # Green
+        'WARNING': '\033[93m', # Yellow
+        'ERROR': '\033[91m',   # Red
+        'CRITICAL': '\033[91m',# Red
+        'DEBUG': '\033[94m',   # Blue (optional)
+    }
 
 INPUT_CSV_NAMES = {
     'solar_plants': 'Set_k_SolarPV.csv', #TODO this set should be optional since are col names CFSolar_2050.csv

@@ -32,7 +32,7 @@ def test_optimization_model_res_case_no_resiliency():
     model = initialize_model( data, n_hours = 24, with_resilience_constraints = False )
 
     try:
-        best_result = run_solver(model, optcr=0.0, num_runs=1)
+        best_result = run_solver( model, optcr=0.0 )
         assert best_result is not None
     except Exception as e:
         pytest.fail(f"{run_solver.__name__} failed with error: {e}")

@@ -206,7 +206,7 @@ def collect_results( model ):
 
 
 # Run solver function
-def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, num_runs=1, cbc_executable_path=None):
+def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, cbc_executable_path=".\\Solver\\bin\\cbc.exe"):
     """
     Solves the given optimization model using the CBC solver, optionally running multiple times with varying target values.
     Args:
@@ -234,28 +234,26 @@ def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, num_runs=1, c
     best_result = None
     best_objective_value = float('inf')
 
-    for run in range(num_runs):
-        target_value = 0.95 + 0.05 * (run + 1) # REVIEW THIS. DO WE NEED THIS FOR LOOP?
-        model.GenMix_Target.set_value(target_value)
+    target_value = float(model.GenMix_Target.value)
 
-        logging.info(f"Running optimization for GenMix_Target = {target_value:.2f}")
-        result = solver.solve(model, 
-                              #, tee=True, keepfiles = True, #working_dir='C:/Users/mkoleva/Documents/Masha/Projects/LDES_Demonstration/CBP/TEA/Results/solver_log.txt'
-                             )
-        
-        if (result.solver.status == SolverStatus.ok) and (result.solver.termination_condition == TerminationCondition.optimal):
-            # If the solution is optimal, collect the results
-            run_results = collect_results(model)
-            run_results['GenMix_Target'] = target_value
-            results_over_runs.append(run_results)
-            # Update the best result if it found a better one
-            if 'Total_Cost' in run_results and run_results['Total_Cost'] < best_objective_value:
-                best_objective_value = run_results['Total_Cost']
-                best_result = run_results
-        else:
-            logging.warning(f"Solver did not find an optimal solution for GenMix_Target = {target_value:.2f}.")
-            # Log infeasible constraints for debugging
-            logging.warning("Logging infeasible constraints...")
-            log_infeasible_constraints(model)
+    logging.info(f"Running optimization for GenMix_Target = {target_value:.2f}")
+    result = solver.solve(model, 
+                            #, tee=True, keepfiles = True, #working_dir='C:/Users/mkoleva/Documents/Masha/Projects/LDES_Demonstration/CBP/TEA/Results/solver_log.txt'
+                            )
+    
+    if (result.solver.status == SolverStatus.ok) and (result.solver.termination_condition == TerminationCondition.optimal):
+        # If the solution is optimal, collect the results
+        run_results = collect_results(model)
+        run_results['GenMix_Target'] = target_value
+        results_over_runs.append(run_results)
+        # Update the best result if it found a better one
+        if 'Total_Cost' in run_results and run_results['Total_Cost'] < best_objective_value:
+            best_objective_value = run_results['Total_Cost']
+            best_result = run_results
+    else:
+        logging.warning(f"Solver did not find an optimal solution for GenMix_Target = {target_value:.2f}.")
+        # Log infeasible constraints for debugging
+        logging.warning("Logging infeasible constraints...")
+        log_infeasible_constraints(model)
 
     return results_over_runs, best_result, result

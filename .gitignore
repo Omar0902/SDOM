@@ -3,7 +3,7 @@
 *.pyd
 results_pyomo/*
 .vscode/*
-_*
+___*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/*

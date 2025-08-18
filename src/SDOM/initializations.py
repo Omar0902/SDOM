@@ -1,6 +1,6 @@
 import logging
 from pyomo.environ import Param, Set, RangeSet
-from .constants import STORAGE_PROPERTIES_NAMES, STORAGE_SET_B_TECHS
+from .constants import STORAGE_PROPERTIES_NAMES
 from .models.formulations_vre import add_vre_parameters
 from .models.formulations_thermal import add_gascc_parameters
 from .models.formulations_nuclear import add_nuclear_parameters

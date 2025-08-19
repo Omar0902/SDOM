@@ -2,7 +2,7 @@ from pyomo.core import Constraint
 
 
 from .formulations_vre import add_vre_fixed_costs
-from .formulations_thermal import add_gasscc_fixed_costs, add_gasscc_variable_costs
+from .formulations_thermal import add_thermal_fixed_costs, add_thermal_variable_costs
 from .formulations_storage import add_storage_fixed_costs, add_storage_variable_costs
 
 ####################################################################################|
@@ -33,12 +33,12 @@ def objective_rule(model):
         +
         add_storage_fixed_costs(model)
         +
-        add_gasscc_fixed_costs(model)
+        add_thermal_fixed_costs(model)
     )
 
     # Variable Costs (Gas CC Fuel & VOM, Storage VOM)
     variable_costs = (
-        add_gasscc_variable_costs(model)
+        add_thermal_variable_costs(model)
         + 
         add_storage_variable_costs(model)
     )
@@ -55,13 +55,13 @@ def supply_balance_rule(model, h):
         model.Load[h] + sum(model.PC[h, j] for j in model.j) - sum(model.PD[h, j] for j in model.j)
         - model.AlphaNuclear * model.Nuclear[h] - model.AlphaLargHy * model.LargeHydro[h] - model.AlphaOtheRe * model.OtherRenewables[h]
         - model.GenPV[h] - model.GenWind[h]
-        - model.GenCC[h] == 0
+        - sum(model.GenCC[h, bu] for bu in model.bu) == 0
     )
 
 # Generation mix target
 # Limit on generation from NG
 def genmix_share_rule(model):
-    return sum(model.GenCC[h] for h in model.h) <= (1 - model.GenMix_Target)*sum(model.Load[h] + sum(model.PC[h, j] for j in model.j)
+    return sum(model.GenCC[h, bu] for h in model.h for bu in model.bu) <= (1 - model.GenMix_Target)*sum(model.Load[h] + sum(model.PC[h, j] for j in model.j)
                         - sum(model.PD[h, j] for j in model.j) for h in model.h)
 
 def add_system_constraints(model):

@@ -1,0 +1,9 @@
+Plant_id
+MinCapacity
+MaxCapacity
+LifeTime
+Capex
+HeatRate
+FuelCost
+VOM
+FOM

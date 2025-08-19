@@ -327,7 +327,8 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     ## VOM
     vom = {}
     sum_all = 0.0
-    vom['Thermal'] = sum( safe_pyomo_value( (model.GasPrice[bu] * model.HR[bu] + model.VOM_GasCC[bu]) *sum(model.GenCC[h, bu] for h in model.h ) ) for bu in model.bu )
+    #TODO review this calculation
+    vom['Thermal'] = sum( safe_pyomo_value( (model.VOM_GasCC[bu]) *sum(model.GenCC[h, bu] for h in model.h ) ) for bu in model.bu )
 
     for tech in storage_tech_list:
         vom[tech] = safe_pyomo_value(model.StorageData['VOM', tech] * sum(model.PD[h, tech] for h in model.h))

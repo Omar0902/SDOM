@@ -175,9 +175,6 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     storage_results = {'Hour': [], 'Technology': [], 'Charging power (MW)': [],
                        'Discharging power (MW)': [], 'State of charge (MWh)': []}
 
-    summary_results_columns = ['Metric', 'Technology', 'Run', 'Optimal Value', 'Unit']
-    summary_results = pd.DataFrame(columns=summary_results_columns)
-
     # Extract generation results
 #    for run in range(num_runs):
     logging.debug("--Extracting generation results...")
@@ -223,7 +220,8 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     total_cost = pd.DataFrame.from_dict({'Total cost':[None, 1,safe_pyomo_value(model.Obj()), '$US']}, orient='index',
                                         columns=['Technology','Run','Optimal Value', 'Unit'])
     total_cost = total_cost.reset_index(names='Metric')
-    summary_results = pd.concat([summary_results, total_cost], ignore_index=True)
+    summary_results = total_cost
+
     ## Total capacity
     cap = {}
     cap['Thermal'] = sum( safe_pyomo_value( model.CapCC[bu] ) for bu in model.bu )

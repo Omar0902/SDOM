@@ -1,7 +1,7 @@
 import os
 import pytest
 
-from sdom import load_data, export_results
+from sdom import load_data
 from sdom import run_solver, initialize_model
 
 

@@ -184,7 +184,7 @@ def collect_results( model ):
     results['TotalThermalCapex'] = sum( model.FCR_GasCC[bu] * MW_TO_KW * model.CapexGasCC[bu] * model.CapCC[bu] for bu in model.bu )
     results['ThermalFuel'] = sum( (model.GasPrice[bu] * model.HR[bu]) * sum(model.GenCC[h, bu] for h in model.h) for bu in model.bu )
     results['ThermalFOM'] = sum( MW_TO_KW * model.FOM_GasCC[bu] * model.CapCC[bu] for bu in model.bu )
-    results['ThermalVOM'] = sum( (model.GasPrice[bu] * model.HR[bu]) * sum(model.GenCC[h, bu] for h in model.h) for bu in model.bu ) #TODO review this calculation
+    results['ThermalVOM'] = sum( model.VOM_GasCC[bu] * sum(model.GenCC[h, bu] for h in model.h) for bu in model.bu )
 
     return results
 

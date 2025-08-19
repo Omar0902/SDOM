@@ -1,6 +1,7 @@
 from pyomo.core import Var, Constraint
 from pyomo.environ import NonNegativeReals, Param, Binary, sqrt
 from ..constants import STORAGE_PROPERTIES_NAMES, MW_TO_KW
+from .models_utils import crf_rule
 
 ####################################################################################|
 # ----------------------------------- Parameters -----------------------------------|
@@ -13,6 +14,8 @@ def add_storage_parameters(model, data):
     storage_dict = data["storage_data"].stack().to_dict()
     storage_tuple_dict = {(prop, tech): storage_dict[(prop, tech)] for prop in STORAGE_PROPERTIES_NAMES for tech in model.j}
     model.StorageData = Param( model.sp, model.j, initialize = storage_tuple_dict )
+
+    model.CRF = Param( model.j, initialize = crf_rule ) #Capital Recovery Factor -STORAGE
 
 ####################################################################################|
 # ------------------------------------ Variables -----------------------------------|

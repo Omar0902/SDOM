@@ -6,7 +6,7 @@ from pyomo.environ import ConcreteModel, Objective, minimize
 from .initializations import initialize_sets, initialize_params
 from .common.utilities import safe_pyomo_value
 from .models.formulations_vre import add_vre_variables, add_vre_balance_constraints
-from .models.formulations_thermal import add_gascc_variables, add_thermal_constraints
+from .models.formulations_thermal import add_thermal_variables, add_thermal_constraints
 from .models.formulations_resiliency import add_resiliency_variables, add_resiliency_constraints
 from .models.formulations_storage import add_storage_variables, add_storage_constraints
 from .models.formulations_system import objective_rule, add_system_constraints
@@ -54,7 +54,7 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
     
     # Capacity of backup GCC units
     logging.debug("-- Adding gas combined cycle variables...")
-    add_gascc_variables( model )
+    add_thermal_variables( model )
 
     # Resilience variables
     if with_resilience_constraints:

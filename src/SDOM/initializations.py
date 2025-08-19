@@ -1,8 +1,8 @@
 import logging
 from pyomo.environ import Param, Set, RangeSet
-from .constants import STORAGE_PROPERTIES_NAMES
+from .constants import STORAGE_PROPERTIES_NAMES, THERMAL_PROPERTIES_NAMES
 from .models.formulations_vre import add_vre_parameters
-from .models.formulations_thermal import add_gascc_parameters
+from .models.formulations_thermal import add_thermal_parameters
 from .models.formulations_nuclear import add_nuclear_parameters
 from .models.formulations_hydro import add_large_hydro_parameters
 from .models.formulations_other_renewables import add_other_renewables_parameters
@@ -71,6 +71,10 @@ def initialize_sets( model, data, n_hours = 8760 ):
     # Initialize storage properties
     model.sp = Set( initialize = STORAGE_PROPERTIES_NAMES )
 
+    # Initialize THERMAL properties
+    model.bu = Set( initialize = data['thermal_data']['Plant_id'].astype(str).tolist() )
+    model.tp = Set( initialize = THERMAL_PROPERTIES_NAMES )
+    logging.info(f"Thermal balancing units being considered: {list(model.bu)}")
 
 
 def initialize_params(model, data):
@@ -88,7 +92,7 @@ def initialize_params(model, data):
     add_vre_parameters(model, data)
 
     logging.debug("--Initializing gas combined cycle parameters...")
-    add_gascc_parameters(model,data)
+    add_thermal_parameters(model,data)
 
     logging.debug("--Initializing load parameters...")
     add_load_parameters(model, data)
@@ -107,7 +111,6 @@ def initialize_params(model, data):
 
     # GenMix_Target, mutable to change across multiple runs
     model.GenMix_Target = Param( initialize = float(data["scalars"].loc["GenMix_Target"].Value), mutable=True)
-    model.CRF = Param( model.j, initialize = crf_rule ) #Capital Recovery Factor
     
     logging.debug("--Initializing resiliency parameters...")
     add_resiliency_parameters(model, data)

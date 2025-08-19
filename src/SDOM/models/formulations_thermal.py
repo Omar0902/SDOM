@@ -1,33 +1,60 @@
 from pyomo.core import Var, Constraint
 from pyomo.environ import Param, value, NonNegativeReals
-from .models_utils import fcr_rule
-from ..constants import MW_TO_KW
+import logging
+from .models_utils import fcr_rule_thermal
+from ..constants import MW_TO_KW, THERMAL_PROPERTIES_NAMES
 
 ####################################################################################|
 # ----------------------------------- Parameters -----------------------------------|
 ####################################################################################|
-def add_gascc_parameters(model, data):
+def add_thermal_parameters(model, data):
 
-    model.GasPrice = Param( initialize = float(data["scalars"].loc["GasPrice"].Value))  # Gas prices (US$/MMBtu)
+    df = data["thermal_data"].set_index("Plant_id")
+    thermal_dict = df.stack().to_dict()
+    thermal_tuple_dict = {( prop, name ): thermal_dict[( name, prop )] for prop in THERMAL_PROPERTIES_NAMES for name in model.bu}
+    
+    model.ThermalData = Param( model.tp, model.bu, initialize = thermal_tuple_dict )
+    
+    # Gas prices (US$/MMBtu)
+    model.GasPrice = Param(
+        model.bu,
+        initialize={bu: model.ThermalData["FuelCost", bu] for bu in model.bu}
+    )
+
     # Heat rate for gas combined cycle (MMBtu/MWh)
-    model.HR = Param( initialize = float(data["scalars"].loc["HR"].Value) )
-    # Capex for gas combined cycle units (US$/kW)
-    model.CapexGasCC = Param( initialize =float(data["scalars"].loc["CapexGasCC"].Value) )
-    # Fixed O&M for gas combined cycle (US$/kW-year)
-    model.FOM_GasCC = Param( initialize = float(data["scalars"].loc["FOM_GasCC"].Value) )
-    # Variable O&M for gas combined cycle (US$/MWh)
-    model.VOM_GasCC = Param( initialize = float(data["scalars"].loc["VOM_GasCC"].Value) )
+    model.HR = Param( 
+        model.bu, 
+        initialize = {bu: model.ThermalData["HeatRate", bu] for bu in model.bu}
+    )
 
-    model.FCR_GasCC = Param( initialize = fcr_rule( model, float(data["scalars"].loc["LifeTimeGasCC"].Value) ) )
+    # Capex for gas combined cycle units (US$/kW)
+    model.CapexGasCC = Param( 
+        model.bu, 
+        initialize ={bu: model.ThermalData["Capex", bu] for bu in model.bu}
+    )
+
+    # Fixed O&M for gas combined cycle (US$/kW-year)
+    model.FOM_GasCC = Param( 
+        model.bu, 
+        initialize = {bu: model.ThermalData["FOM", bu] for bu in model.bu}
+    )
+
+    # Variable O&M for gas combined cycle (US$/MWh)
+    model.VOM_GasCC = Param( 
+        model.bu, 
+        initialize = {bu: model.ThermalData["VOM", bu] for bu in model.bu} 
+    )
+
+    model.FCR_GasCC = Param( model.bu, initialize = fcr_rule_thermal ) #Capital Recovery Factor -THERMAL
 
 
 ####################################################################################|
 # ------------------------------------ Variables -----------------------------------|
 ####################################################################################|
 
-def add_gascc_variables(model):
-    model.CapCC = Var(domain=NonNegativeReals, initialize=0)
-    model.GenCC = Var(model.h, domain=NonNegativeReals,initialize=0)  # Generation from GCC units
+def add_thermal_variables(model):
+    model.CapCC = Var(model.bu, domain=NonNegativeReals, initialize=0)
+    model.GenCC = Var(model.h, model.bu, domain=NonNegativeReals,initialize=0)  # Generation from thermal units
 
     # Compute and set the upper bound for CapCC
     CapCC_upper_bound_value = max(
@@ -38,9 +65,18 @@ def add_gascc_variables(model):
         for h in model.h
     )
 
-    model.CapCC.setub(CapCC_upper_bound_value)
-   # model.CapCC.setub(0)
-    #print(CapCC_upper_bound_value)
+    if ( len( list(model.bu) ) <= 1 ) & ( CapCC_upper_bound_value > model.ThermalData['MaxCapacity', model.bu[1]] ):
+        model.CapCC[model.bu[1]].setub( CapCC_upper_bound_value )
+        logging.warning(f"There is only one thermal balancing unit. " \
+        f"Upper bound for Capacity variable was set to {CapCC_upper_bound_value} instead of the input = {model.ThermalData['MaxCapacity', model.bu[1]]} to ensure feasibility.")
+    else:
+        sum_cap = 0
+        for bu in model.bu:
+            model.CapCC[bu].setub( model.ThermalData["MaxCapacity", bu] )
+            model.CapCC[bu].setlb( model.ThermalData["MinCapacity", bu] )
+            sum_cap += model.ThermalData["MaxCapacity", bu]
+        if ( CapCC_upper_bound_value > model.ThermalData['MaxCapacity', model.bu[1]] ):
+            logging.warning(f"Total allowed capacity for thermal units is {sum_cap}MW. This value might be insufficient to achieve problem feasibility, consider increase it to at least {CapCC_upper_bound_value}MW.")
 
 
 ####################################################################################|
@@ -49,44 +85,46 @@ def add_gascc_variables(model):
 
 def add_thermal_constraints( model ):
     # Capacity of the backup generation
-    model.BackupGen = Constraint( model.h, rule = lambda m,h: m.CapCC >= m.GenCC[h] )
+    model.BackupGen = Constraint( model.h, model.bu, rule = lambda m,h,bu: m.CapCC[bu] >= m.GenCC[h,bu] )
 
 
 
 ####################################################################################|
 # -----------------------------------= Add_costs -----------------------------------|
 ####################################################################################|
-def add_gasscc_fixed_costs(model):
+def add_thermal_fixed_costs(model):
     """
-    Add cost-related variables for gas combined cycle (GCC) to the model.
-    
-    Parameters:
-    model: The optimization model to which GCC cost variables will be added.
-    
-    Returns:
-    Costs sum for gas combined cycle, including capital and fixed O&M costs.
-    """
-    return (
-        # Gas CC Capex and Fixed O&M
-        model.FCR_GasCC*MW_TO_KW*model.CapexGasCC*model.CapCC
-        + MW_TO_KW*model.FOM_GasCC*model.CapCC
-    )
-
-def add_gasscc_variable_costs(model):
-    """
-    Add variable costs for gas combined cycle (GCC) to the model.
+    Add cost-related variables for thermal units to the model.
 
     Parameters:
-    model: The optimization model to which GCC variable costs will be added.
+    model: The optimization model to which thermal cost variables will be added.
 
     Returns:
-    Variable costs sum for gas combined cycle, including fuel costs.
+    Costs sum for each thermal unit, including capital and fixed O&M costs.
     """
     return (
-        (model.GasPrice * model.HR + model.VOM_GasCC) *
-            sum(model.GenCC[h] for h in model.h)
+        sum(
+            model.FCR_GasCC[bu]*MW_TO_KW*model.CapexGasCC[bu]*model.CapCC[bu]
+            + MW_TO_KW*model.FOM_GasCC[bu]*model.CapCC[bu]
+            for bu in model.bu
+        )
     )
 
-####################################################################################|
-# ----------------------------------- Constraints ----------------------------------|
-####################################################################################|
+def add_thermal_variable_costs(model):
+    """
+    Add variable costs for thermal units to the model.
+
+    Parameters:
+    model: The optimization model to which thermal variable costs will be added.
+
+    Returns:
+    Variable costs sum for thermal units, including fuel costs.
+    """
+    return (
+
+        sum(
+            (model.GasPrice[bu] * model.HR[bu] + model.VOM_GasCC[bu]) *
+            sum(model.GenCC[h, bu] for h in model.h)
+            for bu in model.bu )
+    )
+

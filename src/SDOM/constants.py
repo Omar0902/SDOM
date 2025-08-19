@@ -14,8 +14,8 @@ LOG_COLORS = {
     }
 
 INPUT_CSV_NAMES = {
-    'solar_plants': 'Set_k_SolarPV.csv', #TODO this set should be optional since are col names CFSolar_2050.csv
-    'wind_plants': 'Set_w_Wind.csv', #TODO this set should be optional since are col names CFWind_2050.csv
+    # 'solar_plants': 'Set_k_SolarPV.csv', #Now this set is optional since are col names CFSolar_2050.csv
+    # 'wind_plants': 'Set_w_Wind.csv', #Now this set is optional since are col names CFWind_2050.csv
     'load_data': 'Load_hourly_2050.csv',
     'nuclear_data': 'Nucl_hourly_2019.csv',
     'large_hydro_data': 'lahy_hourly_2019.csv',
@@ -24,13 +24,16 @@ INPUT_CSV_NAMES = {
     'cf_wind': 'CFWind_2050.csv',
     'cap_solar': 'CapSolar_2050.csv',
     'cap_wind': 'CapWind_2050.csv',
+    'thermal_data': 'Data_BalancingUnits_2030(in).csv',
     'storage_data': 'StorageData_2050.csv',
-    'scalars': 'Scalars.csv',
+    'scalars': 'scalars.csv',
 }
 
 VRE_PROPERTIES_NAMES = ['trans_cap_cost', 'CAPEX_M', 'FOM_M']
 STORAGE_PROPERTIES_NAMES = ['P_Capex', 'E_Capex', 'Eff', 'Min_Duration',
                           'Max_Duration', 'Max_P', 'Coupled', 'FOM', 'VOM', 'Lifetime', 'CostRatio']
+
+THERMAL_PROPERTIES_NAMES = ['MinCapacity', 'MaxCapacity', 'LifeTime', 'Capex', 'HeatRate', 'FuelCost', 'VOM', 'FOM']
 
 #TODO this set is the col names of the StorageData_2050.csv file
 #STORAGE_SET_J_TECHS = ['Li-Ion', 'CAES', 'PHS', 'H2'] - THIS WAS REPLACED BY "data["STORAGE_SET_J_TECHS"]" which reads the cols of storage_data

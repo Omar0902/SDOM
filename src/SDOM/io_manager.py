@@ -100,6 +100,11 @@ def load_data( input_data_dir = '.\\Data\\' ):
         storage_set_j_techs = storage_data.columns[0:].astype(str).tolist()
         storage_set_b_techs = storage_data.columns[ storage_data.loc["Coupled"] == 1 ].astype( str ).tolist()
 
+    logging.debug("- Trying to load thermal generation data...")
+    input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["thermal_data"])
+    if check_file_exists(input_file_path, "thermal data"):
+        thermal_data = pd.read_csv( input_file_path ).round(5)
+
     logging.debug("- Trying to load scalars data...")
     input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["scalars"])
     if check_file_exists(input_file_path, "scalars"):
@@ -119,6 +124,7 @@ def load_data( input_data_dir = '.\\Data\\' ):
         "storage_data": storage_data,
         "STORAGE_SET_J_TECHS": storage_set_j_techs,
         "STORAGE_SET_B_TECHS": storage_set_b_techs,
+        "thermal_data": thermal_data,
         "scalars": scalars,
     }
     

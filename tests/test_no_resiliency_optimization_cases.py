@@ -19,7 +19,7 @@ def test_optimization_model_ini_case_no_resiliency_24h():
     constraint_counts = get_n_eq_ineq_constraints( model )
 
     assert constraint_counts["equality"] == 170
-    assert constraint_counts["inequality"] == 522
+    assert constraint_counts["inequality"] == 546
 
 
 def test_optimization_model_res_case_no_resiliency():

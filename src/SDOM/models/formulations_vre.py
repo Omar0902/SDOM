@@ -56,6 +56,10 @@ def add_vre_variables(model):
     model.GenWind = Var(model.h, domain=NonNegativeReals,initialize=0)  # Generated wind power
     model.CurtWind = Var(model.h, domain=NonNegativeReals,initialize=0)  # Curtailment for wind power
 
+    # Capacity selection variables with continuous bounds between 0 and 1
+    model.Ypv = Var(model.k, domain=NonNegativeReals, bounds=(0, 1), initialize=1)
+    model.Ywind = Var(model.w, domain=NonNegativeReals, bounds=(0, 1), initialize=1)
+
 
 ####################################################################################|
 # -----------------------------------= Add_costs -----------------------------------|

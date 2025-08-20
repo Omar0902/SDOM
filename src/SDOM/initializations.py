@@ -28,14 +28,14 @@ def initialize_sets( model, data, n_hours = 8760 ):
     complete_solar_data = data["cap_solar"][data["cap_solar"]['sc_gid'].astype(str).isin(common_solar_plants)]
     complete_solar_data = complete_solar_data.dropna(subset=['CAPEX_M', 'trans_cap_cost', 'FOM_M', 'capacity'])
     common_solar_plants_filtered = complete_solar_data['sc_gid'].astype(str).tolist()
-    model.k = Set( initialize = common_solar_plants_filtered )
+    model.pv.plants_set = Set( initialize = common_solar_plants_filtered )
 
     # Load the solar capacities
     cap_solar_dict = complete_solar_data.set_index('sc_gid')['capacity'].to_dict()
 
     # Filter the dictionary to ensure only valid keys are included
     default_capacity_value = 0.0
-    filtered_cap_solar_dict = {k: cap_solar_dict.get(k, default_capacity_value) for k in model.k}
+    filtered_cap_solar_dict = {k: cap_solar_dict.get(k, default_capacity_value) for k in model.pv.plants_set}
     
     # Wind plant ID alignment
     wind_plants_cf = data['cf_wind'].columns[1:].astype(str).tolist()

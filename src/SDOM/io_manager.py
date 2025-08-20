@@ -263,7 +263,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     
     ## Demand
     dem = {}
-    dem['demand'] = sum(model.Load[h] for h in model.h)
+    dem['demand'] = sum(model.demand.ts_parameter[h] for h in model.h)
 
     summary_results = concatenate_dataframes( summary_results, dem, run=1, unit='MWh', metric='Total demand' )
     

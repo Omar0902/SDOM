@@ -24,11 +24,13 @@ def add_alpha_and_ts_parameters( block,
                                 key_scalars: str, 
                                 key_ts: str,
                                 key_col: str):
-    # Control for large hydro generation
-    block.alpha = Param( initialize = float(data["scalars"].loc[key_scalars].Value) )
+    # Control parameter to activate certain device.
+    if key_scalars != "":
+        # Initialize alpha parameter from scalars
+        block.alpha = Param( initialize = float(data["scalars"].loc[key_scalars].Value) )
 
-    # Large hydro data initialization
-    large_hydro_data          = data[key_ts].set_index('*Hour')[key_col].to_dict()
-    filtered_large_hydro_data = {h: large_hydro_data[h] for h in hourly_set if h in large_hydro_data}
+    # Time-series parameter data initialization
+    selected_data          = data[key_ts].set_index('*Hour')[key_col].to_dict()
+    filtered_selected_data = {h: selected_data[h] for h in hourly_set if h in selected_data}
 
-    block.ts_parameter = Param( hourly_set, initialize = filtered_large_hydro_data)
+    block.ts_parameter = Param( hourly_set, initialize = filtered_selected_data)

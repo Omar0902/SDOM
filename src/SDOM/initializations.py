@@ -88,11 +88,8 @@ def initialize_params(model, data):
     """
     model.r = Param( initialize = float(data["scalars"].loc["r"].Value) )  # Discount rate
 
-    logging.debug("--Initializing VRE parameters...")
-    add_vre_parameters(model, data)
-
-    logging.debug("--Initializing thermal cycle parameters...")
-    add_thermal_parameters(model,data)
+    logging.debug("--Initializing large hydro parameters...")
+    add_large_hydro_parameters(model, data)
 
     logging.debug("--Initializing load parameters...")
     add_load_parameters(model, data)
@@ -100,14 +97,17 @@ def initialize_params(model, data):
     logging.debug("--Initializing nuclear parameters...")
     add_nuclear_parameters(model, data)
 
-    logging.debug("--Initializing large hydro parameters...")
-    add_large_hydro_parameters(model, data)
-
     logging.debug("--Initializing other renewables parameters...")
     add_other_renewables_parameters(model, data)
 
     logging.debug("--Initializing storage parameters...")
     add_storage_parameters(model, data)
+
+    logging.debug("--Initializing thermal parameters...")
+    add_thermal_parameters(model,data)
+
+    logging.debug("--Initializing VRE parameters...")
+    add_vre_parameters(model, data)
 
     # GenMix_Target, mutable to change across multiple runs
     model.GenMix_Target = Param( initialize = float(data["scalars"].loc["GenMix_Target"].Value), mutable=True)

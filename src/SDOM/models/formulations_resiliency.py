@@ -22,8 +22,8 @@ def add_resiliency_variables( model ):
 ####################################################################################|
 def pcls_constraint_rule( model ):
     
-    return sum( model.Load[h] - model.LoadShed[h] for h in model.h ) \
-        >= PCLS_TARGET * sum( model.Load[h] for h in model.h ) * CRITICAL_LOAD_PERCENTAGE
+    return sum( model.demand.ts_parameter[h] - model.LoadShed[h] for h in model.h ) \
+        >= PCLS_TARGET * sum( model.demand.ts_parameter[h] for h in model.h ) * CRITICAL_LOAD_PERCENTAGE
 
 # EUE - Expected Unserved Energy - Constraint : Resilience
 def max_eue_constraint_rule( model ):

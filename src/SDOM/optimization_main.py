@@ -44,7 +44,7 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
     logging.info("Instantiating SDOM Pyomo optimization blocks...")
     model.hydro = Block()
     #model.imports = Block() #TODO implement this
-    # model.load = Block()
+    model.demand = Block()
     # model.nuclear = Block()
     # model.resiliency = Block()
     # model.storage = Block()

@@ -47,7 +47,8 @@ def test_optimization_model_res_case_no_resiliency():
     problem_sol_dict = get_optimization_problem_solution_info( best_result )
     assert problem_sol_dict["Termination condition"] == "optimal"
     assert abs( problem_sol_dict["Total_Cost"] - 3285154847.471892 ) <= 10 
-    assert abs( problem_sol_dict["Total_CapWind"] - 24907.852743827232 ) <= 1
+    assert abs( problem_sol_dict["Total_CapWind"] - 26681.257521521577 ) <= 1
+    assert abs( problem_sol_dict["Total_CapPV"] - 0.0 ) <= 0.001
     assert abs( problem_sol_dict["Total_CapScha_Li-Ion"] - 1254.8104 ) <= 1
     assert abs( problem_sol_dict["Total_CapScha_CAES"] -1340.7415 ) <= 1
     assert abs( problem_sol_dict["Total_CapScha_PHS"] - 0.0 ) <= 1

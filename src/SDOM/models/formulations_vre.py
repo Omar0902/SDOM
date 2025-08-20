@@ -92,12 +92,16 @@ def wind_capex_cost_expr_rule(model):
 
 
 def add_vre_expressions(model):
-    model.solar_fixed_om_cost_expr = Expression(rule=solar_fixed_om_cost_expr_rule)
+    model.pv_fixed_om_cost_expr = Expression(rule=solar_fixed_om_cost_expr_rule)
     model.wind_fixed_om_cost_expr = Expression(rule=wind_fixed_om_cost_expr_rule)
-    model.solar_capex_cost_expr = Expression(rule=solar_capex_cost_expr_rule)
+    model.pv_capex_cost_expr = Expression(rule=solar_capex_cost_expr_rule)
     model.wind_capex_cost_expr = Expression(rule=wind_capex_cost_expr_rule)
+    
+    model.total_hourly_pv_availability = Expression(model.h, rule=lambda model, h: model.GenPV[h] + model.CurtPV[h])
+    model.total_hourly_wind_availability = Expression(model.h, rule=lambda model, h: model.GenWind[h] + model.CurtWind[h])
 
-
+    model.total_hourly_pv_plant_availability = Expression(model.h, model.k, rule=lambda model, h, k: model.CFSolar[h, k] * model.CapSolar_capacity[k] * model.Ypv[k])
+    model.total_hourly_wind_plant_availability = Expression(model.h, model.w, rule=lambda model, h, w: model.CFWind[h, w] * model.CapWind_capacity[w] * model.Ywind[w])
 
 ####################################################################################|
 # ------------------------------------ Add_costs -----------------------------------|
@@ -115,7 +119,7 @@ def add_vre_fixed_costs(model):
     """
     # Solar PV Capex and Fixed O&M
     return ( 
-        model.solar_fixed_om_cost_expr + model.solar_capex_cost_expr +
+        model.pv_fixed_om_cost_expr + model.pv_capex_cost_expr +
         # Wind Capex and Fixed O&M
         model.wind_fixed_om_cost_expr + model.wind_capex_cost_expr
          )
@@ -125,11 +129,11 @@ def add_vre_fixed_costs(model):
 ####################################################################################|
 # - Solar balance : generation + curtailed generation = capacity factor * capacity
 def solar_balance_rule(model, h):
-    return model.GenPV[h] + model.CurtPV[h] == sum(model.CFSolar[h, k] * model.CapSolar_capacity[k] * model.Ypv[k] for k in model.k)
+    return model.total_hourly_pv_availability[h] == sum(model.total_hourly_pv_plant_availability[h, k] for k in model.k)
 
 # - Wind balance : generation + curtailed generation = capacity factor * capacity 
 def wind_balance_rule(model, h):
-    return model.GenWind[h] + model.CurtWind[h] == sum(model.CFWind[h, w] * model.CapWind_capacity[w] * model.Ywind[w] for w in model.w)
+    return model.total_hourly_wind_availability[h] == sum(model.total_hourly_wind_plant_availability[h, w] for w in model.w)
 
 def add_vre_balance_constraints(model):
     """

@@ -91,7 +91,7 @@ def initialize_params(model, data):
     logging.debug("--Initializing VRE parameters...")
     add_vre_parameters(model, data)
 
-    logging.debug("--Initializing gas combined cycle parameters...")
+    logging.debug("--Initializing thermal cycle parameters...")
     add_thermal_parameters(model,data)
 
     logging.debug("--Initializing load parameters...")

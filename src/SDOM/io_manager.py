@@ -233,7 +233,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     
     ## Generation
     gen = {}
-    gen['Thermal'] =  sum( safe_pyomo_value( model.GenCC[h,bu] ) for h in model.h for bu in model.bu )
+    gen['Thermal'] =  safe_pyomo_value( model.annual_thermal_gen_expr )
     gen['Solar PV'] = sum(safe_pyomo_value(model.GenPV[h]) for h in model.h)
     gen['Wind'] = sum(safe_pyomo_value(model.GenWind[h]) for h in model.h)
     gen['Other renewables'] = safe_pyomo_value(sum(model.OtherRenewables[h]for h in model.h)) 

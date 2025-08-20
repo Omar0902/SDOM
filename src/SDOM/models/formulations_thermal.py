@@ -1,4 +1,4 @@
-from pyomo.core import Var, Constraint
+from pyomo.core import Var, Constraint, Expression
 from pyomo.environ import Param, value, NonNegativeReals
 import logging
 from .models_utils import fcr_rule_thermal
@@ -52,6 +52,21 @@ def add_thermal_parameters(model, data):
 # ------------------------------------ Variables -----------------------------------|
 ####################################################################################|
 
+def annual_thermal_expr_rule(m):
+    """
+    Expression to calculate the annual generation from thermal units.
+    
+    Parameters:
+    m: The optimization model instance.
+    h: Time period index.
+    bu: Balancing unit index.
+    
+    Returns:
+    The sum of generation from the specified thermal unit across all time periods.
+    """
+    return sum(m.GenCC[h, bu] for h in m.h for bu in m.bu)
+
+
 def add_thermal_variables(model):
     model.CapCC = Var(model.bu, domain=NonNegativeReals, initialize=0)
     model.GenCC = Var(model.h, model.bu, domain=NonNegativeReals,initialize=0)  # Generation from thermal units
@@ -78,6 +93,9 @@ def add_thermal_variables(model):
         if ( CapCC_upper_bound_value > model.ThermalData['MaxCapacity', model.bu[1]] ):
             logging.warning(f"Total allowed capacity for thermal units is {sum_cap}MW. This value might be insufficient to achieve problem feasibility, consider increase it to at least {CapCC_upper_bound_value}MW.")
 
+def add_thermal_expressions(model):
+    model.annual_thermal_gen_expr = Expression(rule=annual_thermal_expr_rule )
+    
 
 ####################################################################################|
 # ----------------------------------- Constraints ----------------------------------|
@@ -85,7 +103,7 @@ def add_thermal_variables(model):
 
 def add_thermal_constraints( model ):
     # Capacity of the backup generation
-    model.BackupGen = Constraint( model.h, model.bu, rule = lambda m,h,bu: m.CapCC[bu] >= m.GenCC[h,bu] )
+    model.BackupGen = Constraint( model.h, model.bu, rule = lambda m,h,bu: m.CapCC[bu] >= m.GenCC[h,bu]  )
 
 
 

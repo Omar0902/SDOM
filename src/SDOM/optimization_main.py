@@ -1,4 +1,5 @@
 import logging
+#from pympler import muppy, summary
 from pyomo.opt import SolverFactory, SolverStatus, TerminationCondition
 from pyomo.util.infeasible import log_infeasible_constraints
 from pyomo.environ import ConcreteModel, Objective, minimize
@@ -6,7 +7,7 @@ from pyomo.environ import ConcreteModel, Objective, minimize
 from .initializations import initialize_sets, initialize_params
 from .common.utilities import safe_pyomo_value
 from .models.formulations_vre import add_vre_variables, add_vre_balance_constraints
-from .models.formulations_thermal import add_thermal_variables, add_thermal_constraints
+from .models.formulations_thermal import add_thermal_variables, add_thermal_expressions, add_thermal_constraints
 from .models.formulations_resiliency import add_resiliency_variables, add_resiliency_constraints
 from .models.formulations_storage import add_storage_variables, add_storage_constraints
 from .models.formulations_system import objective_rule, add_system_constraints
@@ -53,8 +54,11 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
     add_vre_variables( model )
     
     # Capacity of backup GCC units
-    logging.debug("-- Adding gas combined cycle variables...")
+    logging.debug("-- Adding thermal generation variables...")
     add_thermal_variables( model )
+
+    logging.debug("-- Adding thermal generation expressions...")
+    add_thermal_expressions( model )
 
     # Resilience variables
     if with_resilience_constraints:
@@ -92,8 +96,10 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
     add_thermal_constraints( model )
     
     # Build a model size report
-    #all_objects = muppy.get_objects()
-    #print(summary.summarize(all_objects))
+    # Log memory usage before solving
+    # all_objects = muppy.get_objects()
+    # logging.info("Memory usage before solving:")
+    # logging.info(summary.summarize(all_objects))
 
     return model
 

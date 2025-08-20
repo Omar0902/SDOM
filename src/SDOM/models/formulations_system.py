@@ -61,7 +61,7 @@ def supply_balance_rule(model, h):
 # Generation mix target
 # Limit on generation from NG
 def genmix_share_rule(model):
-    return sum(model.GenCC[h, bu] for h in model.h for bu in model.bu) <= (1 - model.GenMix_Target)*sum(model.Load[h] + sum(model.PC[h, j] for j in model.j)
+    return model.annual_thermal_gen_expr <= (1 - model.GenMix_Target)*sum(model.Load[h] + sum(model.PC[h, j] for j in model.j)
                         - sum(model.PD[h, j] for j in model.j) for h in model.h)
 
 def add_system_constraints(model):
@@ -76,6 +76,6 @@ def add_system_constraints(model):
     """
     # Supply balance constraint
     model.SupplyBalance = Constraint(model.h, rule=supply_balance_rule)
-
+    
     # Generation mix share constraint
     model.GenMix_Share = Constraint(rule=genmix_share_rule)

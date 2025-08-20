@@ -2,7 +2,7 @@ import logging
 #from pympler import muppy, summary
 from pyomo.opt import SolverFactory, SolverStatus, TerminationCondition
 from pyomo.util.infeasible import log_infeasible_constraints
-from pyomo.environ import ConcreteModel, Objective, minimize
+from pyomo.environ import ConcreteModel, Objective, Block, minimize
 
 from .initializations import initialize_sets, initialize_params
 from .common.utilities import safe_pyomo_value
@@ -40,6 +40,18 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
 
     logging.info("Instantiating SDOM Pyomo optimization model...")
     model = ConcreteModel(name=model_name)
+
+    logging.info("Instantiating SDOM Pyomo optimization blocks...")
+    model.hydro = Block()
+    #model.imports = Block() #TODO implement this
+    # model.load = Block()
+    # model.nuclear = Block()
+    # model.resiliency = Block()
+    # model.storage = Block()
+    # model.thermal = Block()
+    # model.storage = Block()
+    # model.pv = Block()
+    # model.wind = Block()
 
     logging.info("Initializing model sets...")
     initialize_sets( model, data, n_hours = n_hours )

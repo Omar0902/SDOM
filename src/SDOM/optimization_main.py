@@ -41,11 +41,11 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
     logging.info("Instantiating SDOM Pyomo optimization model...")
     model = ConcreteModel(name=model_name)
 
-    logging.info("Instantiating SDOM Pyomo optimization blocks...")
+    logging.debug("Instantiating SDOM Pyomo optimization blocks...")
     model.hydro = Block()
     #model.imports = Block() #TODO implement this
     model.demand = Block()
-    # model.nuclear = Block()
+    model.nuclear = Block()
     # model.resiliency = Block()
     # model.storage = Block()
     # model.thermal = Block()

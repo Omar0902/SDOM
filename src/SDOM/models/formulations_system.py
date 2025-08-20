@@ -53,7 +53,7 @@ def objective_rule(model):
 def supply_balance_rule(model, h):
     return (
         model.demand.ts_parameter[h] + sum(model.PC[h, j] for j in model.j) - sum(model.PD[h, j] for j in model.j)
-        - model.AlphaNuclear * model.Nuclear[h] - model.hydro.alpha * model.hydro.ts_parameter[h] - model.AlphaOtheRe * model.OtherRenewables[h]
+        - model.nuclear.alpha * model.nuclear.ts_parameter[h] - model.hydro.alpha * model.hydro.ts_parameter[h] - model.AlphaOtheRe * model.OtherRenewables[h]
         - model.GenPV[h] - model.GenWind[h]
         - sum(model.GenCC[h, bu] for bu in model.bu) == 0
     )

@@ -269,10 +269,8 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     
     ## CAPEX
     capex = {}
-    capex['Solar PV'] = sum(safe_pyomo_value((model.FCR_VRE * (MW_TO_KW * model.CapSolar_CAPEX_M[k] + model.CapSolar_trans_cap_cost[k]))\
-                                         * model.CapSolar_capacity[k] * model.Ypv[k]) for k in model.k)
-    capex['Wind'] = sum(safe_pyomo_value((model.FCR_VRE * (MW_TO_KW * model.CapWind_CAPEX_M[w] + model.CapWind_trans_cap_cost[w])) \
-                                       * model.CapWind_capacity[w] * model.Ywind[w]) for w in model.w) 
+    capex['Solar PV'] = safe_pyomo_value( model.pv_capex_cost_expr )
+    capex['Wind'] = safe_pyomo_value( model.wind_capex_cost_expr )
     capex['Thermal'] = sum( safe_pyomo_value( model.FCR_GasCC[bu] * MW_TO_KW * model.CapexGasCC[bu] * model.CapCC[bu] ) for bu in model.bu )
     capex['All'] = capex['Solar PV'] + capex['Wind'] + capex['Thermal']
 
@@ -312,7 +310,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     fom = {}
     sum_all = 0.0
     fom['Thermal'] = sum( safe_pyomo_value( MW_TO_KW*model.FOM_GasCC[bu]*model.CapCC[bu] ) for bu in model.bu )
-    fom['Solar PV'] = safe_pyomo_value( model.solar_fixed_om_cost_expr )
+    fom['Solar PV'] = safe_pyomo_value( model.pv_fixed_om_cost_expr )
     fom['Wind'] = safe_pyomo_value( model.wind_fixed_om_cost_expr )
      
     for tech in storage_tech_list:

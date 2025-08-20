@@ -50,7 +50,7 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
     model.storage = Block()
     # model.thermal = Block()
     model.pv = Block()
-    # model.wind = Block()
+    model.wind = Block()
 
     logging.info("Initializing model sets...")
     initialize_sets( model, data, n_hours = n_hours )
@@ -157,7 +157,7 @@ def collect_results( model ):
     Notes
     -----
     - The function assumes the existence of a helper function `safe_pyomo_value` to safely extract values from Pyomo variables.
-    - The model is expected to have specific sets and parameters (e.g., model.pv.plants_set, model.w, model.storage.j, model.h, and various cost parameters).
+    - The model is expected to have specific sets and parameters (e.g., model.pv.plants_set, model.wind.plants_set, model.storage.j, model.h, and various cost parameters).
     """
 
     logging.info("Collecting SDOM results...")
@@ -167,28 +167,26 @@ def collect_results( model ):
     # Capacity and generation results
     logging.debug("Collecting capacity results...")
     results['Total_CapCC'] = sum( safe_pyomo_value(model.CapCC[bu]) for bu in model.bu )
-    results['Total_CapPV'] = sum(safe_pyomo_value(model.Ypv[k]) * model.CapSolar_CAPEX_M[k] for k in model.pv.plants_set)
-    results['Total_CapWind'] = sum(safe_pyomo_value(model.Ywind[w]) * model.CapWind_CAPEX_M[w] for w in model.w)
+    results['Total_CapPV'] = safe_pyomo_value( model.pv.total_installed_capacity )
+    results['Total_CapWind'] = safe_pyomo_value( model.wind.total_installed_capacity )
     results['Total_CapScha'] = {j: safe_pyomo_value(model.Pcha[j]) for j in model.storage.j}
     results['Total_CapSdis'] = {j: safe_pyomo_value(model.Pdis[j]) for j in model.storage.j}
     results['Total_EcapS'] = {j: safe_pyomo_value(model.Ecap[j]) for j in model.storage.j}
 
     # Generation and dispatch results
     logging.debug("Collecting generation dispatch results...")
-    results['Total_GenPV'] = sum(safe_pyomo_value(model.GenPV[h]) for h in model.h)
-    results['Total_GenWind'] = sum(safe_pyomo_value(model.GenWind[h]) for h in model.h)
+    results['Total_GenPV'] = safe_pyomo_value(model.pv.total_generation)
+    results['Total_GenWind'] = safe_pyomo_value(model.wind.total_generation)
     results['Total_GenS'] = {j: sum(safe_pyomo_value(model.PD[h, j]) for h in model.h) for j in model.storage.j}
 
-    results['SolarPVGen'] = {h: safe_pyomo_value(model.GenPV[h]) for h in model.h}
-    results['WindGen'] = {h: safe_pyomo_value(model.GenWind[h]) for h in model.h}
+    results['SolarPVGen'] = {h: safe_pyomo_value(model.pv.generation[h]) for h in model.h}
+    results['WindGen'] = {h: safe_pyomo_value(model.wind.generation[h]) for h in model.h}
     results['AggThermalGen'] = {h: sum(safe_pyomo_value(model.GenCC[h, bu]) for bu in model.bu) for h in model.h}
 
-    results['SolarCapex'] = sum((model.FCR_VRE * (MW_TO_KW * model.CapSolar_CAPEX_M[k] + model.CapSolar_trans_cap_cost[k])) \
-                                * model.CapSolar_capacity[k] * model.Ypv[k] for k in model.pv.plants_set)
-    results['WindCapex'] =  sum((model.FCR_VRE * (MW_TO_KW * model.CapWind_CAPEX_M[w] + model.CapWind_trans_cap_cost[w])) \
-                                * model.CapWind_capacity[w] * model.Ywind[w] for w in model.w)
-    results['SolarFOM'] = sum((model.FCR_VRE * MW_TO_KW*model.CapSolar_FOM_M[k]) * model.CapSolar_capacity[k] * model.Ypv[k] for k in model.pv.plants_set)
-    results['WindFOM'] =  sum((model.FCR_VRE * MW_TO_KW*model.CapWind_FOM_M[w]) * model.CapWind_capacity[w] * model.Ywind[w] for w in model.w)
+    results['SolarCapex'] = safe_pyomo_value( model.pv.capex_cost_expr )
+    results['WindCapex'] =  safe_pyomo_value( model.wind.capex_cost_expr )
+    results['SolarFOM'] = safe_pyomo_value( model.pv.fixed_om_cost_expr )
+    results['WindFOM'] =  safe_pyomo_value( model.wind.fixed_om_cost_expr )
 
     logging.debug("Collecting storage results...")
     storage_tech_list = list(model.storage.j)

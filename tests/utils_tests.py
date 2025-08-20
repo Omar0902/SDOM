@@ -33,6 +33,7 @@ def get_optimization_problem_solution_info( best_result ):
             "Termination condition": best_result[2]['Solver'][0]["Termination condition"],
             "Total_Cost": best_result[1]["Total_Cost"],
             "Total_CapWind": best_result[1]["Total_CapWind"],
+            "Total_CapPV": best_result[1]["Total_CapPV"],
             "Total_CapScha": best_result[1]["Total_CapScha"],
             "Total_CapScha_Li-Ion": best_result[1]["Total_CapScha"]["Li-Ion"],
             "Total_CapScha_CAES": best_result[1]["Total_CapScha"]["CAES"],

@@ -54,7 +54,7 @@ def supply_balance_rule(model, h):
     return (
         model.demand.ts_parameter[h] + sum(model.PC[h, j] for j in model.storage.j) - sum(model.PD[h, j] for j in model.storage.j)
         - model.nuclear.alpha * model.nuclear.ts_parameter[h] - model.hydro.alpha * model.hydro.ts_parameter[h] - model.AlphaOtheRe * model.OtherRenewables[h]
-        - model.GenPV[h] - model.GenWind[h]
+        - model.pv.generation[h] - model.wind.generation[h]
         - sum(model.GenCC[h, bu] for bu in model.bu) == 0
     )
 

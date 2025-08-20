@@ -46,6 +46,7 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
     #model.imports = Block() #TODO implement this
     model.demand = Block()
     model.nuclear = Block()
+    model.other_renewables = Block()
     # model.resiliency = Block() #TODO implement this
     model.storage = Block()
     # model.thermal = Block()

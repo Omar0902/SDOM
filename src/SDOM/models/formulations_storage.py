@@ -34,10 +34,6 @@ def add_storage_variables(model):
     # Energy capacity for storage technology j
     model.Ecap = Var(model.j, domain=NonNegativeReals, initialize=0)
 
-    # Capacity selection variables with continuous bounds between 0 and 1
-    model.Ypv = Var(model.k, domain=NonNegativeReals, bounds=(0, 1), initialize=1)
-    model.Ywind = Var(model.w, domain=NonNegativeReals, bounds=(0, 1), initialize=1)
-
     model.Ystorage = Var(model.j, model.h, domain=Binary, initialize=0)
 
 

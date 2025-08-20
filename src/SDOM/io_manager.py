@@ -225,7 +225,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     ## Total capacity
     cap = {}
     cap['Thermal'] = sum( safe_pyomo_value( model.CapCC[bu] ) for bu in model.bu )
-    cap['Solar PV'] = sum(safe_pyomo_value(model.Ypv[k]) * model.CapSolar_CAPEX_M[k] for k in model.k)
+    cap['Solar PV'] = sum(safe_pyomo_value(model.Ypv[k]) * model.CapSolar_CAPEX_M[k] for k in model.k) #TODO REVIEW THIS
     cap['Wind'] = sum(safe_pyomo_value(model.Ywind[w]) * model.CapWind_CAPEX_M[w] for w in model.w)
     cap['All'] = cap['Thermal'] + cap['Solar PV'] + cap['Wind']
 
@@ -311,9 +311,9 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     ## FOM
     fom = {}
     sum_all = 0.0
-    fom['Thermal'] = sum( safe_pyomo_value(MW_TO_KW*model.FOM_GasCC[bu]*model.CapCC[bu]) for bu in model.bu )
-    fom['Solar PV'] = sum(safe_pyomo_value((model.FCR_VRE * MW_TO_KW*model.CapSolar_FOM_M[k]) * model.CapSolar_capacity[k] * model.Ypv[k]) for k in model.k)
-    fom['Wind'] = sum(safe_pyomo_value((model.FCR_VRE * MW_TO_KW*model.CapWind_FOM_M[w]) * model.CapWind_capacity[w] * model.Ywind[w]) for w in model.w)
+    fom['Thermal'] = sum( safe_pyomo_value( MW_TO_KW*model.FOM_GasCC[bu]*model.CapCC[bu] ) for bu in model.bu )
+    fom['Solar PV'] = safe_pyomo_value( model.solar_fixed_om_cost_expr )
+    fom['Wind'] = safe_pyomo_value( model.wind_fixed_om_cost_expr )
      
     for tech in storage_tech_list:
         fom[tech] = safe_pyomo_value(MW_TO_KW*model.StorageData['CostRatio', tech] * model.StorageData['FOM', tech]*model.Pcha[tech]

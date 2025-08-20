@@ -1,4 +1,4 @@
-from pyomo.core import Var, Constraint
+from pyomo.core import Var, Constraint, Expression
 from pyomo.environ import Param, NonNegativeReals
 from ..constants import VRE_PROPERTIES_NAMES, MW_TO_KW
 from .models_utils import fcr_rule
@@ -60,9 +60,47 @@ def add_vre_variables(model):
     model.Ypv = Var(model.k, domain=NonNegativeReals, bounds=(0, 1), initialize=1)
     model.Ywind = Var(model.w, domain=NonNegativeReals, bounds=(0, 1), initialize=1)
 
+####################################################################################|
+# ----------------------------------- Expressions ----------------------------------|
+####################################################################################|
+
+def solar_fixed_om_cost_expr_rule(model):
+    """
+    Expression to calculate the fixed O&M costs for solar PV technologies.
+    """
+    return sum( ( MW_TO_KW * model.CapSolar_FOM_M[k]) * model.CapSolar_capacity[k] * model.Ypv[k] for k in model.k )
+
+def wind_fixed_om_cost_expr_rule(model):
+    """
+    Expression to calculate the fixed O&M costs for wind technologies.
+    """
+    return sum( ( MW_TO_KW * model.CapWind_FOM_M[w]) * model.CapWind_capacity[w] * model.Ywind[w] for w in model.w )
+
+def solar_capex_cost_expr_rule(model):
+    """
+    Expression to calculate the capital expenditures (Capex) for solar PV technologies.
+    """
+    return sum( (model.FCR_VRE * (MW_TO_KW * model.CapSolar_CAPEX_M[k] + model.CapSolar_trans_cap_cost[k]))\
+                                         * model.CapSolar_capacity[k] * model.Ypv[k] for k in model.k )
+
+def wind_capex_cost_expr_rule(model):
+    """
+    Expression to calculate the capital expenditures (Capex) for wind technologies.
+    """
+    return sum( (model.FCR_VRE * (MW_TO_KW * model.CapWind_CAPEX_M[w] + model.CapWind_trans_cap_cost[w])) \
+                                       * model.CapWind_capacity[w] * model.Ywind[w] for w in model.w )
+
+
+def add_vre_expressions(model):
+    model.solar_fixed_om_cost_expr = Expression(rule=solar_fixed_om_cost_expr_rule)
+    model.wind_fixed_om_cost_expr = Expression(rule=wind_fixed_om_cost_expr_rule)
+    model.solar_capex_cost_expr = Expression(rule=solar_capex_cost_expr_rule)
+    model.wind_capex_cost_expr = Expression(rule=wind_capex_cost_expr_rule)
+
+
 
 ####################################################################################|
-# -----------------------------------= Add_costs -----------------------------------|
+# ------------------------------------ Add_costs -----------------------------------|
 ####################################################################################|
 
 def add_vre_fixed_costs(model):
@@ -77,20 +115,10 @@ def add_vre_fixed_costs(model):
     """
     # Solar PV Capex and Fixed O&M
     return ( 
-        sum(
-        (model.FCR_VRE * (MW_TO_KW * \
-            model.CapSolar_CAPEX_M[k] + model.CapSolar_trans_cap_cost[k]) + MW_TO_KW*model.CapSolar_FOM_M[k])
-        * model.CapSolar_capacity[k] * model.Ypv[k]
-        for k in model.k
-        )
-        +
+        model.solar_fixed_om_cost_expr + model.solar_capex_cost_expr +
         # Wind Capex and Fixed O&M
-        sum(
-            (model.FCR_VRE * (MW_TO_KW * \
-                model.CapWind_CAPEX_M[w] + model.CapWind_trans_cap_cost[w]) + MW_TO_KW*model.CapWind_FOM_M[w])
-            * model.CapWind_capacity[w] * model.Ywind[w]
-            for w in model.w
-        ) )
+        model.wind_fixed_om_cost_expr + model.wind_capex_cost_expr
+         )
 
 ####################################################################################|
 # ----------------------------------- Constraints ----------------------------------|

@@ -60,8 +60,8 @@ def add_thermal_variables(model):
 
     # Compute and set the upper bound for CapCC
     CapCC_upper_bound_value = max(
-        value(model.demand.ts_parameter[h]) - value(model.AlphaNuclear) *
-        value(model.Nuclear[h])
+        value(model.demand.ts_parameter[h]) - value(model.nuclear.alpha) *
+        value(model.nuclear.ts_parameter[h])
         - value(model.hydro.alpha) * value(model.hydro.ts_parameter[h])
         - value(model.AlphaOtheRe) * value(model.OtherRenewables[h])
         for h in model.h

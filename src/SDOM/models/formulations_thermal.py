@@ -63,7 +63,7 @@ def add_thermal_variables(model):
         value(model.demand.ts_parameter[h]) - value(model.nuclear.alpha) *
         value(model.nuclear.ts_parameter[h])
         - value(model.hydro.alpha) * value(model.hydro.ts_parameter[h])
-        - value(model.AlphaOtheRe) * value(model.OtherRenewables[h])
+        - value(model.other_renewables.alpha) * value(model.other_renewables.ts_parameter[h])
         for h in model.h
     )
 

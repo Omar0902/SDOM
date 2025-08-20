@@ -225,7 +225,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     ## Total capacity
     cap = {}
     cap['Thermal'] = sum( safe_pyomo_value( model.CapCC[bu] ) for bu in model.bu )
-    cap['Solar PV'] = sum(safe_pyomo_value(model.Ypv[k]) * model.CapSolar_CAPEX_M[k] for k in model.k) #TODO REVIEW THIS
+    cap['Solar PV'] = sum(safe_pyomo_value(model.Ypv[k]) * model.CapSolar_CAPEX_M[k] for k in model.pv.plants_set) #TODO REVIEW THIS
     cap['Wind'] = sum(safe_pyomo_value(model.Ywind[w]) * model.CapWind_CAPEX_M[w] for w in model.w)
     cap['All'] = cap['Thermal'] + cap['Solar PV'] + cap['Wind']
 

@@ -52,7 +52,7 @@ def objective_rule(model):
 # Energy supply demand
 def supply_balance_rule(model, h):
     return (
-        model.demand.ts_parameter[h] + sum(model.PC[h, j] for j in model.j) - sum(model.PD[h, j] for j in model.j)
+        model.demand.ts_parameter[h] + sum(model.PC[h, j] for j in model.storage.j) - sum(model.PD[h, j] for j in model.storage.j)
         - model.nuclear.alpha * model.nuclear.ts_parameter[h] - model.hydro.alpha * model.hydro.ts_parameter[h] - model.AlphaOtheRe * model.OtherRenewables[h]
         - model.GenPV[h] - model.GenWind[h]
         - sum(model.GenCC[h, bu] for bu in model.bu) == 0
@@ -61,8 +61,8 @@ def supply_balance_rule(model, h):
 # Generation mix target
 # Limit on generation from NG
 def genmix_share_rule(model):
-    return model.annual_thermal_gen_expr <= (1 - model.GenMix_Target)*sum(model.demand.ts_parameter[h] + sum(model.PC[h, j] for j in model.j)
-                        - sum(model.PD[h, j] for j in model.j) for h in model.h)
+    return model.annual_thermal_gen_expr <= (1 - model.GenMix_Target)*sum(model.demand.ts_parameter[h] + sum(model.PC[h, j] for j in model.storage.j)
+                        - sum(model.PD[h, j] for j in model.storage.j) for h in model.h)
 
 def add_system_constraints(model):
     """

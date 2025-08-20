@@ -194,14 +194,14 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
             gen_results['Wind Curtailment (MW)'].append(wind_curt)
             gen_results['Thermal Generation (MW)'].append(gas_cc_gen)
 
-            power_to_storage = sum(safe_pyomo_value(model.PC[h, j]) or 0 for j in model.j) - sum(safe_pyomo_value(model.PD[h, j]) or 0 for j in model.j)
+            power_to_storage = sum(safe_pyomo_value(model.PC[h, j]) or 0 for j in model.storage.j) - sum(safe_pyomo_value(model.PD[h, j]) or 0 for j in model.storage.j)
             gen_results['Storage Charge/Discharge (MW)'].append(power_to_storage)
         gen_results['Scenario'].append(case)
 
     # Extract storage results
     logging.debug("--Extracting storage results...")
     for h in model.h:
-        for j in model.j:
+        for j in model.storage.j:
             charge_power = safe_pyomo_value(model.PC[h, j])
             discharge_power = safe_pyomo_value(model.PD[h, j])
             soc = safe_pyomo_value(model.SOC[h, j])
@@ -241,7 +241,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     gen['Nuclear'] = safe_pyomo_value(sum(model.nuclear.ts_parameter[h] for h in model.h))
 
     sum_all = 0.0
-    storage_tech_list = list(model.j)
+    storage_tech_list = list(model.storage.j)
     for tech in storage_tech_list:
         gen[tech] = safe_pyomo_value( sum( model.PD[h, tech] for h in model.h ) )
         sum_all += gen[tech]

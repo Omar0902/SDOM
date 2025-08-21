@@ -64,6 +64,8 @@ def add_thermal_parameters(model, data):
 # ------------------------------------ Variables -----------------------------------|
 ####################################################################################|
 
+
+
 def add_thermal_variables(model):
     model.thermal.plant_installed_capacity = Var(model.thermal.plants_set, domain=NonNegativeReals, initialize=0)
     model.thermal.generation = Var(model.h, model.thermal.plants_set, domain=NonNegativeReals,initialize=0)  # Generation from thermal units

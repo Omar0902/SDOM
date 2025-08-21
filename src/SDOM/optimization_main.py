@@ -1,5 +1,6 @@
 import logging
 #from pympler import muppy, summary
+#from pympler import muppy, summary
 from pyomo.opt import SolverFactory, SolverStatus, TerminationCondition
 from pyomo.util.infeasible import log_infeasible_constraints
 from pyomo.environ import ConcreteModel, Objective, Block, minimize
@@ -68,7 +69,12 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
     logging.debug("-- Adding VRE expressions...")
     add_vre_expressions( model )
 
+
+    logging.debug("-- Adding VRE expressions...")
+    add_vre_expressions( model )
+
     # Capacity of backup GCC units
+    logging.debug("-- Adding thermal generation variables...")
     logging.debug("-- Adding thermal generation variables...")
     add_thermal_variables( model )
 
@@ -111,6 +117,10 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
     add_thermal_constraints( model )
     
     # Build a model size report
+    # Log memory usage before solving
+    # all_objects = muppy.get_objects()
+    # logging.info("Memory usage before solving:")
+    # logging.info(summary.summarize(all_objects))
     # Log memory usage before solving
     # all_objects = muppy.get_objects()
     # logging.info("Memory usage before solving:")

@@ -1,8 +1,14 @@
 from pyomo.core import Var, Constraint
-from pyomo.environ import NonNegativeReals, Param, Binary, sqrt
+from pyomo.environ import Set, Param, Binary, NonNegativeReals, sqrt
 from ..constants import STORAGE_PROPERTIES_NAMES, MW_TO_KW
 from .models_utils import crf_rule
 
+def initialize_storage_sets(block, data):
+    block.j = Set( initialize = data['STORAGE_SET_J_TECHS'] )
+    block.b = Set( within=block.j, initialize = data['STORAGE_SET_B_TECHS'] )
+    
+    # Initialize storage properties
+    block.properties_set = Set( initialize = STORAGE_PROPERTIES_NAMES )
 ####################################################################################|
 # ----------------------------------- Parameters -----------------------------------|
 ####################################################################################|
@@ -13,7 +19,7 @@ def add_storage_parameters(model, data):
     # Storage data initialization
     storage_dict = data["storage_data"].stack().to_dict()
     storage_tuple_dict = {(prop, tech): storage_dict[(prop, tech)] for prop in STORAGE_PROPERTIES_NAMES for tech in model.storage.j}
-    model.StorageData = Param( model.sp, model.storage.j, initialize = storage_tuple_dict )
+    model.StorageData = Param( model.storage.properties_set, model.storage.j, initialize = storage_tuple_dict )
 
     model.CRF = Param( model.storage.j, initialize = crf_rule ) #Capital Recovery Factor -STORAGE
 

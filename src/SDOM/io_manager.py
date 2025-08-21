@@ -183,7 +183,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
         solar_curt = safe_pyomo_value(model.pv.curtailment[h])
         wind_gen = safe_pyomo_value(model.wind.generation[h])
         wind_curt = safe_pyomo_value(model.wind.curtailment[h])
-        gas_cc_gen = sum( safe_pyomo_value(model.thermal.generation[h, bu]) for bu in model.thermal.bu )
+        gas_cc_gen = sum( safe_pyomo_value(model.thermal.generation[h, bu]) for bu in model.thermal.plants_set )
 
         if None not in [solar_gen, solar_curt, wind_gen, wind_curt, gas_cc_gen]:
 #            gen_results['Scenario'].append(run)
@@ -224,7 +224,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
 
     ## Total capacity
     cap = {}
-    cap['Thermal'] = sum( safe_pyomo_value( model.thermal.plant_installed_capacity[bu] ) for bu in model.thermal.bu )
+    cap['Thermal'] = sum( safe_pyomo_value( model.thermal.plant_installed_capacity[bu] ) for bu in model.thermal.plants_set )
     cap['Solar PV'] = safe_pyomo_value( model.pv.total_installed_capacity )
     cap['Wind'] = safe_pyomo_value( model.wind.total_installed_capacity )
     cap['All'] = cap['Thermal'] + cap['Solar PV'] + cap['Wind']

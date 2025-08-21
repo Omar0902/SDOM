@@ -88,7 +88,7 @@ def test_load_data_thermal_values():
         assert abs( row["VOM"] - vom_v[idx] ) <= 0.05
 
     model = initialize_model(data, n_hours = 24, with_resilience_constraints=False)
-    assert list(model.bu) == ['83_GAS', '83_Coal']
+    assert list(model.thermal.plants_set) == ['83_GAS', '83_Coal']
     
 
 def test_load_data_storage_values():

@@ -182,7 +182,7 @@ def collect_results( model ):
 
     results['SolarPVGen'] = {h: safe_pyomo_value(model.pv.generation[h]) for h in model.h}
     results['WindGen'] = {h: safe_pyomo_value(model.wind.generation[h]) for h in model.h}
-    results['AggThermalGen'] = {h: sum(safe_pyomo_value(model.thermal.generation[h, bu]) for bu in model.thermal.bu) for h in model.h}
+    results['AggThermalGen'] = {h: sum(safe_pyomo_value(model.thermal.generation[h, bu]) for bu in model.thermal.plants_set) for h in model.h}
 
     results['SolarCapex'] = safe_pyomo_value( model.pv.capex_cost_expr )
     results['WindCapex'] =  safe_pyomo_value( model.wind.capex_cost_expr )
@@ -200,10 +200,10 @@ def collect_results( model ):
                         + MW_TO_KW*(1 - model.StorageData['CostRatio', tech]) * model.StorageData['FOM', tech]*model.Pdis[tech]
         results[f'{tech}VOM'] = model.StorageData['VOM', tech] * sum(model.PD[h, tech] for h in model.h)
 
-    results['TotalThermalCapex'] = sum( model.thermal.FCR[bu] * MW_TO_KW * model.thermal.CAPEX_M[bu] * model.thermal.plant_installed_capacity[bu] for bu in model.thermal.bu )
-    results['ThermalFuel'] = sum( (model.thermal.fuel_price[bu] * model.thermal.heat_rate[bu]) * sum(model.thermal.generation[h, bu] for h in model.h) for bu in model.thermal.bu )
-    results['ThermalFOM'] = sum( MW_TO_KW * model.thermal.FOM_M[bu] * model.thermal.plant_installed_capacity[bu] for bu in model.thermal.bu )
-    results['ThermalVOM'] = sum( model.thermal.VOM_M[bu] * sum(model.thermal.generation[h, bu] for h in model.h) for bu in model.thermal.bu )
+    results['TotalThermalCapex'] = sum( model.thermal.FCR[bu] * MW_TO_KW * model.thermal.CAPEX_M[bu] * model.thermal.plant_installed_capacity[bu] for bu in model.thermal.plants_set )
+    results['ThermalFuel'] = sum( (model.thermal.fuel_price[bu] * model.thermal.heat_rate[bu]) * sum(model.thermal.generation[h, bu] for h in model.h) for bu in model.thermal.plants_set )
+    results['ThermalFOM'] = sum( MW_TO_KW * model.thermal.FOM_M[bu] * model.thermal.plant_installed_capacity[bu] for bu in model.thermal.plants_set )
+    results['ThermalVOM'] = sum( model.thermal.VOM_M[bu] * sum(model.thermal.generation[h, bu] for h in model.h) for bu in model.thermal.plants_set )
 
     return results
 

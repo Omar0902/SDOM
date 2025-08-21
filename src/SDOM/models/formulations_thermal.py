@@ -7,7 +7,7 @@ from ..constants import MW_TO_KW, THERMAL_PROPERTIES_NAMES
 def initialize_thermal_sets(block, data):
     # Initialize THERMAL properties
     block.plants_set = Set( initialize = data['thermal_data']['Plant_id'].astype(str).tolist() )
-    block.tp = Set( initialize = THERMAL_PROPERTIES_NAMES )
+    block.properties_set = Set( initialize = THERMAL_PROPERTIES_NAMES )
     logging.info(f"Thermal balancing units being considered: {list(block.plants_set)}")
 
 ####################################################################################|
@@ -19,7 +19,7 @@ def _add_thermal_parameters(block, df):
     thermal_dict = df.stack().to_dict()
     thermal_tuple_dict = {( prop, name ): thermal_dict[( name, prop )] for prop in THERMAL_PROPERTIES_NAMES for name in block.plants_set}
     
-    block.data = Param( block.tp, block.plants_set, initialize = thermal_tuple_dict )
+    block.data = Param( block.properties_set, block.plants_set, initialize = thermal_tuple_dict )
     
     # Gas prices (US$/MMBtu)
     block.fuel_price = Param(

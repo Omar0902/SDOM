@@ -19,36 +19,36 @@ def _add_thermal_parameters(block, df):
     thermal_dict = df.stack().to_dict()
     thermal_tuple_dict = {( prop, name ): thermal_dict[( name, prop )] for prop in THERMAL_PROPERTIES_NAMES for name in block.plants_set}
     
-    block.ThermalData = Param( block.tp, block.plants_set, initialize = thermal_tuple_dict )
+    block.data = Param( block.tp, block.plants_set, initialize = thermal_tuple_dict )
     
     # Gas prices (US$/MMBtu)
     block.fuel_price = Param(
         block.plants_set,
-        initialize={bu: block.ThermalData["FuelCost", bu] for bu in block.plants_set}
+        initialize={bu: block.data["FuelCost", bu] for bu in block.plants_set}
     )
 
     # Heat rate for gas combined cycle (MMBtu/MWh)
     block.heat_rate = Param( 
         block.plants_set, 
-        initialize = {bu: block.ThermalData["HeatRate", bu] for bu in block.plants_set}
+        initialize = {bu: block.data["HeatRate", bu] for bu in block.plants_set}
     )
 #block.GasPrice, block.HR, block.FOM_GasCC, block.VOM_GasCC
     # Capex for gas combined cycle units (US$/kW)
     block.CAPEX_M = Param( 
         block.plants_set, 
-        initialize ={bu: block.ThermalData["Capex", bu] for bu in block.plants_set}
+        initialize ={bu: block.data["Capex", bu] for bu in block.plants_set}
     )
 
     # Fixed O&M for gas combined cycle (US$/kW-year)
     block.FOM_M = Param( 
         block.plants_set, 
-        initialize = {bu: block.ThermalData["FOM", bu] for bu in block.plants_set}
+        initialize = {bu: block.data["FOM", bu] for bu in block.plants_set}
     )
 
     # Variable O&M for gas combined cycle (US$/MWh)
     block.VOM_M = Param( 
         block.plants_set, 
-        initialize = {bu: block.ThermalData["VOM", bu] for bu in block.plants_set} 
+        initialize = {bu: block.data["VOM", bu] for bu in block.plants_set} 
     )
     block.trans_cap_cost = Param(block.plants_set, initialize=0.0)
 
@@ -77,17 +77,17 @@ def add_thermal_variables(model):
         for h in model.h
     )
 
-    if ( len( list(model.thermal.plants_set) ) <= 1 ) & ( CapCC_upper_bound_value > model.thermal.ThermalData['MaxCapacity', model.thermal.plants_set[1]] ):
+    if ( len( list(model.thermal.plants_set) ) <= 1 ) & ( CapCC_upper_bound_value > model.thermal.data['MaxCapacity', model.thermal.plants_set[1]] ):
         model.thermal.plant_installed_capacity[model.thermal.plants_set[1]].setub( CapCC_upper_bound_value )
         logging.warning(f"There is only one thermal balancing unit. " \
-        f"Upper bound for Capacity variable was set to {CapCC_upper_bound_value} instead of the input = {model.thermal.ThermalData['MaxCapacity', model.thermal.plants_set[1]]} to ensure feasibility.")
+        f"Upper bound for Capacity variable was set to {CapCC_upper_bound_value} instead of the input = {model.thermal.data['MaxCapacity', model.thermal.plants_set[1]]} to ensure feasibility.")
     else:
         sum_cap = 0
         for bu in model.thermal.plants_set:
-            model.thermal.plant_installed_capacity[bu].setub( model.thermal.ThermalData["MaxCapacity", bu] )
-            model.thermal.plant_installed_capacity[bu].setlb( model.thermal.ThermalData["MinCapacity", bu] )
-            sum_cap += model.thermal.ThermalData["MaxCapacity", bu]
-        if ( CapCC_upper_bound_value > model.thermal.ThermalData['MaxCapacity', model.thermal.plants_set[1]] ):
+            model.thermal.plant_installed_capacity[bu].setub( model.thermal.data["MaxCapacity", bu] )
+            model.thermal.plant_installed_capacity[bu].setlb( model.thermal.data["MinCapacity", bu] )
+            sum_cap += model.thermal.data["MaxCapacity", bu]
+        if ( CapCC_upper_bound_value > model.thermal.data['MaxCapacity', model.thermal.plants_set[1]] ):
             logging.warning(f"Total allowed capacity for thermal units is {sum_cap}MW. This value might be insufficient to achieve problem feasibility, consider increase it to at least {CapCC_upper_bound_value}MW.")
 
 

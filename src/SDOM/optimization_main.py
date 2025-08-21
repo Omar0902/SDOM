@@ -218,6 +218,33 @@ def collect_results( model ):
     return results
 
 
+
+
+
+def configure_solver(solver_name: str, solver_options: dict = None):
+    """
+    Configure and return a Pyomo solver instance.
+
+    Parameters:
+    - solver_name (str): Name of the solver (e.g., 'xpress', 'highs', 'cbc', 'gurobi').
+    - solver_options (dict): Optional dictionary of solver-specific options.
+
+    Returns:
+    - solver (SolverFactory): Configured Pyomo solver instance.
+    """
+    solver = SolverFactory(solver_name)
+
+    if not solver.available():
+        raise RuntimeError(f"Solver '{solver_name}' is not available on this system.")
+
+    # Apply solver-specific options
+    if solver_options:
+        for key, value in solver_options.items():
+            solver.options[key] = value
+
+    return solver
+
+
 # Run solver function
 def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, cbc_executable_path=".\\Solver\\bin\\cbc.exe"):
     """

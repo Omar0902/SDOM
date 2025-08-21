@@ -64,7 +64,7 @@ def add_thermal_parameters(model, data):
 ####################################################################################|
 
 def add_thermal_variables(model):
-    model.thermal.capacity = Var(model.thermal.bu, domain=NonNegativeReals, initialize=0)
+    model.thermal.plant_installed_capacity = Var(model.thermal.bu, domain=NonNegativeReals, initialize=0)
     model.thermal.generation = Var(model.h, model.thermal.bu, domain=NonNegativeReals,initialize=0)  # Generation from thermal units
     #model.thermal.CapCC, model.thermal.GenCC
     # Compute and set the upper bound for CapCC
@@ -77,14 +77,14 @@ def add_thermal_variables(model):
     )
 
     if ( len( list(model.thermal.bu) ) <= 1 ) & ( CapCC_upper_bound_value > model.thermal.ThermalData['MaxCapacity', model.thermal.bu[1]] ):
-        model.thermal.capacity[model.thermal.bu[1]].setub( CapCC_upper_bound_value )
+        model.thermal.plant_installed_capacity[model.thermal.bu[1]].setub( CapCC_upper_bound_value )
         logging.warning(f"There is only one thermal balancing unit. " \
         f"Upper bound for Capacity variable was set to {CapCC_upper_bound_value} instead of the input = {model.thermal.ThermalData['MaxCapacity', model.thermal.bu[1]]} to ensure feasibility.")
     else:
         sum_cap = 0
         for bu in model.thermal.bu:
-            model.thermal.capacity[bu].setub( model.thermal.ThermalData["MaxCapacity", bu] )
-            model.thermal.capacity[bu].setlb( model.thermal.ThermalData["MinCapacity", bu] )
+            model.thermal.plant_installed_capacity[bu].setub( model.thermal.ThermalData["MaxCapacity", bu] )
+            model.thermal.plant_installed_capacity[bu].setlb( model.thermal.ThermalData["MinCapacity", bu] )
             sum_cap += model.thermal.ThermalData["MaxCapacity", bu]
         if ( CapCC_upper_bound_value > model.thermal.ThermalData['MaxCapacity', model.thermal.bu[1]] ):
             logging.warning(f"Total allowed capacity for thermal units is {sum_cap}MW. This value might be insufficient to achieve problem feasibility, consider increase it to at least {CapCC_upper_bound_value}MW.")
@@ -109,6 +109,7 @@ def total_thermal_expr_rule(m):
 
 def _add_thermal_expressions(block, set_hours):
     block.total_generation = Expression( rule = sum(block.generation[h, bu] for h in set_hours for bu in block.bu) )
+    block.total_installed_capacity = Expression( rule = sum(block.plant_installed_capacity[bu] for bu in block.bu) )
 
 def add_thermal_expressions(model):
     _add_thermal_expressions(model.thermal, model.h)
@@ -123,7 +124,7 @@ def add_thermal_expressions(model):
 def add_thermal_constraints( model ):
     set_hours = model.h
     # Capacity of the backup generation
-    model.thermal.BackupGen = Constraint( set_hours, model.thermal.bu, rule = lambda m,h,bu: m.capacity[bu] >= m.generation[h,bu]  )
+    model.thermal.BackupGen = Constraint( set_hours, model.thermal.bu, rule = lambda m,h,bu: m.plant_installed_capacity[bu] >= m.generation[h,bu]  )
 
 
 
@@ -142,8 +143,8 @@ def add_thermal_fixed_costs(model):
     """
     return (
         sum(
-            model.thermal.FCR[bu]*MW_TO_KW*model.thermal.CAPEX_M[bu]*model.thermal.capacity[bu]
-            + MW_TO_KW*model.thermal.FOM_M[bu]*model.thermal.capacity[bu]
+            model.thermal.FCR[bu]*MW_TO_KW*model.thermal.CAPEX_M[bu]*model.thermal.plant_installed_capacity[bu]
+            + MW_TO_KW*model.thermal.FOM_M[bu]*model.thermal.plant_installed_capacity[bu]
             for bu in model.thermal.bu
         )
     )

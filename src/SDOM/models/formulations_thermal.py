@@ -109,11 +109,22 @@ def total_thermal_expr_rule(m):
     return sum(m.GenCC[h, bu] for h in m.h for bu in m.thermal.plants_set)
 
 def _add_thermal_expressions(block, set_hours):
-    block.total_generation = Expression( rule = sum(block.generation[h, bu] for h in set_hours for bu in block.plants_set) )
+    block.total_plant_generation = Expression( block.plants_set, rule = lambda m, bu:sum(m.generation[h, bu] for h in set_hours ) )
+    block.total_generation = Expression( rule = sum(block.total_plant_generation[bu] for bu in block.plants_set) )
     block.total_installed_capacity = Expression( rule = sum_installed_capacity_by_plants_set_expr_rule )
 
     block.fixed_om_cost_expr = Expression( rule = generic_fixed_om_cost_expr_rule )
     block.capex_cost_expr = Expression( rule = different_fcr_capex_cost_expr_rule )
+
+    block.total_fuel_cost_expr = Expression( 
+        rule = sum(
+            ( block.fuel_price[bu] * block.heat_rate[bu] ) * ( block.total_plant_generation[bu] )
+            for bu in block.plants_set ) 
+            )
+    
+    block.total_vom_cost_expr = Expression( 
+        rule = sum( block.VOM_M[bu] * block.total_plant_generation[bu] for bu in block.plants_set ) 
+        )
 
 def add_thermal_expressions(model):
     _add_thermal_expressions(model.thermal, model.h)
@@ -150,7 +161,7 @@ def add_thermal_fixed_costs(model):
 
 def add_thermal_variable_costs(model):
     """
-    Add variable costs for thermal units to the model.
+    Add variable costs (Fuel cost + VOM cost) for thermal units to the model.
 
     Parameters:
     model: The optimization model to which thermal variable costs will be added.
@@ -159,10 +170,6 @@ def add_thermal_variable_costs(model):
     Variable costs sum for thermal units, including fuel costs.
     """
     return (
-
-        sum(
-            (model.thermal.fuel_price[bu] * model.thermal.heat_rate[bu] + model.thermal.VOM_M[bu]) *
-            ( model.thermal.total_generation )
-            for bu in model.thermal.plants_set )
+        model.thermal.total_fuel_cost_expr + model.thermal.total_vom_cost_expr
     )
 

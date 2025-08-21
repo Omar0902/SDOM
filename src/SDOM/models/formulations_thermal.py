@@ -1,7 +1,7 @@
 from pyomo.core import Var, Constraint, Expression
 from pyomo.environ import Set, Param, value, NonNegativeReals
 import logging
-from .models_utils import fcr_rule_thermal
+from .models_utils import fcr_rule_thermal, generic_fixed_om_cost_expr_rule, different_fcr_capex_cost_expr_rule, sum_installed_capacity_by_plants_set_expr_rule, add_generic_fixed_costs
 from ..constants import MW_TO_KW, THERMAL_PROPERTIES_NAMES
 
 def initialize_thermal_sets(block, data):
@@ -50,12 +50,13 @@ def _add_thermal_parameters(block, df):
         block.plants_set, 
         initialize = {bu: block.ThermalData["VOM", bu] for bu in block.plants_set} 
     )
-
+    block.trans_cap_cost = Param(block.plants_set, initialize=0.0)
 
 
 def add_thermal_parameters(model, data):
     df = data["thermal_data"].set_index("Plant_id")
     _add_thermal_parameters(model.thermal, df)
+    
     model.thermal.r = Param( initialize = float(data["scalars"].loc["r"].Value) )  # Interest rate
     model.thermal.FCR = Param( model.thermal.plants_set, initialize = fcr_rule_thermal ) #Capital Recovery Factor -THERMAL
 
@@ -109,11 +110,13 @@ def total_thermal_expr_rule(m):
 
 def _add_thermal_expressions(block, set_hours):
     block.total_generation = Expression( rule = sum(block.generation[h, bu] for h in set_hours for bu in block.plants_set) )
-    block.total_installed_capacity = Expression( rule = sum(block.plant_installed_capacity[bu] for bu in block.plants_set) )
+    block.total_installed_capacity = Expression( rule = sum_installed_capacity_by_plants_set_expr_rule )
+
+    block.fixed_om_cost_expr = Expression( rule = generic_fixed_om_cost_expr_rule )
+    block.capex_cost_expr = Expression( rule = different_fcr_capex_cost_expr_rule )
 
 def add_thermal_expressions(model):
     _add_thermal_expressions(model.thermal, model.h)
-    #model.thermal.total_generation = Expression( rule = total_thermal_expr_rule )
     
 
 
@@ -142,11 +145,7 @@ def add_thermal_fixed_costs(model):
     Costs sum for each thermal unit, including capital and fixed O&M costs.
     """
     return (
-        sum(
-            model.thermal.FCR[bu]*MW_TO_KW*model.thermal.CAPEX_M[bu]*model.thermal.plant_installed_capacity[bu]
-            + MW_TO_KW*model.thermal.FOM_M[bu]*model.thermal.plant_installed_capacity[bu]
-            for bu in model.thermal.plants_set
-        )
+        add_generic_fixed_costs(model.thermal)
     )
 
 def add_thermal_variable_costs(model):
@@ -163,7 +162,7 @@ def add_thermal_variable_costs(model):
 
         sum(
             (model.thermal.fuel_price[bu] * model.thermal.heat_rate[bu] + model.thermal.VOM_M[bu]) *
-            sum(model.thermal.generation    [h, bu] for h in model.h)
+            ( model.thermal.total_generation )
             for bu in model.thermal.plants_set )
     )
 

@@ -193,12 +193,12 @@ def collect_results( model ):
     storage_tech_list = list(model.storage.j)
 
     for tech in storage_tech_list:
-        results[f'{tech}PowerCapex'] = model.CRF[tech]*(MW_TO_KW*model.StorageData['CostRatio', tech] * model.StorageData['P_Capex', tech]*model.Pcha[tech]
-                        + MW_TO_KW*(1 - model.StorageData['CostRatio', tech]) * model.StorageData['P_Capex', tech]*model.Pdis[tech])
-        results[f'{tech}EnergyCapex'] = model.CRF[tech]*MW_TO_KW*model.StorageData['E_Capex', tech]*model.Ecap[tech]
-        results[f'{tech}FOM'] = MW_TO_KW*model.StorageData['CostRatio', tech] * model.StorageData['FOM', tech]*model.Pcha[tech] \
-                        + MW_TO_KW*(1 - model.StorageData['CostRatio', tech]) * model.StorageData['FOM', tech]*model.Pdis[tech]
-        results[f'{tech}VOM'] = model.StorageData['VOM', tech] * sum(model.PD[h, tech] for h in model.h)
+        results[f'{tech}PowerCapex'] = model.storage.CRF[tech]*(MW_TO_KW*model.storage.data['CostRatio', tech] * model.storage.data['P_Capex', tech]*model.Pcha[tech]
+                        + MW_TO_KW*(1 - model.storage.data['CostRatio', tech]) * model.storage.data['P_Capex', tech]*model.Pdis[tech])
+        results[f'{tech}EnergyCapex'] = model.storage.CRF[tech]*MW_TO_KW*model.storage.data['E_Capex', tech]*model.Ecap[tech]
+        results[f'{tech}FOM'] = MW_TO_KW*model.storage.data['CostRatio', tech] * model.storage.data['FOM', tech]*model.Pcha[tech] \
+                        + MW_TO_KW*(1 - model.storage.data['CostRatio', tech]) * model.storage.data['FOM', tech]*model.Pdis[tech]
+        results[f'{tech}VOM'] = model.storage.data['VOM', tech] * sum(model.PD[h, tech] for h in model.h)
 
     results['TotalThermalCapex'] = sum( model.thermal.FCR[bu] * MW_TO_KW * model.thermal.CAPEX_M[bu] * model.thermal.plant_installed_capacity[bu] for bu in model.thermal.plants_set )
     results['ThermalFuel'] = sum( (model.thermal.fuel_price[bu] * model.thermal.heat_rate[bu]) * sum(model.thermal.generation[h, bu] for h in model.h) for bu in model.thermal.plants_set )

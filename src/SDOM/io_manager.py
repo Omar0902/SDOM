@@ -194,7 +194,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
             gen_results['Wind Curtailment (MW)'].append(wind_curt)
             gen_results['Thermal Generation (MW)'].append(gas_cc_gen)
 
-            power_to_storage = sum(safe_pyomo_value(model.PC[h, j]) or 0 for j in model.storage.j) - sum(safe_pyomo_value(model.PD[h, j]) or 0 for j in model.storage.j)
+            power_to_storage = sum(safe_pyomo_value(model.storage.PC[h, j]) or 0 for j in model.storage.j) - sum(safe_pyomo_value(model.storage.PD[h, j]) or 0 for j in model.storage.j)
             gen_results['Storage Charge/Discharge (MW)'].append(power_to_storage)
         gen_results['Scenario'].append(case)
 
@@ -202,9 +202,9 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     logging.debug("--Extracting storage results...")
     for h in model.h:
         for j in model.storage.j:
-            charge_power = safe_pyomo_value(model.PC[h, j])
-            discharge_power = safe_pyomo_value(model.PD[h, j])
-            soc = safe_pyomo_value(model.SOC[h, j])
+            charge_power = safe_pyomo_value(model.storage.PC[h, j])
+            discharge_power = safe_pyomo_value(model.storage.PD[h, j])
+            soc = safe_pyomo_value(model.storage.SOC[h, j])
             if None not in [charge_power, discharge_power, soc]:
                 storage_results['Hour'].append(h)
                 storage_results['Technology'].append(j)
@@ -243,7 +243,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     sum_all = 0.0
     storage_tech_list = list(model.storage.j)
     for tech in storage_tech_list:
-        gen[tech] = safe_pyomo_value( sum( model.PD[h, tech] for h in model.h ) )
+        gen[tech] = safe_pyomo_value( sum( model.storage.PD[h, tech] for h in model.h ) )
         sum_all += gen[tech]
 
     gen['All'] = gen['Thermal'] + gen['Solar PV'] + gen['Wind'] + gen['Other renewables'] + gen['Hydro'] + \
@@ -255,7 +255,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     sum_all = 0.0
     stoch = {}
     for tech in storage_tech_list:
-        stoch[tech] = safe_pyomo_value( sum( model.PC[h, tech] for h in model.h ) )
+        stoch[tech] = safe_pyomo_value( sum( model.storage.PC[h, tech] for h in model.h ) )
         sum_all += stoch[tech]
     stoch['All'] = sum_all
 
@@ -281,9 +281,9 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     sum_all = 0.0
     for tech in storage_tech_list:
         pcapex[tech] = safe_pyomo_value(model.storage.CRF[tech]*(MW_TO_KW*model.storage.data['CostRatio', tech] * \
-                                        model.storage.data['P_Capex', tech]*model.Pcha[tech]
+                                        model.storage.data['P_Capex', tech]*model.storage.Pcha[tech]
                                         + MW_TO_KW*(1 - model.storage.data['CostRatio', tech]) * \
-                                        model.storage.data['P_Capex', tech]*model.Pdis[tech]))
+                                        model.storage.data['P_Capex', tech]*model.storage.Pdis[tech]))
         sum_all += pcapex[tech]
     
     pcapex['All'] = sum_all
@@ -296,7 +296,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     sum_all = 0.0
     sum_all_t = 0.0
     for tech in storage_tech_list:
-        ecapex[tech] = safe_pyomo_value(model.storage.CRF[tech]*MW_TO_KW*model.storage.data['E_Capex', tech]*model.Ecap[tech])
+        ecapex[tech] = safe_pyomo_value(model.storage.CRF[tech]*MW_TO_KW*model.storage.data['E_Capex', tech]*model.storage.Ecap[tech])
         sum_all += ecapex[tech]
         tcapex[tech] = pcapex[tech] + ecapex[tech]
         sum_all_t += tcapex[tech]
@@ -314,8 +314,8 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     fom['Wind'] = safe_pyomo_value( model.wind.fixed_om_cost_expr )
      
     for tech in storage_tech_list:
-        fom[tech] = safe_pyomo_value(MW_TO_KW*model.storage.data['CostRatio', tech] * model.storage.data['FOM', tech]*model.Pcha[tech]
-                            + MW_TO_KW*(1 - model.storage.data['CostRatio', tech]) * model.storage.data['FOM', tech]*model.Pdis[tech])
+        fom[tech] = safe_pyomo_value(MW_TO_KW*model.storage.data['CostRatio', tech] * model.storage.data['FOM', tech]*model.storage.Pcha[tech]
+                            + MW_TO_KW*(1 - model.storage.data['CostRatio', tech]) * model.storage.data['FOM', tech]*model.storage.Pdis[tech])
         sum_all += fom[tech]
 
     fom['All'] = fom['Thermal'] + fom['Solar PV'] + fom['Wind'] + sum_all 
@@ -329,7 +329,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     vom['Thermal'] = safe_pyomo_value( model.thermal.total_vom_cost_expr )
 
     for tech in storage_tech_list:
-        vom[tech] = safe_pyomo_value(model.storage.data['VOM', tech] * sum(model.PD[h, tech] for h in model.h))
+        vom[tech] = safe_pyomo_value(model.storage.data['VOM', tech] * sum(model.storage.PD[h, tech] for h in model.h))
         sum_all += vom[tech]
     vom['All'] = vom['Thermal'] + sum_all
 
@@ -353,7 +353,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     charge = {}
     sum_all = 0.0
     for tech in storage_tech_list:
-        charge[tech] = safe_pyomo_value(model.Pcha[tech])
+        charge[tech] = safe_pyomo_value(model.storage.Pcha[tech])
         sum_all += charge[tech]
     charge['All'] = sum_all
 
@@ -364,7 +364,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     sum_all = 0.0
 
     for tech in storage_tech_list:
-        dcharge[tech] = safe_pyomo_value(model.Pdis[tech])
+        dcharge[tech] = safe_pyomo_value(model.storage.Pdis[tech])
         sum_all += dcharge[tech]
     dcharge['All'] = sum_all
 
@@ -384,7 +384,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     encap = {}
     sum_all = 0.0
     for tech in storage_tech_list:
-        encap[tech] = safe_pyomo_value(model.Ecap[tech])
+        encap[tech] = safe_pyomo_value(model.storage.Ecap[tech])
         sum_all += encap[tech]
     encap['All'] = sum_all
 
@@ -393,14 +393,14 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     ## Discharge duration
     dur = {}
     for tech in storage_tech_list:
-        dur[tech] = safe_pyomo_value(sqrt(model.storage.data['Eff', tech] * model.Ecap[tech] / (model.Pdis[tech] + 1e-15)))
+        dur[tech] = safe_pyomo_value(sqrt(model.storage.data['Eff', tech] * model.storage.Ecap[tech] / (model.storage.Pdis[tech] + 1e-15)))
 
     summary_results = concatenate_dataframes( summary_results, dur, run=1, unit='h', metric='Duration' )
 
     ## Equivalent number of cycles
     cyc = {}
     for tech in storage_tech_list:
-        cyc[tech] = safe_pyomo_value(gen[tech] / (model.Ecap[tech] + 1e-15))
+        cyc[tech] = safe_pyomo_value(gen[tech] / (model.storage.Ecap[tech] + 1e-15))
 
     summary_results = concatenate_dataframes( summary_results, cyc, run=1, unit='-', metric='Equivalent number of cycles' )
     

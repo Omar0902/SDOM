@@ -170,15 +170,15 @@ def collect_results( model ):
     results['Total_CapCC'] = safe_pyomo_value(model.thermal.total_installed_capacity )
     results['Total_CapPV'] = safe_pyomo_value( model.pv.total_installed_capacity )
     results['Total_CapWind'] = safe_pyomo_value( model.wind.total_installed_capacity )
-    results['Total_CapScha'] = {j: safe_pyomo_value(model.Pcha[j]) for j in model.storage.j}
-    results['Total_CapSdis'] = {j: safe_pyomo_value(model.Pdis[j]) for j in model.storage.j}
-    results['Total_EcapS'] = {j: safe_pyomo_value(model.Ecap[j]) for j in model.storage.j}
+    results['Total_CapScha'] = {j: safe_pyomo_value(model.storage.Pcha[j]) for j in model.storage.j}
+    results['Total_CapSdis'] = {j: safe_pyomo_value(model.storage.Pdis[j]) for j in model.storage.j}
+    results['Total_EcapS'] = {j: safe_pyomo_value(model.storage.Ecap[j]) for j in model.storage.j}
 
     # Generation and dispatch results
     logging.debug("Collecting generation dispatch results...")
     results['Total_GenPV'] = safe_pyomo_value(model.pv.total_generation)
     results['Total_GenWind'] = safe_pyomo_value(model.wind.total_generation)
-    results['Total_GenS'] = {j: sum(safe_pyomo_value(model.PD[h, j]) for h in model.h) for j in model.storage.j}
+    results['Total_GenS'] = {j: sum(safe_pyomo_value(model.storage.PD[h, j]) for h in model.h) for j in model.storage.j}
 
     results['SolarPVGen'] = {h: safe_pyomo_value(model.pv.generation[h]) for h in model.h}
     results['WindGen'] = {h: safe_pyomo_value(model.wind.generation[h]) for h in model.h}
@@ -193,12 +193,12 @@ def collect_results( model ):
     storage_tech_list = list(model.storage.j)
 
     for tech in storage_tech_list:
-        results[f'{tech}PowerCapex'] = model.storage.CRF[tech]*(MW_TO_KW*model.storage.data['CostRatio', tech] * model.storage.data['P_Capex', tech]*model.Pcha[tech]
-                        + MW_TO_KW*(1 - model.storage.data['CostRatio', tech]) * model.storage.data['P_Capex', tech]*model.Pdis[tech])
-        results[f'{tech}EnergyCapex'] = model.storage.CRF[tech]*MW_TO_KW*model.storage.data['E_Capex', tech]*model.Ecap[tech]
-        results[f'{tech}FOM'] = MW_TO_KW*model.storage.data['CostRatio', tech] * model.storage.data['FOM', tech]*model.Pcha[tech] \
-                        + MW_TO_KW*(1 - model.storage.data['CostRatio', tech]) * model.storage.data['FOM', tech]*model.Pdis[tech]
-        results[f'{tech}VOM'] = model.storage.data['VOM', tech] * sum(model.PD[h, tech] for h in model.h)
+        results[f'{tech}PowerCapex'] = model.storage.CRF[tech]*(MW_TO_KW*model.storage.data['CostRatio', tech] * model.storage.data['P_Capex', tech]*model.storage.Pcha[tech]
+                        + MW_TO_KW*(1 - model.storage.data['CostRatio', tech]) * model.storage.data['P_Capex', tech]*model.storage.Pdis[tech])
+        results[f'{tech}EnergyCapex'] = model.storage.CRF[tech]*MW_TO_KW*model.storage.data['E_Capex', tech]*model.storage.Ecap[tech]
+        results[f'{tech}FOM'] = MW_TO_KW*model.storage.data['CostRatio', tech] * model.storage.data['FOM', tech]*model.storage.Pcha[tech] \
+                        + MW_TO_KW*(1 - model.storage.data['CostRatio', tech]) * model.storage.data['FOM', tech]*model.storage.Pdis[tech]
+        results[f'{tech}VOM'] = model.storage.data['VOM', tech] * sum(model.storage.PD[h, tech] for h in model.h)
 
     results['TotalThermalCapex'] = sum( model.thermal.FCR[bu] * MW_TO_KW * model.thermal.CAPEX_M[bu] * model.thermal.plant_installed_capacity[bu] for bu in model.thermal.plants_set )
     results['ThermalFuel'] = sum( (model.thermal.fuel_price[bu] * model.thermal.heat_rate[bu]) * sum(model.thermal.generation[h, bu] for h in model.h) for bu in model.thermal.plants_set )

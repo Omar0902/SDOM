@@ -202,7 +202,7 @@ def collect_results( model ):
 
     results['TotalThermalCapex'] = sum( model.thermal.FCR[bu] * MW_TO_KW * model.thermal.CAPEX_M[bu] * model.thermal.plant_installed_capacity[bu] for bu in model.thermal.plants_set )
     results['ThermalFuel'] = sum( (model.thermal.fuel_price[bu] * model.thermal.heat_rate[bu]) * sum(model.thermal.generation[h, bu] for h in model.h) for bu in model.thermal.plants_set )
-    results['ThermalFOM'] = sum( MW_TO_KW * model.thermal.FOM_M[bu] * model.thermal.plant_installed_capacity[bu] for bu in model.thermal.plants_set )
+    results['ThermalFOM'] = safe_pyomo_value( model.thermal.fixed_om_cost_expr )
     results['ThermalVOM'] = sum( model.thermal.VOM_M[bu] * sum(model.thermal.generation[h, bu] for h in model.h) for bu in model.thermal.plants_set )
 
     return results

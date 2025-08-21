@@ -1,7 +1,7 @@
 from pyomo.core import Var, Constraint, Expression
 from pyomo.environ import Param, NonNegativeReals
 from ..constants import VRE_PROPERTIES_NAMES, MW_TO_KW
-from .models_utils import fcr_rule
+from .models_utils import fcr_rule, generic_fixed_om_cost_expr_rule, generic_capex_cost_expr_rule, sum_installed_capacity_by_plants_set_expr_rule, add_generic_fixed_costs
 import pandas as pd
 
 ####################################################################################|
@@ -25,7 +25,6 @@ def _add_vre_parameters(block,
 
     block.max_capacity = Param( block.plants_set, initialize = filtered_cap_solar_dict )
 
-    #model.CapSolar_capacity, model.CFSolar, model.CapWind__CAPEX_M, model.CapWind__FOM_M, model.CapWind__trans_cap_cost
 
     # Solar capacity factor initialization
     cf_vre_melted = data[key_cf_data].melt(id_vars='Hour', var_name='plant', value_name='CF')
@@ -80,28 +79,14 @@ def add_vre_variables(model):
 # ----------------------------------- Expressions ----------------------------------|
 ####################################################################################|
 
-def vre_fixed_om_cost_expr_rule( block ):
-    """
-    Expression to calculate the fixed O&M costs for VRE technologies.
-    """
-    return sum( ( MW_TO_KW * block.FOM_M[k]) * block.plant_installed_capacity[k] for k in block.plants_set )
-
-
-def vre_capex_cost_expr_rule( block ):
-    """
-    Expression to calculate the capital expenditures (Capex) for VRE technologies.
-    """
-    return sum( ( (MW_TO_KW * block.CAPEX_M[k] + block.trans_cap_cost[k]))\
-                                         * block.plant_installed_capacity[k] for k in block.plants_set )
-
 
 def _add_vre_expresions ( block, fcr_vre, set_hours ):
 
     block.plant_installed_capacity = Expression(block.plants_set, rule=lambda block, k: block.max_capacity[k] * block.capacity_fraction[k] )
-    block.total_installed_capacity = Expression( rule=lambda block: sum(block.plant_installed_capacity[k] for k in block.plants_set))
+    block.total_installed_capacity = Expression( rule = sum_installed_capacity_by_plants_set_expr_rule )
 
-    block.fixed_om_cost_expr = Expression( rule = vre_fixed_om_cost_expr_rule )
-    block.capex_cost_expr = Expression (rule = lambda model: fcr_vre * vre_capex_cost_expr_rule(model) )
+    block.fixed_om_cost_expr = Expression( rule = generic_fixed_om_cost_expr_rule )
+    block.capex_cost_expr = Expression (rule = lambda model: fcr_vre * generic_capex_cost_expr_rule(model) )
 
     block.total_hourly_availability = Expression(set_hours, rule=lambda block, h: block.generation[h] + block.curtailment[h])
     block.total_hourly_plant_availability = Expression(set_hours, block.plants_set, rule=lambda block, h, k: block.capacity_factor[h, k] * block.max_capacity[k] * block.capacity_fraction[k])
@@ -131,10 +116,8 @@ def add_vre_fixed_costs(model):
     """
     # Solar PV Capex and Fixed O&M
     return ( 
-        model.pv.fixed_om_cost_expr + model.pv.capex_cost_expr +
-        # Wind Capex and Fixed O&M
-        model.wind.fixed_om_cost_expr + model.wind.capex_cost_expr
-         )
+        add_generic_fixed_costs(model.pv) + add_generic_fixed_costs(model.wind)
+    )
 
 ####################################################################################|
 # ----------------------------------- Constraints ----------------------------------|

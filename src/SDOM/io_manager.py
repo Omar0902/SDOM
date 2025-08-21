@@ -271,7 +271,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     capex = {}
     capex['Solar PV'] = safe_pyomo_value( model.pv.capex_cost_expr )
     capex['Wind'] = safe_pyomo_value( model.wind.capex_cost_expr )
-    capex['Thermal'] = sum( safe_pyomo_value( model.thermal.FCR[bu] * MW_TO_KW * model.thermal.CAPEX_M[bu] * model.thermal.plant_installed_capacity[bu] ) for bu in model.thermal.bu )
+    capex['Thermal'] = safe_pyomo_value( model.thermal.capex_cost_expr )
     capex['All'] = capex['Solar PV'] + capex['Wind'] + capex['Thermal']
 
     summary_results = concatenate_dataframes( summary_results, capex, run=1, unit='$US', metric='CAPEX' )
@@ -309,7 +309,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     ## FOM
     fom = {}
     sum_all = 0.0
-    fom['Thermal'] = sum( safe_pyomo_value( MW_TO_KW*model.thermal.FOM_M[bu]*model.thermal.plant_installed_capacity[bu] ) for bu in model.thermal.bu )
+    fom['Thermal'] = safe_pyomo_value( model.thermal.fixed_om_cost_expr )
     fom['Solar PV'] = safe_pyomo_value( model.pv.fixed_om_cost_expr )
     fom['Wind'] = safe_pyomo_value( model.wind.fixed_om_cost_expr )
      

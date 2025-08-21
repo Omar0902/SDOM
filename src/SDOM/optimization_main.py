@@ -47,9 +47,9 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
     model.demand = Block()
     model.nuclear = Block()
     model.other_renewables = Block()
-    # model.resiliency = Block() #TODO implement this
+    # model.resiliency = Block() #TODO implement this block
     model.storage = Block()
-    # model.thermal = Block()
+    model.thermal = Block()
     model.pv = Block()
     model.wind = Block()
 
@@ -167,7 +167,7 @@ def collect_results( model ):
 
     # Capacity and generation results
     logging.debug("Collecting capacity results...")
-    results['Total_CapCC'] = sum( safe_pyomo_value(model.CapCC[bu]) for bu in model.bu )
+    results['Total_CapCC'] = sum( safe_pyomo_value(model.thermal.capacity[bu]) for bu in model.thermal.bu )
     results['Total_CapPV'] = safe_pyomo_value( model.pv.total_installed_capacity )
     results['Total_CapWind'] = safe_pyomo_value( model.wind.total_installed_capacity )
     results['Total_CapScha'] = {j: safe_pyomo_value(model.Pcha[j]) for j in model.storage.j}
@@ -182,7 +182,7 @@ def collect_results( model ):
 
     results['SolarPVGen'] = {h: safe_pyomo_value(model.pv.generation[h]) for h in model.h}
     results['WindGen'] = {h: safe_pyomo_value(model.wind.generation[h]) for h in model.h}
-    results['AggThermalGen'] = {h: sum(safe_pyomo_value(model.GenCC[h, bu]) for bu in model.bu) for h in model.h}
+    results['AggThermalGen'] = {h: sum(safe_pyomo_value(model.thermal.generation[h, bu]) for bu in model.thermal.bu) for h in model.h}
 
     results['SolarCapex'] = safe_pyomo_value( model.pv.capex_cost_expr )
     results['WindCapex'] =  safe_pyomo_value( model.wind.capex_cost_expr )
@@ -200,10 +200,10 @@ def collect_results( model ):
                         + MW_TO_KW*(1 - model.StorageData['CostRatio', tech]) * model.StorageData['FOM', tech]*model.Pdis[tech]
         results[f'{tech}VOM'] = model.StorageData['VOM', tech] * sum(model.PD[h, tech] for h in model.h)
 
-    results['TotalThermalCapex'] = sum( model.FCR_GasCC[bu] * MW_TO_KW * model.CapexGasCC[bu] * model.CapCC[bu] for bu in model.bu )
-    results['ThermalFuel'] = sum( (model.GasPrice[bu] * model.HR[bu]) * sum(model.GenCC[h, bu] for h in model.h) for bu in model.bu )
-    results['ThermalFOM'] = sum( MW_TO_KW * model.FOM_GasCC[bu] * model.CapCC[bu] for bu in model.bu )
-    results['ThermalVOM'] = sum( model.VOM_GasCC[bu] * sum(model.GenCC[h, bu] for h in model.h) for bu in model.bu )
+    results['TotalThermalCapex'] = sum( model.thermal.FCR[bu] * MW_TO_KW * model.thermal.CAPEX_M[bu] * model.thermal.capacity[bu] for bu in model.thermal.bu )
+    results['ThermalFuel'] = sum( (model.thermal.fuel_price[bu] * model.thermal.heat_rate[bu]) * sum(model.thermal.generation[h, bu] for h in model.h) for bu in model.thermal.bu )
+    results['ThermalFOM'] = sum( MW_TO_KW * model.thermal.FOM_M[bu] * model.thermal.capacity[bu] for bu in model.thermal.bu )
+    results['ThermalVOM'] = sum( model.thermal.VOM_M[bu] * sum(model.thermal.generation[h, bu] for h in model.h) for bu in model.thermal.bu )
 
     return results
 

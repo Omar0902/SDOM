@@ -7,7 +7,7 @@ from .models.formulations_nuclear import add_nuclear_parameters
 from .models.formulations_hydro import add_large_hydro_parameters
 from .models.formulations_other_renewables import add_other_renewables_parameters
 from .models.formulations_load import add_load_parameters
-from .models.formulations_storage import add_storage_parameters
+from .models.formulations_storage import add_storage_parameters, initialize_storage_sets
 from .models.formulations_resiliency import add_resiliency_parameters
 
 
@@ -49,14 +49,10 @@ def initialize_sets( model, data, n_hours = 8760 ):
 
     # Define sets
     model.h = RangeSet(1, n_hours)
-    
-    model.storage.j = Set( initialize = data['STORAGE_SET_J_TECHS'] )
-    model.storage.b = Set( within=model.storage.j, initialize = data['STORAGE_SET_B_TECHS'] )
+
+    initialize_storage_sets(model.storage, data)
     logging.info(f"Storage technologies being considered: {list(model.storage.j)}")
     logging.info(f"Storage technologies with coupled charge/discharge power: {list(model.storage.b)}")
-
-    # Initialize storage properties
-    model.sp = Set( initialize = STORAGE_PROPERTIES_NAMES )
 
     initialize_thermal_sets(model.thermal, data)
 

@@ -167,7 +167,7 @@ def collect_results( model ):
 
     # Capacity and generation results
     logging.debug("Collecting capacity results...")
-    results['Total_CapCC'] = sum( safe_pyomo_value(model.thermal.capacity[bu]) for bu in model.thermal.bu )
+    results['Total_CapCC'] = safe_pyomo_value(model.thermal.total_installed_capacity )
     results['Total_CapPV'] = safe_pyomo_value( model.pv.total_installed_capacity )
     results['Total_CapWind'] = safe_pyomo_value( model.wind.total_installed_capacity )
     results['Total_CapScha'] = {j: safe_pyomo_value(model.Pcha[j]) for j in model.storage.j}
@@ -200,9 +200,9 @@ def collect_results( model ):
                         + MW_TO_KW*(1 - model.StorageData['CostRatio', tech]) * model.StorageData['FOM', tech]*model.Pdis[tech]
         results[f'{tech}VOM'] = model.StorageData['VOM', tech] * sum(model.PD[h, tech] for h in model.h)
 
-    results['TotalThermalCapex'] = sum( model.thermal.FCR[bu] * MW_TO_KW * model.thermal.CAPEX_M[bu] * model.thermal.capacity[bu] for bu in model.thermal.bu )
+    results['TotalThermalCapex'] = sum( model.thermal.FCR[bu] * MW_TO_KW * model.thermal.CAPEX_M[bu] * model.thermal.plant_installed_capacity[bu] for bu in model.thermal.bu )
     results['ThermalFuel'] = sum( (model.thermal.fuel_price[bu] * model.thermal.heat_rate[bu]) * sum(model.thermal.generation[h, bu] for h in model.h) for bu in model.thermal.bu )
-    results['ThermalFOM'] = sum( MW_TO_KW * model.thermal.FOM_M[bu] * model.thermal.capacity[bu] for bu in model.thermal.bu )
+    results['ThermalFOM'] = sum( MW_TO_KW * model.thermal.FOM_M[bu] * model.thermal.plant_installed_capacity[bu] for bu in model.thermal.bu )
     results['ThermalVOM'] = sum( model.thermal.VOM_M[bu] * sum(model.thermal.generation[h, bu] for h in model.h) for bu in model.thermal.bu )
 
     return results

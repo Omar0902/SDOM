@@ -11,7 +11,7 @@ def fcr_rule_thermal( model, bu ):
 
 # Capital recovery factor for storage
 def crf_rule( model, j ):
-    lifetime = model.StorageData['Lifetime', j]
+    lifetime = model.data['Lifetime', j]
     return ( model.r * (1 + model.r) ** lifetime ) / ( (1 + model.r) ** lifetime - 1 )
 
 

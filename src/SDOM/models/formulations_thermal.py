@@ -1,63 +1,72 @@
 from pyomo.core import Var, Constraint, Expression
-from pyomo.environ import Param, value, NonNegativeReals
+from pyomo.environ import Set, Param, value, NonNegativeReals
 import logging
 from .models_utils import fcr_rule_thermal
 from ..constants import MW_TO_KW, THERMAL_PROPERTIES_NAMES
 
+def initialize_thermal_sets(block, data):
+    # Initialize THERMAL properties
+    block.bu = Set( initialize = data['thermal_data']['Plant_id'].astype(str).tolist() )
+    block.tp = Set( initialize = THERMAL_PROPERTIES_NAMES )
+    logging.info(f"Thermal balancing units being considered: {list(block.bu)}")
+
 ####################################################################################|
 # ----------------------------------- Parameters -----------------------------------|
 ####################################################################################|
-def add_thermal_parameters(model, data):
 
-    df = data["thermal_data"].set_index("Plant_id")
-    thermal_dict = df.stack().to_dict()
-    thermal_tuple_dict = {( prop, name ): thermal_dict[( name, prop )] for prop in THERMAL_PROPERTIES_NAMES for name in model.bu}
+def _add_thermal_parameters(block, df):
     
-    model.ThermalData = Param( model.tp, model.bu, initialize = thermal_tuple_dict )
+    thermal_dict = df.stack().to_dict()
+    thermal_tuple_dict = {( prop, name ): thermal_dict[( name, prop )] for prop in THERMAL_PROPERTIES_NAMES for name in block.bu}
+    
+    block.ThermalData = Param( block.tp, block.bu, initialize = thermal_tuple_dict )
     
     # Gas prices (US$/MMBtu)
-    model.GasPrice = Param(
-        model.bu,
-        initialize={bu: model.ThermalData["FuelCost", bu] for bu in model.bu}
+    block.fuel_price = Param(
+        block.bu,
+        initialize={bu: block.ThermalData["FuelCost", bu] for bu in block.bu}
     )
 
     # Heat rate for gas combined cycle (MMBtu/MWh)
-    model.HR = Param( 
-        model.bu, 
-        initialize = {bu: model.ThermalData["HeatRate", bu] for bu in model.bu}
+    block.heat_rate = Param( 
+        block.bu, 
+        initialize = {bu: block.ThermalData["HeatRate", bu] for bu in block.bu}
     )
-
+#block.GasPrice, block.HR, block.FOM_GasCC, block.VOM_GasCC
     # Capex for gas combined cycle units (US$/kW)
-    model.CapexGasCC = Param( 
-        model.bu, 
-        initialize ={bu: model.ThermalData["Capex", bu] for bu in model.bu}
+    block.CAPEX_M = Param( 
+        block.bu, 
+        initialize ={bu: block.ThermalData["Capex", bu] for bu in block.bu}
     )
 
     # Fixed O&M for gas combined cycle (US$/kW-year)
-    model.FOM_GasCC = Param( 
-        model.bu, 
-        initialize = {bu: model.ThermalData["FOM", bu] for bu in model.bu}
+    block.FOM_M = Param( 
+        block.bu, 
+        initialize = {bu: block.ThermalData["FOM", bu] for bu in block.bu}
     )
 
     # Variable O&M for gas combined cycle (US$/MWh)
-    model.VOM_GasCC = Param( 
-        model.bu, 
-        initialize = {bu: model.ThermalData["VOM", bu] for bu in model.bu} 
+    block.VOM_M = Param( 
+        block.bu, 
+        initialize = {bu: block.ThermalData["VOM", bu] for bu in block.bu} 
     )
 
-    model.FCR_GasCC = Param( model.bu, initialize = fcr_rule_thermal ) #Capital Recovery Factor -THERMAL
 
+
+def add_thermal_parameters(model, data):
+    df = data["thermal_data"].set_index("Plant_id")
+    _add_thermal_parameters(model.thermal, df)
+    model.thermal.r = Param( initialize = float(data["scalars"].loc["r"].Value) )  # Interest rate
+    model.thermal.FCR = Param( model.thermal.bu, initialize = fcr_rule_thermal ) #Capital Recovery Factor -THERMAL
 
 ####################################################################################|
 # ------------------------------------ Variables -----------------------------------|
 ####################################################################################|
 
-
-
 def add_thermal_variables(model):
-    model.CapCC = Var(model.bu, domain=NonNegativeReals, initialize=0)
-    model.GenCC = Var(model.h, model.bu, domain=NonNegativeReals,initialize=0)  # Generation from thermal units
-
+    model.thermal.capacity = Var(model.thermal.bu, domain=NonNegativeReals, initialize=0)
+    model.thermal.generation = Var(model.h, model.thermal.bu, domain=NonNegativeReals,initialize=0)  # Generation from thermal units
+    #model.thermal.CapCC, model.thermal.GenCC
     # Compute and set the upper bound for CapCC
     CapCC_upper_bound_value = max(
         value(model.demand.ts_parameter[h]) - value(model.nuclear.alpha) *
@@ -67,26 +76,26 @@ def add_thermal_variables(model):
         for h in model.h
     )
 
-    if ( len( list(model.bu) ) <= 1 ) & ( CapCC_upper_bound_value > model.ThermalData['MaxCapacity', model.bu[1]] ):
-        model.CapCC[model.bu[1]].setub( CapCC_upper_bound_value )
+    if ( len( list(model.thermal.bu) ) <= 1 ) & ( CapCC_upper_bound_value > model.thermal.ThermalData['MaxCapacity', model.thermal.bu[1]] ):
+        model.thermal.capacity[model.thermal.bu[1]].setub( CapCC_upper_bound_value )
         logging.warning(f"There is only one thermal balancing unit. " \
-        f"Upper bound for Capacity variable was set to {CapCC_upper_bound_value} instead of the input = {model.ThermalData['MaxCapacity', model.bu[1]]} to ensure feasibility.")
+        f"Upper bound for Capacity variable was set to {CapCC_upper_bound_value} instead of the input = {model.thermal.ThermalData['MaxCapacity', model.thermal.bu[1]]} to ensure feasibility.")
     else:
         sum_cap = 0
-        for bu in model.bu:
-            model.CapCC[bu].setub( model.ThermalData["MaxCapacity", bu] )
-            model.CapCC[bu].setlb( model.ThermalData["MinCapacity", bu] )
-            sum_cap += model.ThermalData["MaxCapacity", bu]
-        if ( CapCC_upper_bound_value > model.ThermalData['MaxCapacity', model.bu[1]] ):
+        for bu in model.thermal.bu:
+            model.thermal.capacity[bu].setub( model.thermal.ThermalData["MaxCapacity", bu] )
+            model.thermal.capacity[bu].setlb( model.thermal.ThermalData["MinCapacity", bu] )
+            sum_cap += model.thermal.ThermalData["MaxCapacity", bu]
+        if ( CapCC_upper_bound_value > model.thermal.ThermalData['MaxCapacity', model.thermal.bu[1]] ):
             logging.warning(f"Total allowed capacity for thermal units is {sum_cap}MW. This value might be insufficient to achieve problem feasibility, consider increase it to at least {CapCC_upper_bound_value}MW.")
 
 
 ####################################################################################|
 # ----------------------------------- Expressions ----------------------------------|
 ####################################################################################|
-def annual_thermal_expr_rule(m):
+def total_thermal_expr_rule(m):
     """
-    Expression to calculate the annual generation from thermal units.
+    Expression to calculate the total generation from thermal units.
     
     Parameters:
     m: The optimization model instance.
@@ -96,10 +105,14 @@ def annual_thermal_expr_rule(m):
     Returns:
     The sum of generation from the specified thermal unit across all time periods.
     """
-    return sum(m.GenCC[h, bu] for h in m.h for bu in m.bu)
+    return sum(m.GenCC[h, bu] for h in m.h for bu in m.thermal.bu)
+
+def _add_thermal_expressions(block, set_hours):
+    block.total_generation = Expression( rule = sum(block.generation[h, bu] for h in set_hours for bu in block.bu) )
 
 def add_thermal_expressions(model):
-    model.annual_thermal_gen_expr = Expression(rule=annual_thermal_expr_rule )
+    _add_thermal_expressions(model.thermal, model.h)
+    #model.thermal.total_generation = Expression( rule = total_thermal_expr_rule )
     
 
 
@@ -108,8 +121,9 @@ def add_thermal_expressions(model):
 ####################################################################################|
 
 def add_thermal_constraints( model ):
+    set_hours = model.h
     # Capacity of the backup generation
-    model.BackupGen = Constraint( model.h, model.bu, rule = lambda m,h,bu: m.CapCC[bu] >= m.GenCC[h,bu]  )
+    model.thermal.BackupGen = Constraint( set_hours, model.thermal.bu, rule = lambda m,h,bu: m.capacity[bu] >= m.generation[h,bu]  )
 
 
 
@@ -128,9 +142,9 @@ def add_thermal_fixed_costs(model):
     """
     return (
         sum(
-            model.FCR_GasCC[bu]*MW_TO_KW*model.CapexGasCC[bu]*model.CapCC[bu]
-            + MW_TO_KW*model.FOM_GasCC[bu]*model.CapCC[bu]
-            for bu in model.bu
+            model.thermal.FCR[bu]*MW_TO_KW*model.thermal.CAPEX_M[bu]*model.thermal.capacity[bu]
+            + MW_TO_KW*model.thermal.FOM_M[bu]*model.thermal.capacity[bu]
+            for bu in model.thermal.bu
         )
     )
 
@@ -147,8 +161,8 @@ def add_thermal_variable_costs(model):
     return (
 
         sum(
-            (model.GasPrice[bu] * model.HR[bu] + model.VOM_GasCC[bu]) *
-            sum(model.GenCC[h, bu] for h in model.h)
-            for bu in model.bu )
+            (model.thermal.fuel_price[bu] * model.thermal.heat_rate[bu] + model.thermal.VOM_M[bu]) *
+            sum(model.thermal.generation    [h, bu] for h in model.h)
+            for bu in model.thermal.bu )
     )
 

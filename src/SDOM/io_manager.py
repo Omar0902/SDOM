@@ -183,7 +183,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
         solar_curt = safe_pyomo_value(model.pv.curtailment[h])
         wind_gen = safe_pyomo_value(model.wind.generation[h])
         wind_curt = safe_pyomo_value(model.wind.curtailment[h])
-        gas_cc_gen = sum( safe_pyomo_value(model.GenCC[h, bu]) for bu in model.bu )
+        gas_cc_gen = sum( safe_pyomo_value(model.thermal.generation[h, bu]) for bu in model.thermal.bu )
 
         if None not in [solar_gen, solar_curt, wind_gen, wind_curt, gas_cc_gen]:
 #            gen_results['Scenario'].append(run)
@@ -224,7 +224,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
 
     ## Total capacity
     cap = {}
-    cap['Thermal'] = sum( safe_pyomo_value( model.CapCC[bu] ) for bu in model.bu )
+    cap['Thermal'] = sum( safe_pyomo_value( model.thermal.capacity[bu] ) for bu in model.thermal.bu )
     cap['Solar PV'] = safe_pyomo_value( model.pv.total_installed_capacity )
     cap['Wind'] = safe_pyomo_value( model.wind.total_installed_capacity )
     cap['All'] = cap['Thermal'] + cap['Solar PV'] + cap['Wind']
@@ -233,7 +233,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     
     ## Generation
     gen = {}
-    gen['Thermal'] =  safe_pyomo_value( model.annual_thermal_gen_expr )
+    gen['Thermal'] =  safe_pyomo_value( model.thermal.total_generation )
     gen['Solar PV'] = safe_pyomo_value(model.pv.total_generation)
     gen['Wind'] = safe_pyomo_value(model.wind.total_generation)
     gen['Other renewables'] = safe_pyomo_value(sum(model.other_renewables.ts_parameter[h] for h in model.h))
@@ -271,7 +271,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     capex = {}
     capex['Solar PV'] = safe_pyomo_value( model.pv.capex_cost_expr )
     capex['Wind'] = safe_pyomo_value( model.wind.capex_cost_expr )
-    capex['Thermal'] = sum( safe_pyomo_value( model.FCR_GasCC[bu] * MW_TO_KW * model.CapexGasCC[bu] * model.CapCC[bu] ) for bu in model.bu )
+    capex['Thermal'] = sum( safe_pyomo_value( model.thermal.FCR[bu] * MW_TO_KW * model.thermal.CAPEX_M[bu] * model.thermal.capacity[bu] ) for bu in model.thermal.bu )
     capex['All'] = capex['Solar PV'] + capex['Wind'] + capex['Thermal']
 
     summary_results = concatenate_dataframes( summary_results, capex, run=1, unit='$US', metric='CAPEX' )
@@ -309,7 +309,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     ## FOM
     fom = {}
     sum_all = 0.0
-    fom['Thermal'] = sum( safe_pyomo_value( MW_TO_KW*model.FOM_GasCC[bu]*model.CapCC[bu] ) for bu in model.bu )
+    fom['Thermal'] = sum( safe_pyomo_value( MW_TO_KW*model.thermal.FOM_M[bu]*model.thermal.capacity[bu] ) for bu in model.thermal.bu )
     fom['Solar PV'] = safe_pyomo_value( model.pv.fixed_om_cost_expr )
     fom['Wind'] = safe_pyomo_value( model.wind.fixed_om_cost_expr )
      
@@ -326,7 +326,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     vom = {}
     sum_all = 0.0
     #TODO review this calculation
-    vom['Thermal'] = sum( safe_pyomo_value( (model.VOM_GasCC[bu]) *sum(model.GenCC[h, bu] for h in model.h ) ) for bu in model.bu )
+    vom['Thermal'] = sum( safe_pyomo_value( (model.thermal.VOM_M[bu]) *sum(model.thermal.generation[h, bu] for h in model.h ) ) for bu in model.thermal.bu )
 
     for tech in storage_tech_list:
         vom[tech] = safe_pyomo_value(model.StorageData['VOM', tech] * sum(model.PD[h, tech] for h in model.h))

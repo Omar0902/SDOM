@@ -28,10 +28,10 @@ def _add_vre_parameters(block,
     #model.CapSolar_capacity, model.CFSolar, model.CapWind__CAPEX_M, model.CapWind__FOM_M, model.CapWind__trans_cap_cost
 
     # Solar capacity factor initialization
-    cf_solar_melted = data[key_cf_data].melt(id_vars='Hour', var_name='plant', value_name='CF')
-    cf_solar_filtered = cf_solar_melted[(cf_solar_melted['plant'].isin(block.plants_set)) & (cf_solar_melted['Hour'].isin(set_hours))]
-    cf_solar_dict = cf_solar_filtered.set_index(['Hour', 'plant'])['CF'].to_dict()
-    block.capacity_factor = Param( set_hours, block.plants_set, initialize = cf_solar_dict )
+    cf_vre_melted = data[key_cf_data].melt(id_vars='Hour', var_name='plant', value_name='CF')
+    cf_vre_filtered = cf_vre_melted[(cf_vre_melted['plant'].isin(block.plants_set)) & (cf_vre_melted['Hour'].isin(set_hours))]
+    cf_vre_dict = cf_vre_filtered.set_index(['Hour', 'plant'])['CF'].to_dict()
+    block.capacity_factor = Param( set_hours, block.plants_set, initialize = cf_vre_dict )
 
 
 def add_vre_parameters(model, data):

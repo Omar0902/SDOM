@@ -221,7 +221,7 @@ def collect_results( model ):
 
 
 
-def configure_solver(solver_name: str, solver_options: dict = None):
+def configure_solver(solver_config_dict:dict):
     """
     Configure and return a Pyomo solver instance.
 
@@ -232,21 +232,34 @@ def configure_solver(solver_name: str, solver_options: dict = None):
     Returns:
     - solver (SolverFactory): Configured Pyomo solver instance.
     """
-    solver = SolverFactory(solver_name)
+
+    
+    if solver_config_dict["solver_name"]=="cbc":
+        solver = SolverFactory(solver_config_dict["solver_name"],
+                               executable=solver_config_dict["executable_path"]) if solver_config_dict["executable_path"] else SolverFactory(solver_config_dict["solver_name"])
+        # solver.options['loglevel'] = solver_config_dict["loglevel"]#3
+        # solver.options['mip_rel_gap'] = solver_config_dict["mip_rel_gap"]
+        # solver.options['tee'] = solver_config_dict["tee"]#True
+        # solver.options['keepfiles'] = solver_config_dict["keepfiles"]#True
+        # solver.options['logfile'] = solver_config_dict["log_file_path"]
+    else:
+        solver = SolverFactory(solver_config_dict["solver_name"])
 
     if not solver.available():
-        raise RuntimeError(f"Solver '{solver_name}' is not available on this system.")
+        raise RuntimeError(f"Solver '{solver_config_dict['solver_name']}' is not available on this system.")
 
     # Apply solver-specific options
-    if solver_options:
-        for key, value in solver_options.items():
+    if solver_config_dict:
+        for key, value in solver_config_dict.items():
+            if key == "solver_name" or key == "executable_path":
+                continue  # Skip keys that are not solver options
             solver.options[key] = value
 
     return solver
 
-
+############################CONTINUE HERE
 # Run solver function
-def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, cbc_executable_path=".\\Solver\\bin\\cbc.exe"):
+def run_solver(model, solver_config_dict:dict):
     """
     Solves the given optimization model using the CBC solver, optionally running multiple times with varying target values.
     Args:
@@ -263,12 +276,7 @@ def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, cbc_executabl
     """
 
     logging.info("Starting to solve SDOM model...")
-    solver = SolverFactory('cbc', executable=cbc_executable_path) if cbc_executable_path else SolverFactory('cbc')
-    solver.options['loglevel'] = 3
-    solver.options['mip_rel_gap'] = optcr
-    solver.options['tee'] = True
-    solver.options['keepfiles'] = True
-    solver.options['logfile'] = log_file_path
+    solver = configure_solver(solver_config_dict)
 
     results_over_runs = []
     best_result = None

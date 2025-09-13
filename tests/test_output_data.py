@@ -1,6 +1,8 @@
 #include tests for csv outputs
 import os
 
+from utils_tests import get_default_solver_config_dict
+
 from sdom import load_data
 from sdom import run_solver, initialize_model, export_results
 
@@ -13,9 +15,9 @@ def test_output_files_creation_case_no_resiliency():
 
     model = initialize_model( data, n_hours = 24, with_resilience_constraints = False )
 
-    
-    best_result = run_solver( model, optcr=0.0 )
-    
+    solver_dict = get_default_solver_config_dict(solver_name="cbc", executable_path=".\\Solver\\bin\\cbc.exe")
+    best_result = run_solver( model, solver_dict )
+
     export_results(model, 'test_data')
     
     files_names = ["OutputGeneration_test_data", "OutputStorage_test_data", "OutputSummary_test_data"]

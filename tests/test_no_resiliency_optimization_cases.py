@@ -5,7 +5,7 @@ from sdom import load_data
 from sdom import run_solver, initialize_model
 
 
-from utils_tests import get_n_eq_ineq_constraints, get_optimization_problem_info, get_optimization_problem_solution_info
+from utils_tests import get_n_eq_ineq_constraints, get_optimization_problem_info, get_optimization_problem_solution_info, get_default_solver_config_dict
 
 def test_optimization_model_ini_case_no_resiliency_24h():
 
@@ -31,8 +31,9 @@ def test_optimization_model_res_case_no_resiliency():
 
     model = initialize_model( data, n_hours = 24, with_resilience_constraints = False )
 
+    solver_dict = get_default_solver_config_dict(solver_name="cbc", executable_path=".\\Solver\\bin\\cbc.exe")
     try:
-        best_result = run_solver( model, optcr=0.0 )
+        best_result = run_solver( model, solver_dict )
         assert best_result is not None
     except Exception as e:
         pytest.fail(f"{run_solver.__name__} failed with error: {e}")

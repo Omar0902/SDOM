@@ -266,7 +266,7 @@ def get_default_solver_config_dict(solver_name="cbc", executable_path=".\\Solver
             "report_timing": True, #If True (the default), then timing information is reported
             "logfile": "solver_log.txt", # The filename used to store output for shell solvers
             #"solnfile": "./results_pyomo/solver_soln.txt", # The filename used to store the solution for shell solvers
-            "timelimit": 2, # The number of seconds that a shell solver is run before it is terminated. (default is None)
+            "timelimit": None, # The number of seconds that a shell solver is run before it is terminated. (default is None)
             },  
     }
     

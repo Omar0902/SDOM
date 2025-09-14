@@ -70,11 +70,7 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
     add_vre_expressions( model )
 
 
-    logging.debug("-- Adding VRE expressions...")
-    add_vre_expressions( model )
-
-    # Capacity of backup GCC units
-    logging.debug("-- Adding thermal generation variables...")
+    # Capacity of backup Thermal units
     logging.debug("-- Adding thermal generation variables...")
     add_thermal_variables( model )
 
@@ -249,15 +245,40 @@ def configure_solver(solver_config_dict:dict):
         raise RuntimeError(f"Solver '{solver_config_dict['solver_name']}' is not available on this system.")
 
     # Apply solver-specific options
-    if solver_config_dict:
-        for key, value in solver_config_dict.items():
-            if key == "solver_name" or key == "executable_path":
-                continue  # Skip keys that are not solver options
+    if solver_config_dict["options"]:
+        for key, value in solver_config_dict["options"].items():
             solver.options[key] = value
 
     return solver
 
-############################CONTINUE HERE
+def get_default_solver_config_dict(solver_name="cbc", executable_path=".\\Solver\\bin\\cbc.exe"):
+    solver_dict = {
+        "solver_name": "appsi_" + solver_name,
+        "options":{
+            "loglevel": 3,
+            "mip_rel_gap": 0.0,
+            "keepfiles": True,
+            "logfile": "solver_log.txt", # The filename used to store output for shell solvers
+            },
+        "solve_keywords":{
+            "tee": True, #If true solver output is printed both to the standard output as well as saved to the log file.
+            "load_solutions": True, #If True (the default), then solution values are automically transfered to Var objects on the model
+            "report_timing": True, #If True (the default), then timing information is reported
+            "logfile": "solver_log.txt", # The filename used to store output for shell solvers
+            #"solnfile": "./results_pyomo/solver_soln.txt", # The filename used to store the solution for shell solvers
+            "timelimit": 2, # The number of seconds that a shell solver is run before it is terminated. (default is None)
+            },  
+    }
+    
+    if solver_name == "cbc":
+        solver_dict["solver_name"] = solver_name
+        solver_dict["executable_path"] = executable_path
+    elif solver_name == "xpress":
+        solver_dict["solver_name"] = "xpress_direct"
+
+    return solver_dict
+
+
 # Run solver function
 def run_solver(model, solver_config_dict:dict):
     """
@@ -286,7 +307,13 @@ def run_solver(model, solver_config_dict:dict):
 
     logging.info(f"Running optimization for GenMix_Target = {target_value:.2f}")
     result = solver.solve(model, 
-                            #, tee=True, keepfiles = True, #working_dir='C:/Users/mkoleva/Documents/Masha/Projects/LDES_Demonstration/CBP/TEA/Results/solver_log.txt'
+                          tee = solver_config_dict["solve_keywords"].get("tee", True),
+                          load_solutions = solver_config_dict["solve_keywords"].get("load_solutions", True),
+                          #logfile = solver_config_dict["solve_keywords"].get("logfile", "solver_log.txt"),
+                          timelimit = solver_config_dict["solve_keywords"].get("timelimit", None),
+                          report_timing = solver_config_dict["solve_keywords"].get("report_timing", True),
+                          keepfiles = solver_config_dict["solve_keywords"].get("keepfiles", True),
+                          #logfile='solver_log.txt'
                             )
     
     if (result.solver.status == SolverStatus.ok) and (result.solver.termination_condition == TerminationCondition.optimal):

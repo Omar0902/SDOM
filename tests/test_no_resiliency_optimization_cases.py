@@ -2,10 +2,10 @@ import os
 import pytest
 
 from sdom import load_data
-from sdom import run_solver, initialize_model
+from sdom import run_solver, initialize_model, get_default_solver_config_dict
 
 
-from utils_tests import get_n_eq_ineq_constraints, get_optimization_problem_info, get_optimization_problem_solution_info, get_default_solver_config_dict
+from utils_tests import get_n_eq_ineq_constraints, get_optimization_problem_info, get_optimization_problem_solution_info
 
 def test_optimization_model_ini_case_no_resiliency_24h():
 

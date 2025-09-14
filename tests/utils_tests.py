@@ -41,16 +41,3 @@ def get_optimization_problem_solution_info( best_result ):
             "Total_CapScha_H2": best_result[1]["Total_CapScha"]["H2"]
         }
     return None
-
-def get_default_solver_config_dict(solver_name="cbc", executable_path=".\\Solver\\bin\\cbc.exe"):
-    if solver_name == "cbc":    
-        solver_dict = {
-            "solver_name": solver_name,
-            "executable_path": executable_path,
-            "mip_rel_gap": 0.0,
-            "loglevel": 3,
-            "tee": True,
-            "keepfiles": True,
-            "log_file_path": "./solver_log.txt"
-        }
-    return solver_dict

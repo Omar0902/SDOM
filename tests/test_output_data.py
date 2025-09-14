@@ -1,10 +1,8 @@
 #include tests for csv outputs
 import os
 
-from utils_tests import get_default_solver_config_dict
-
 from sdom import load_data
-from sdom import run_solver, initialize_model, export_results
+from sdom import run_solver, initialize_model, export_results, get_default_solver_config_dict
 
 def test_output_files_creation_case_no_resiliency():
 

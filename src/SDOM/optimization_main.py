@@ -230,14 +230,10 @@ def configure_solver(solver_config_dict:dict):
     """
 
     
-    if solver_config_dict["solver_name"]=="cbc":
+    if solver_config_dict["solver_name"]=="cbc": #or solver_config_dict["solver_name"]=="xpress_direct":
         solver = SolverFactory(solver_config_dict["solver_name"],
                                executable=solver_config_dict["executable_path"]) if solver_config_dict["executable_path"] else SolverFactory(solver_config_dict["solver_name"])
-        # solver.options['loglevel'] = solver_config_dict["loglevel"]#3
-        # solver.options['mip_rel_gap'] = solver_config_dict["mip_rel_gap"]
-        # solver.options['tee'] = solver_config_dict["tee"]#True
-        # solver.options['keepfiles'] = solver_config_dict["keepfiles"]#True
-        # solver.options['logfile'] = solver_config_dict["log_file_path"]
+        
     else:
         solver = SolverFactory(solver_config_dict["solver_name"])
 
@@ -275,6 +271,7 @@ def get_default_solver_config_dict(solver_name="cbc", executable_path=".\\Solver
         solver_dict["executable_path"] = executable_path
     elif solver_name == "xpress":
         solver_dict["solver_name"] = "xpress_direct"
+        #solver_dict["executable_path"] = executable_path
 
     return solver_dict
 

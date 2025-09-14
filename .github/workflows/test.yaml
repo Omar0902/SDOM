@@ -36,7 +36,7 @@ jobs:
 
       - name: 📥 Install package
         run: |
-            pip install . sdom highspy pytest
+            pip install . highspy pytest
 
       - name: ▶️ Run tests
         run: |

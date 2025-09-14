@@ -251,10 +251,10 @@ def get_default_solver_config_dict(solver_name="cbc", executable_path=".\\Solver
     solver_dict = {
         "solver_name": "appsi_" + solver_name,
         "options":{
-            "loglevel": 3,
+            #"loglevel": 3,
             "mip_rel_gap": 0.0,
-            "keepfiles": True,
-            "logfile": "solver_log.txt", # The filename used to store output for shell solvers
+            #"keepfiles": True,
+            #"logfile": "solver_log.txt", # The filename used to store output for shell solvers
             },
         "solve_keywords":{
             "tee": True, #If true solver output is printed both to the standard output as well as saved to the log file.

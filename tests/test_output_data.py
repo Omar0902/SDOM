@@ -13,7 +13,8 @@ def test_output_files_creation_case_no_resiliency():
 
     model = initialize_model( data, n_hours = 24, with_resilience_constraints = False )
 
-    solver_dict = get_default_solver_config_dict(solver_name="cbc", executable_path=".\\Solver\\bin\\cbc.exe")
+    #solver_dict = get_default_solver_config_dict(solver_name="cbc", executable_path=".\\Solver\\bin\\cbc.exe")
+    solver_dict = get_default_solver_config_dict(solver_name="highs", executable_path="")
     best_result = run_solver( model, solver_dict )
 
     export_results(model, 'test_data')

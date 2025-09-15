@@ -4,7 +4,7 @@ import pandas as pd
 from sdom import load_data, initialize_model
 
 def test_load_data_folder_exist():
-    test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data')
+    test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data/no_exchange_run_of_river')
     test_data_path = os.path.abspath(test_data_path)
 
     assert os.path.exists(test_data_path)
@@ -12,7 +12,7 @@ def test_load_data_folder_exist():
 
 
 def test_load_data_keys_and_types():
-    test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data')
+    test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data/no_exchange_run_of_river')
     test_data_path = os.path.abspath(test_data_path)
     
     data = load_data( test_data_path )
@@ -52,7 +52,7 @@ def test_load_data_keys_and_types():
     
 
 def test_load_data_param_values():
-    test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data')
+    test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data/no_exchange_run_of_river')
     test_data_path = os.path.abspath(test_data_path)
     
     data = load_data( test_data_path )
@@ -65,7 +65,7 @@ def test_load_data_param_values():
     assert abs( df.loc["r"].Value - 0.06 ) <= 0.0005
 
 def test_load_data_thermal_values():
-    test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data')
+    test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data/no_exchange_run_of_river')
     test_data_path = os.path.abspath(test_data_path)
 
     data = load_data( test_data_path )
@@ -92,7 +92,7 @@ def test_load_data_thermal_values():
     
 
 def test_load_data_storage_values():
-    test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data')
+    test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data/no_exchange_run_of_river')
     test_data_path = os.path.abspath(test_data_path)
 
     data = load_data( test_data_path )

@@ -9,14 +9,28 @@ def safe_pyomo_value(var):
         return value(var) if var is not None else None
     except ValueError:
         return None
+
+def get_complete_path(filepath, file_name):
+
+    base_name, ext = os.path.splitext(file_name)
+    if ext.lower() == '.csv':
+        for f in os.listdir(filepath):
+            if f.startswith(base_name) and f.endswith('.csv'):
+                logging.debug(f"Found matching file: {f}")
+                return os.path.join(filepath, f)
     
-def check_file_exists(filepath, name_file = ""):
+    return ""
+
+def check_file_exists(filepath, file_name, file_description = ""):
     """Check if the expected file exists. Raise FileNotFoundError if not."""
-    if not os.path.isfile(filepath):
-        logging.error(f"Expected {name_file} file not found: {filepath}")
-        raise FileNotFoundError(f"Expected {name_file} file not found: {filepath}")
-        return False
-    return True
+    
+    input_file_path = get_complete_path(filepath, file_name)#os.path.join(filepath, file_name)
+
+    if not os.path.isfile(input_file_path):
+        logging.error(f"Expected {file_description} file not found: {filepath}{file_name}")
+        raise FileNotFoundError(f"Expected {file_description} file not found: {filepath}{file_name}")
+
+    return input_file_path
 
 def compare_lists(list1, list2, text_comp='', list_names=['','']):
     """Compare two lists for length and element equality. Log warnings if they differ."""

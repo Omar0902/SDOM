@@ -1,5 +1,6 @@
 import logging
 #from pympler import muppy, summary
+#from pympler import muppy, summary
 from pyomo.opt import SolverFactory, SolverStatus, TerminationCondition
 from pyomo.util.infeasible import log_infeasible_constraints
 from pyomo.environ import ConcreteModel, Objective, Block, minimize
@@ -68,7 +69,8 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
     logging.debug("-- Adding VRE expressions...")
     add_vre_expressions( model )
 
-    # Capacity of backup GCC units
+
+    # Capacity of backup Thermal units
     logging.debug("-- Adding thermal generation variables...")
     add_thermal_variables( model )
 
@@ -111,6 +113,10 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
     add_thermal_constraints( model )
     
     # Build a model size report
+    # Log memory usage before solving
+    # all_objects = muppy.get_objects()
+    # logging.info("Memory usage before solving:")
+    # logging.info(summary.summarize(all_objects))
     # Log memory usage before solving
     # all_objects = muppy.get_objects()
     # logging.info("Memory usage before solving:")
@@ -208,8 +214,70 @@ def collect_results( model ):
     return results
 
 
+
+
+
+def configure_solver(solver_config_dict:dict):
+    """
+    Configure and return a Pyomo solver instance.
+
+    Parameters:
+    - solver_name (str): Name of the solver (e.g., 'xpress', 'highs', 'cbc', 'gurobi').
+    - solver_options (dict): Optional dictionary of solver-specific options.
+
+    Returns:
+    - solver (SolverFactory): Configured Pyomo solver instance.
+    """
+
+    
+    if solver_config_dict["solver_name"]=="cbc": #or solver_config_dict["solver_name"]=="xpress_direct":
+        solver = SolverFactory(solver_config_dict["solver_name"],
+                               executable=solver_config_dict["executable_path"]) if solver_config_dict["executable_path"] else SolverFactory(solver_config_dict["solver_name"])
+        
+    else:
+        solver = SolverFactory(solver_config_dict["solver_name"])
+
+    if not solver.available():
+        raise RuntimeError(f"Solver '{solver_config_dict['solver_name']}' is not available on this system.")
+
+    # Apply solver-specific options
+    if solver_config_dict["options"]:
+        for key, value in solver_config_dict["options"].items():
+            solver.options[key] = value
+
+    return solver
+
+def get_default_solver_config_dict(solver_name="cbc", executable_path=".\\Solver\\bin\\cbc.exe"):
+    solver_dict = {
+        "solver_name": "appsi_" + solver_name,
+        "options":{
+            #"loglevel": 3,
+            "mip_rel_gap": 0.0,
+            #"keepfiles": True,
+            #"logfile": "solver_log.txt", # The filename used to store output for shell solvers
+            },
+        "solve_keywords":{
+            "tee": True, #If true solver output is printed both to the standard output as well as saved to the log file.
+            "load_solutions": True, #If True (the default), then solution values are automically transfered to Var objects on the model
+            "report_timing": True, #If True (the default), then timing information is reported
+            "logfile": "solver_log.txt", # The filename used to store output for shell solvers
+            #"solnfile": "./results_pyomo/solver_soln.txt", # The filename used to store the solution for shell solvers
+            "timelimit": None, # The number of seconds that a shell solver is run before it is terminated. (default is None)
+            },  
+    }
+    
+    if solver_name == "cbc":
+        solver_dict["solver_name"] = solver_name
+        solver_dict["executable_path"] = executable_path
+    elif solver_name == "xpress":
+        solver_dict["solver_name"] = "xpress_direct"
+        #solver_dict["executable_path"] = executable_path
+
+    return solver_dict
+
+
 # Run solver function
-def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, cbc_executable_path=".\\Solver\\bin\\cbc.exe"):
+def run_solver(model, solver_config_dict:dict):
     """
     Solves the given optimization model using the CBC solver, optionally running multiple times with varying target values.
     Args:
@@ -226,12 +294,7 @@ def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, cbc_executabl
     """
 
     logging.info("Starting to solve SDOM model...")
-    solver = SolverFactory('cbc', executable=cbc_executable_path) if cbc_executable_path else SolverFactory('cbc')
-    solver.options['loglevel'] = 3
-    solver.options['mip_rel_gap'] = optcr
-    solver.options['tee'] = True
-    solver.options['keepfiles'] = True
-    solver.options['logfile'] = log_file_path
+    solver = configure_solver(solver_config_dict)
 
     results_over_runs = []
     best_result = None
@@ -241,7 +304,13 @@ def run_solver(model, log_file_path='./solver_log.txt', optcr=0.0, cbc_executabl
 
     logging.info(f"Running optimization for GenMix_Target = {target_value:.2f}")
     result = solver.solve(model, 
-                            #, tee=True, keepfiles = True, #working_dir='C:/Users/mkoleva/Documents/Masha/Projects/LDES_Demonstration/CBP/TEA/Results/solver_log.txt'
+                          tee = solver_config_dict["solve_keywords"].get("tee", True),
+                          load_solutions = solver_config_dict["solve_keywords"].get("load_solutions", True),
+                          #logfile = solver_config_dict["solve_keywords"].get("logfile", "solver_log.txt"),
+                          timelimit = solver_config_dict["solve_keywords"].get("timelimit", None),
+                          report_timing = solver_config_dict["solve_keywords"].get("report_timing", True),
+                          keepfiles = solver_config_dict["solve_keywords"].get("keepfiles", True),
+                          #logfile='solver_log.txt'
                             )
     
     if (result.solver.status == SolverStatus.ok) and (result.solver.termination_condition == TerminationCondition.optimal):

@@ -16,17 +16,17 @@ LOG_COLORS = {
 INPUT_CSV_NAMES = {
     # 'solar_plants': 'Set_k_SolarPV.csv', #Now this set is optional since are col names CFSolar_2050.csv
     # 'wind_plants': 'Set_w_Wind.csv', #Now this set is optional since are col names CFWind_2050.csv
-    'load_data': 'Load_hourly_2050.csv',
-    'nuclear_data': 'Nucl_hourly_2019.csv',
-    'large_hydro_data': 'lahy_hourly_2019.csv',
-    'other_renewables_data': 'otre_hourly_2019.csv',
-    'cf_solar': 'CFSolar_2050.csv',
-    'cf_wind': 'CFWind_2050.csv',
-    'cap_solar': 'CapSolar_2050.csv',
-    'cap_wind': 'CapWind_2050.csv',
-    'thermal_data': 'Data_BalancingUnits_2030(in).csv',
-    'storage_data': 'StorageData_2050.csv',
-    'scalars': 'scalars.csv',
+    'load_data': 'Load_hourly.csv',#'Load_hourly_2050.csv',
+    'nuclear_data': 'Nucl_hourly.csv',#'Nucl_hourly_2019.csv',
+    'large_hydro_data': 'lahy_hourly.csv', #'lahy_hourly_2019.csv',
+    'other_renewables_data': 'otre_hourly.csv', #'otre_hourly_2019.csv',
+    'cf_solar': 'CFSolar.csv', #'CFSolar_2050.csv',
+    'cf_wind': 'CFWind.csv', #'CFWind_2050.csv',
+    'cap_solar': 'CapSolar.csv', #'CapSolar_2050.csv',
+    'cap_wind': 'CapWind.csv', #'CapWind_2050.csv',
+    'thermal_data': 'Data_BalancingUnits.csv', #'Data_BalancingUnits_2030(in).csv',
+    'storage_data': 'StorageData.csv', #'StorageData_2050.csv',
+    'scalars': 'scalars.csv', #'scalars.csv',
 }
 
 VRE_PROPERTIES_NAMES = ['trans_cap_cost', 'CAPEX_M', 'FOM_M']

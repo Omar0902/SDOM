@@ -9,7 +9,7 @@ from utils_tests import get_n_eq_ineq_constraints, get_optimization_problem_info
 
 def test_optimization_model_ini_case_no_resiliency_24h():
 
-    test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data')
+    test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data/no_exchange_run_of_river')
     test_data_path = os.path.abspath(test_data_path)
     
     data = load_data( test_data_path )
@@ -24,7 +24,7 @@ def test_optimization_model_ini_case_no_resiliency_24h():
 
 def test_optimization_model_res_case_no_resiliency_highs():
 
-    test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data')
+    test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data/no_exchange_run_of_river')
     test_data_path = os.path.abspath(test_data_path)
     
     data = load_data( test_data_path )

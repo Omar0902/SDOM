@@ -6,7 +6,7 @@ from sdom import run_solver, initialize_model, export_results, get_default_solve
 
 def test_output_files_creation_case_no_resiliency():
 
-    test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data')
+    test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data/no_exchange_run_of_river')
     test_data_path = os.path.abspath(test_data_path)
     
     data = load_data( test_data_path )

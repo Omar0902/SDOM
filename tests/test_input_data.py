@@ -1,10 +1,11 @@
 import os
 import pandas as pd
+from constants_test import REL_PATH_DATA_RUN_OF_RIVER_TEST, DICT_EXPECTED_DATA_KEYS_TO_TYPE
 
 from sdom import load_data, initialize_model
 
 def test_load_data_folder_exist():
-    test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data/no_exchange_run_of_river')
+    test_data_path = os.path.join(os.path.dirname(__file__), '..', REL_PATH_DATA_RUN_OF_RIVER_TEST)
     test_data_path = os.path.abspath(test_data_path)
 
     assert os.path.exists(test_data_path)
@@ -12,47 +13,22 @@ def test_load_data_folder_exist():
 
 
 def test_load_data_keys_and_types():
-    test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data/no_exchange_run_of_river')
+    test_data_path = os.path.join(os.path.dirname(__file__), '..', REL_PATH_DATA_RUN_OF_RIVER_TEST)
     test_data_path = os.path.abspath(test_data_path)
     
     data = load_data( test_data_path )
     data_keys = data.keys()
 
-    assert "solar_plants" in data_keys
-    assert "wind_plants" in data_keys
-    assert "load_data" in data_keys
-    assert "nuclear_data" in data_keys
-    assert "large_hydro_data" in data_keys
-    assert "other_renewables_data" in data_keys
-    assert "cf_solar" in data_keys
-    assert "cf_wind" in data_keys
-    assert "cap_solar" in data_keys
-    assert "cap_wind" in data_keys
-    assert "storage_data" in data_keys
-    assert "STORAGE_SET_J_TECHS" in data_keys
-    assert "STORAGE_SET_B_TECHS" in data_keys
-    assert "thermal_data" in data_keys
-    assert "scalars" in data_keys
+    for key, expected_type in DICT_EXPECTED_DATA_KEYS_TO_TYPE.items():
+        if key == "large_hydro_max" or key == "large_hydro_min":
+                continue  # Skip these keys as they are not for run of River
+        assert key in data_keys, f"Missing expected key: {key}"
+        assert isinstance(data[key], expected_type), f"Key '{key}' has incorrect type. Expected {expected_type}, got {type(data[key])}"
 
-    assert type( data["solar_plants"] ) == list
-    assert type( data["wind_plants"] ) == list
-    assert type( data["load_data"] ) == pd.DataFrame
-    assert type( data["nuclear_data"] ) == pd.DataFrame
-    assert type( data["large_hydro_data"] ) == pd.DataFrame
-    assert type( data["other_renewables_data"] ) == pd.DataFrame
-    assert type( data["cf_solar"] ) == pd.DataFrame
-    assert type( data["cf_wind"] ) == pd.DataFrame
-    assert type( data["cap_solar"] ) == pd.DataFrame
-    assert type( data["cap_wind"] ) == pd.DataFrame
-    assert type( data["storage_data"] ) == pd.DataFrame
-    assert type( data["STORAGE_SET_J_TECHS"] ) == list
-    assert type( data["STORAGE_SET_B_TECHS"] ) == list
-    assert type( data["thermal_data"] ) == pd.DataFrame
-    assert type( data["scalars"] ) == pd.DataFrame
     
 
 def test_load_data_param_values():
-    test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data/no_exchange_run_of_river')
+    test_data_path = os.path.join(os.path.dirname(__file__), '..', REL_PATH_DATA_RUN_OF_RIVER_TEST)
     test_data_path = os.path.abspath(test_data_path)
     
     data = load_data( test_data_path )
@@ -65,7 +41,7 @@ def test_load_data_param_values():
     assert abs( df.loc["r"].Value - 0.06 ) <= 0.0005
 
 def test_load_data_thermal_values():
-    test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data/no_exchange_run_of_river')
+    test_data_path = os.path.join(os.path.dirname(__file__), '..', REL_PATH_DATA_RUN_OF_RIVER_TEST)
     test_data_path = os.path.abspath(test_data_path)
 
     data = load_data( test_data_path )
@@ -92,7 +68,7 @@ def test_load_data_thermal_values():
     
 
 def test_load_data_storage_values():
-    test_data_path = os.path.join(os.path.dirname(__file__), '..', 'Data/no_exchange_run_of_river')
+    test_data_path = os.path.join(os.path.dirname(__file__), '..', REL_PATH_DATA_RUN_OF_RIVER_TEST)
     test_data_path = os.path.abspath(test_data_path)
 
     data = load_data( test_data_path )

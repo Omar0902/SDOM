@@ -16,11 +16,12 @@ LOG_COLORS = {
 INPUT_CSV_NAMES = {
     # 'solar_plants': 'Set_k_SolarPV.csv', #Now this set is optional since are col names CFSolar_2050.csv
     # 'wind_plants': 'Set_w_Wind.csv', #Now this set is optional since are col names CFWind_2050.csv
+    'formulations': 'formulations.csv',
     'load_data': 'Load_hourly.csv',#'Load_hourly_2050.csv',
     'nuclear_data': 'Nucl_hourly.csv',#'Nucl_hourly_2019.csv',
     'large_hydro_data': 'lahy_hourly.csv', #'lahy_hourly_2019.csv',
-    #'large_hydro_max': 'lahy_max_hourly.csv', #'lahy_hourly_2019.csv',
-    #'large_hydro_min': 'lahy_min_hourly.csv', #'lahy_hourly_2019.csv',
+    'large_hydro_max': 'lahy_max_hourly.csv', #'lahy_hourly_2019.csv',
+    'large_hydro_min': 'lahy_min_hourly.csv', #'lahy_hourly_2019.csv',
     'other_renewables_data': 'otre_hourly.csv', #'otre_hourly_2019.csv',
     'cf_solar': 'CFSolar.csv', #'CFSolar_2050.csv',
     'cf_wind': 'CFWind.csv', #'CFWind_2050.csv',

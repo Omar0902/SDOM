@@ -34,6 +34,11 @@ def load_data( input_data_dir = '.\\Data\\' ):
     """
     logging.info("Loading SDOM input data...")
     
+    logging.debug("- Trying to load formulations data...")
+    input_file_path = check_file_exists(input_data_dir, INPUT_CSV_NAMES["formulations"], "CSV file to specify the formulations for different components")
+    if input_file_path != "":
+        formulations = pd.read_csv( input_file_path )
+    
     logging.debug("- Trying to load VRE data...")
     # THE SET CSV FILES WERE REMOVED
     # input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["solar_plants"])
@@ -43,7 +48,8 @@ def load_data( input_data_dir = '.\\Data\\' ):
     # input_file_path = os.path.join(input_data_dir, INPUT_CSV_NAMES["wind_plants"])
     # if check_file_exists(input_file_path, "wind plants ids"):
     #     wind_plants = pd.read_csv( input_file_path, header=None )[0].tolist()
-    
+
+
     input_file_path = check_file_exists(input_data_dir, INPUT_CSV_NAMES["cf_solar"], "Capacity factors for pv solar")
     if input_file_path != "":
         cf_solar = pd.read_csv( input_file_path ).round(5)
@@ -109,23 +115,41 @@ def load_data( input_data_dir = '.\\Data\\' ):
     if input_file_path != "":
         scalars = pd.read_csv( input_file_path, index_col="Parameter" )
     #os.chdir('../')
-    return {
-        "solar_plants": solar_plants,
-        "wind_plants": wind_plants,
-        "load_data": load_data,
-        "nuclear_data": nuclear_data,
-        "large_hydro_data": large_hydro_data,
-        "other_renewables_data": other_renewables_data,
-        "cf_solar": cf_solar,
-        "cf_wind": cf_wind,
-        "cap_solar": cap_solar,
-        "cap_wind": cap_wind,
-        "storage_data": storage_data,
-        "STORAGE_SET_J_TECHS": storage_set_j_techs,
-        "STORAGE_SET_B_TECHS": storage_set_b_techs,
-        "thermal_data": thermal_data,
-        "scalars": scalars,
-    }
+
+    data_dict =  {
+            "formulations": formulations,
+            "solar_plants": solar_plants,
+            "wind_plants": wind_plants,
+            "load_data": load_data,
+            "nuclear_data": nuclear_data,
+            "large_hydro_data": large_hydro_data,
+            "other_renewables_data": other_renewables_data,
+            "cf_solar": cf_solar,
+            "cf_wind": cf_wind,
+            "cap_solar": cap_solar,
+            "cap_wind": cap_wind,
+            "storage_data": storage_data,
+            "STORAGE_SET_J_TECHS": storage_set_j_techs,
+            "STORAGE_SET_B_TECHS": storage_set_b_techs,
+            "thermal_data": thermal_data,
+            "scalars": scalars,
+        }
+
+    if formulations.loc[ formulations["Component"].str.lower() == 'hydro' ]["Formulation"].iloc[0]  == "MonthlyBudgetFormulation":
+        logging.debug("- Hydro was set to MonthlyBudgetFormulation. Trying to load large hydro max/min data...")
+        
+        input_file_path = check_file_exists(input_data_dir, INPUT_CSV_NAMES["large_hydro_max"], "large hydro Mximum  capacity data")
+        if input_file_path != "":
+            large_hydro_max = pd.read_csv( input_file_path ).round(5)
+        
+        input_file_path = check_file_exists(input_data_dir, INPUT_CSV_NAMES["large_hydro_min"], "large hydro Minimum capacity data")
+        if input_file_path != "":
+            large_hydro_min = pd.read_csv( input_file_path ).round(5)
+        data_dict["large_hydro_max"] = large_hydro_max
+        data_dict["large_hydro_min"] = large_hydro_min
+        
+
+    return data_dict
     
 
 

@@ -78,19 +78,19 @@ def add_thermal_variables(model):
         - value(model.other_renewables.alpha) * value(model.other_renewables.ts_parameter[h])
         for h in model.h
     )
-
-    if ( len( list(model.thermal.plants_set) ) <= 1 ) & ( CapCC_upper_bound_value > model.thermal.data['MaxCapacity', model.thermal.plants_set[1]] ):
+    cap_thermal_units = sum(model.thermal.data["MaxCapacity", bu] for bu in model.thermal.plants_set)
+    if ( len( list(model.thermal.plants_set) ) <= 1 ) & ( CapCC_upper_bound_value > cap_thermal_units ):
         model.thermal.plant_installed_capacity[model.thermal.plants_set[1]].setub( CapCC_upper_bound_value )
         logging.warning(f"There is only one thermal balancing unit. " \
-        f"Upper bound for Capacity variable was set to {CapCC_upper_bound_value} instead of the input = {model.thermal.data['MaxCapacity', model.thermal.plants_set[1]]} to ensure feasibility.")
+        f"Upper bound for Capacity variable was set to {CapCC_upper_bound_value} instead of the input = {cap_thermal_units} to ensure feasibility.")
     else:
         sum_cap = 0
         for bu in model.thermal.plants_set:
             model.thermal.plant_installed_capacity[bu].setub( model.thermal.data["MaxCapacity", bu] )
             model.thermal.plant_installed_capacity[bu].setlb( model.thermal.data["MinCapacity", bu] )
-            sum_cap += model.thermal.data["MaxCapacity", bu]
-        if ( CapCC_upper_bound_value > model.thermal.data['MaxCapacity', model.thermal.plants_set[1]] ):
-            logging.warning(f"Total allowed capacity for thermal units is {sum_cap}MW. This value might be insufficient to achieve problem feasibility, consider increase it to at least {CapCC_upper_bound_value}MW.")
+            #sum_cap += model.thermal.data["MaxCapacity", bu]
+        if ( CapCC_upper_bound_value > cap_thermal_units ):
+            logging.warning(f"Total allowed capacity for thermal units is {cap_thermal_units}MW. This value might be insufficient to achieve problem feasibility, consider increase it to at least {CapCC_upper_bound_value}MW.")
 
 
 ####################################################################################|

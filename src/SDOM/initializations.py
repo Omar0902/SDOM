@@ -1,15 +1,18 @@
 import logging
+
 from pyomo.environ import Param, Set, RangeSet
-from .constants import STORAGE_PROPERTIES_NAMES, THERMAL_PROPERTIES_NAMES
+
 from .models.formulations_vre import add_vre_parameters
 from .models.formulations_thermal import add_thermal_parameters, initialize_thermal_sets
 from .models.formulations_nuclear import add_nuclear_parameters
-from .models.formulations_hydro import add_large_hydro_parameters
+from .models.formulations_hydro import add_large_hydro_parameters, add_large_hydro_bound_parameters
 from .models.formulations_other_renewables import add_other_renewables_parameters
 from .models.formulations_load import add_load_parameters
 from .models.formulations_storage import add_storage_parameters, initialize_storage_sets
 from .models.formulations_resiliency import add_resiliency_parameters
 
+
+from .constants import MONTHLY_BUDGET_HOURS_AGGREGATION, DAILY_BUDGET_HOURS_AGGREGATION
 
 def initialize_vre_sets(data, block, vre_type: str):
      # Solar plant ID alignment
@@ -34,7 +37,25 @@ def initialize_vre_sets(data, block, vre_type: str):
     data[f'filtered_cap_{vre_type}_dict'] = filtered_cap_vre_dict
     data[f'complete_{vre_type}_data'] = complete_vre_data
 
+
+def check_n_hours(n_hours: int, interval: int):
+    if n_hours % interval == 0:
+        return n_hours
+    else:
+        n = (n_hours // interval) + 1
+        logging.warning(f"the selected number of hours ({n_hours}) is not multiple of the aggregation interval ({interval}) for the selected formulation. The number of hours will be approximated to {n*interval}.")
+    return n * interval
+
+def create_budget_set( model, 
+                      block, 
+                      n_hours_checked:int, 
+                      budget_hours_aggregation:int ):
+    breakpoints  = list(range(budget_hours_aggregation, n_hours_checked+1, budget_hours_aggregation))
+    indices = list(range(1, len(breakpoints) + 1))
     
+    block.budget_set = Set( within=model.h, initialize = indices  )
+    return
+
 def initialize_sets( model, data, n_hours = 8760 ):
     """
     Initialize model sets from the provided data dictionary.
@@ -48,7 +69,6 @@ def initialize_sets( model, data, n_hours = 8760 ):
 
 
     # Define sets
-    model.h = RangeSet(1, n_hours)
 
     initialize_storage_sets(model.storage, data)
     logging.info(f"Storage technologies being considered: {list(model.storage.j)}")
@@ -56,6 +76,18 @@ def initialize_sets( model, data, n_hours = 8760 ):
 
     initialize_thermal_sets(model.thermal, data)
 
+    if data["formulations"].loc[ data["formulations"]["Component"].str.lower() == 'hydro' ]["Formulation"].iloc[0]  == "MonthlyBudgetFormulation":
+        n_hours_checked= check_n_hours(n_hours, MONTHLY_BUDGET_HOURS_AGGREGATION)
+        model.h = RangeSet(1, n_hours_checked)
+        create_budget_set( model, model.hydro, n_hours_checked, MONTHLY_BUDGET_HOURS_AGGREGATION )
+
+    elif data["formulations"].loc[ data["formulations"]["Component"].str.lower() == 'hydro' ]["Formulation"].iloc[0]  == "DailyBudgetFormulation":
+        n_hours_checked= check_n_hours(n_hours, DAILY_BUDGET_HOURS_AGGREGATION)
+        model.h = RangeSet(1, n_hours_checked)
+        create_budget_set( model, model.hydro, n_hours_checked, DAILY_BUDGET_HOURS_AGGREGATION )
+        
+    else:
+        model.h = RangeSet(1, n_hours)
 
 def initialize_params(model, data):
     """
@@ -70,6 +102,11 @@ def initialize_params(model, data):
 
     logging.debug("--Initializing large hydro parameters...")
     add_large_hydro_parameters(model, data)
+    if not (data["formulations"].loc[ data["formulations"]["Component"].str.lower() == 'hydro' ]["Formulation"].iloc[0]  == "RunOfRiverFormulation"):
+        logging.debug("--Initializing large hydro budget parameters...")
+        add_large_hydro_bound_parameters(model, data)
+    
+   
 
     logging.debug("--Initializing load parameters...")
     add_load_parameters(model, data)

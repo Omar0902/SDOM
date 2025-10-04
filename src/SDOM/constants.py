@@ -44,6 +44,10 @@ THERMAL_PROPERTIES_NAMES = ['MinCapacity', 'MaxCapacity', 'LifeTime', 'Capex', '
 #STORAGE_SET_J_TECHS = ['Li-Ion', 'CAES', 'PHS', 'H2'] - THIS WAS REPLACED BY "data["STORAGE_SET_J_TECHS"]" which reads the cols of storage_data
 #STORAGE_SET_B_TECHS = ['Li-Ion', 'PHS'] #THIS WAS REPLACED BY "data["STORAGE_SET_B_TECHS"]"
 
+MONTHLY_BUDGET_HOURS_AGGREGATION = 730
+DAILY_BUDGET_HOURS_AGGREGATION = 24
+RUN_OF_RIVER_AGGREGATION = 1
+
 #RESILIENCY CONSTANTS HARD-CODED
 # PCLS - Percentage of Critical Load Served - Constraint : Resilience
 CRITICAL_LOAD_PERCENTAGE = 1  # 10% of the total load

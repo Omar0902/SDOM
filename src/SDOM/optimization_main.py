@@ -14,6 +14,7 @@ from .models.formulations_storage import add_storage_variables, add_storage_cons
 from .models.formulations_system import objective_rule, add_system_constraints
 
 from .constants import MW_TO_KW
+from .models.formulations_hydro import add_hydro_variables, add_hydro_run_of_river_constraints, add_hydro_budget_constraints
 # ---------------------------------------------------------------------------------
 # Model initialization
 # Safe value function for uninitialized variables/parameters
@@ -48,7 +49,8 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
     model.demand = Block()
     model.nuclear = Block()
     model.other_renewables = Block()
-    # model.resiliency = Block() #TODO implement this block
+    if with_resilience_constraints:
+        model.resiliency = Block() #TODO implement this block
     model.storage = Block()
     model.thermal = Block()
     model.pv = Block()
@@ -86,6 +88,9 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
     logging.debug("--Adding storage variables...")
     add_storage_variables( model )
 
+    logging.debug("-- Adding hydropower generation variables...")
+    add_hydro_variables(model)
+
     # -------------------------------- Objective function -------------------------------
     logging.info("Adding objective function to the model...")
     model.Obj = Objective( rule = objective_rule, sense = minimize )
@@ -111,6 +116,15 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
 
     logging.debug("-- Adding thermal generation constraints...")
     add_thermal_constraints( model )
+
+    logging.debug("-- Adding hydropower generation constraints...")
+    if data["formulations"].loc[ data["formulations"]["Component"].str.lower() == 'hydro' ]["Formulation"].iloc[0]  == "RunOfRiverFormulation":
+        add_hydro_run_of_river_constraints(model, data)
+    else:
+        add_hydro_budget_constraints(model, data)
+        
+
+        #add_hydro_variables(model)
     
     # Build a model size report
     # Log memory usage before solving

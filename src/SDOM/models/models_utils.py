@@ -1,4 +1,5 @@
-from pyomo.environ import Param
+from pyomo.environ import Param, NonNegativeReals
+from pyomo.core import Var
 from ..constants import MW_TO_KW
 
 # Fixed Charge Rates (FCR) for VRE and Gas CC
@@ -35,6 +36,41 @@ def add_alpha_and_ts_parameters( block,
     filtered_selected_data = {h: selected_data[h] for h in hourly_set if h in selected_data}
 
     block.ts_parameter = Param( hourly_set, initialize = filtered_selected_data)
+
+
+def add_upper_bound_paramenters(block, 
+                                hourly_set, 
+                                data, 
+                                key_scalars: str,
+                                key_ts: str = "large_hydro_max", 
+                                key_col: str = "LargeHydro"):
+    
+    if not hasattr(block, "alpha"):
+        block.alpha = Param( initialize = float(data["scalars"].loc[key_scalars].Value) )
+        
+    selected_data          = data[key_ts].set_index('*Hour')[key_col].to_dict()
+    filtered_selected_data = {h: selected_data[h] for h in hourly_set if h in selected_data}
+    block.ts_parameter_upper_bound = Param( hourly_set, initialize = filtered_selected_data)
+
+def add_lower_bound_paramenters(block, 
+                                hourly_set, 
+                                data, 
+                                key_scalars: str,
+                                key_ts: str = "large_hydro_min", 
+                                key_col: str = "LargeHydro"):
+    if not hasattr(block, "alpha"):
+        block.alpha = Param( initialize = float(data["scalars"].loc[key_scalars].Value) )
+
+    selected_data          = data[key_ts].set_index('*Hour')[key_col].to_dict()
+    filtered_selected_data = {h: selected_data[h] for h in hourly_set if h in selected_data}
+    block.ts_parameter_lower_bound = Param( hourly_set, initialize = filtered_selected_data)
+
+####################################################################################|
+# ------------------------------------ Variables -----------------------------------|
+####################################################################################|
+def add_generation_variables(block, set_hours, initialize=0):
+    block.generation = Var(set_hours, domain=NonNegativeReals, initialize=initialize)
+
 
 
 ####################################################################################|

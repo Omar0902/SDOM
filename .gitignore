@@ -215,3 +215,5 @@ marimo/_lsp/
 __marimo__/
 
 to_do*
+
+*test_no_resiliency_optimization_cases_xpress_local.py

@@ -285,6 +285,7 @@ def get_default_solver_config_dict(solver_name="cbc", executable_path=".\\Solver
         solver_dict["executable_path"] = executable_path
     elif solver_name == "xpress":
         solver_dict["solver_name"] = "xpress_direct"
+        #solver_dict = {"solver_name": "xpress",}
         #solver_dict["executable_path"] = executable_path
 
     return solver_dict
@@ -309,7 +310,6 @@ def run_solver(model, solver_config_dict:dict):
 
     logging.info("Starting to solve SDOM model...")
     solver = configure_solver(solver_config_dict)
-
     results_over_runs = []
     best_result = None
     best_objective_value = float('inf')

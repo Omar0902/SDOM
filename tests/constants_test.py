@@ -2,6 +2,7 @@ import pandas as pd
 
 REL_PATH_DATA_RUN_OF_RIVER_TEST = 'Data/no_exchange_run_of_river'
 REL_PATH_DATA_HYDRO_BUDGET_TEST = 'Data/exchange_hydro_budget_multiple_balancing'
+REL_PATH_DATA_DAILY_HYDRO_BUDGET_TEST = 'Data/exchange_hydro_daily_budget_multiple_balancing p95'
 
 DICT_EXPECTED_DATA_KEYS_TO_TYPE = {
     "solar_plants": list,

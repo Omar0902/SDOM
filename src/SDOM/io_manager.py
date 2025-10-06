@@ -6,7 +6,18 @@ import csv
 from pyomo.environ import sqrt
 
 from .common.utilities import safe_pyomo_value, check_file_exists, compare_lists, concatenate_dataframes
-from .constants import INPUT_CSV_NAMES, MW_TO_KW
+from .constants import INPUT_CSV_NAMES, MW_TO_KW, VALID_HYDRO_FORMULATIONS_TO_BUDGET_MAP
+
+
+def check_formulation( formulation, valid_formulations ):
+    
+    if formulation not in valid_formulations:
+        raise ValueError(f"Invalid formulation '{formulation}' selected by the user in file 'formulations.csv'. Valid options are: {valid_formulations}")
+    return
+
+def get_formulation(data, component:str ='hydro'):
+    formulations = data["formulations"]
+    return formulations.loc[ formulations["Component"].str.lower() == component.lower() ]["Formulation"].iloc[0]
 
 
 def load_data( input_data_dir = '.\\Data\\' ):
@@ -135,7 +146,10 @@ def load_data( input_data_dir = '.\\Data\\' ):
             "scalars": scalars,
         }
 
-    if formulations.loc[ formulations["Component"].str.lower() == 'hydro' ]["Formulation"].iloc[0]  == "MonthlyBudgetFormulation":
+    hydro_formulation = get_formulation(data_dict, component='hydro')
+    check_formulation( hydro_formulation, VALID_HYDRO_FORMULATIONS_TO_BUDGET_MAP.keys() )
+
+    if not (hydro_formulation == "RunOfRiverFormulation"):
         logging.debug("- Hydro was set to MonthlyBudgetFormulation. Trying to load large hydro max/min data...")
         
         input_file_path = check_file_exists(input_data_dir, INPUT_CSV_NAMES["large_hydro_max"], "large hydro Mximum  capacity data")

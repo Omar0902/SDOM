@@ -20,6 +20,10 @@ def crf_rule( model, j ):
 # ----------------------------------- Parameters -----------------------------------|
 ####################################################################################|
 
+def add_alpha_parameter(block, data, key_scalars: str):
+    if not hasattr(block, "alpha") and key_scalars != "":
+        block.alpha = Param( initialize = float(data["scalars"].loc[key_scalars].Value) )
+
 def add_alpha_and_ts_parameters( block, 
                                 hourly_set, 
                                 data, 
@@ -27,9 +31,7 @@ def add_alpha_and_ts_parameters( block,
                                 key_ts: str,
                                 key_col: str):
     # Control parameter to activate certain device.
-    if key_scalars != "":
-        # Initialize alpha parameter from scalars
-        block.alpha = Param( initialize = float(data["scalars"].loc[key_scalars].Value) )
+    add_alpha_parameter(block, data, key_scalars)
 
     # Time-series parameter data initialization
     selected_data          = data[key_ts].set_index('*Hour')[key_col].to_dict()
@@ -38,16 +40,16 @@ def add_alpha_and_ts_parameters( block,
     block.ts_parameter = Param( hourly_set, initialize = filtered_selected_data)
 
 
+def add_budget_parameter(block, formulation, valid_formulation_to_budget_map):
+    if not hasattr(block, "budget_scalar"):
+        block.budget_scalar = Param( initialize = valid_formulation_to_budget_map[formulation])
+
 def add_upper_bound_paramenters(block, 
                                 hourly_set, 
                                 data, 
-                                key_scalars: str,
                                 key_ts: str = "large_hydro_max", 
                                 key_col: str = "LargeHydro"):
     
-    if not hasattr(block, "alpha"):
-        block.alpha = Param( initialize = float(data["scalars"].loc[key_scalars].Value) )
-        
     selected_data          = data[key_ts].set_index('*Hour')[key_col].to_dict()
     filtered_selected_data = {h: selected_data[h] for h in hourly_set if h in selected_data}
     block.ts_parameter_upper_bound = Param( hourly_set, initialize = filtered_selected_data)
@@ -55,12 +57,9 @@ def add_upper_bound_paramenters(block,
 def add_lower_bound_paramenters(block, 
                                 hourly_set, 
                                 data, 
-                                key_scalars: str,
                                 key_ts: str = "large_hydro_min", 
                                 key_col: str = "LargeHydro"):
-    if not hasattr(block, "alpha"):
-        block.alpha = Param( initialize = float(data["scalars"].loc[key_scalars].Value) )
-
+    
     selected_data          = data[key_ts].set_index('*Hour')[key_col].to_dict()
     filtered_selected_data = {h: selected_data[h] for h in hourly_set if h in selected_data}
     block.ts_parameter_lower_bound = Param( hourly_set, initialize = filtered_selected_data)

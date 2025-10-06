@@ -42,7 +42,7 @@ def test_optimization_model_res_case_no_resiliency_730h_monthly_budget_highs():
 
     problem_sol_dict = get_optimization_problem_solution_info( best_result )
     assert problem_sol_dict["Termination condition"] == "optimal"
-    print(problem_sol_dict["Total_Cost"])
+
     assert abs( problem_sol_dict["Total_Cost"] - 441627.4738187364 ) <= 10 
     assert abs( problem_sol_dict["Total_CapWind"] - 0.0 ) <= 1
     assert abs( problem_sol_dict["Total_CapPV"] - 0.0 ) <= 0.001
@@ -77,7 +77,7 @@ def test_optimization_model_res_case_no_resiliency_730h_monthly_budget_cbc():
 
     problem_sol_dict = get_optimization_problem_solution_info( best_result )
     assert problem_sol_dict["Termination condition"] == "optimal"
-    print(problem_sol_dict["Total_Cost"])
+
     assert abs( problem_sol_dict["Total_Cost"] - 441627.4738187364 ) <= 10 
     assert abs( problem_sol_dict["Total_CapWind"] - 0.0 ) <= 1
     assert abs( problem_sol_dict["Total_CapPV"] - 0.0 ) <= 0.001

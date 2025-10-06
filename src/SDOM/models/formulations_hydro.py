@@ -30,8 +30,6 @@ def add_large_hydro_bound_parameters(model, data):
 
 def add_hydro_variables(model):
     add_generation_variables(model.hydro, model.h, initialize=0) # Generation from hydro units
-    #print(model.hydro.generation.pprint())
-    #print(model.hydro.budget_set.pprint())
 
 ####################################################################################|
 # ----------------------------------- Constraints ----------------------------------|
@@ -45,7 +43,6 @@ def monthly_hydro_budget_rule(block, hhh):
     start = ( (hhh - 1) * MONTHLY_BUDGET_HOURS_AGGREGATION ) + 1
     end = hhh * MONTHLY_BUDGET_HOURS_AGGREGATION
     list_budget = list(range(start, end))
-    print(list_budget)
     return sum(block.generation[h] for h in list_budget) == sum(block.ts_parameter[h] for h in list_budget)
 
 

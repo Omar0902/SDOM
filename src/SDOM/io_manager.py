@@ -320,10 +320,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     pcapex = {}
     sum_all = 0.0
     for tech in storage_tech_list:
-        pcapex[tech] = safe_pyomo_value(model.storage.CRF[tech]*(MW_TO_KW*model.storage.data['CostRatio', tech] * \
-                                        model.storage.data['P_Capex', tech]*model.storage.Pcha[tech]
-                                        + MW_TO_KW*(1 - model.storage.data['CostRatio', tech]) * \
-                                        model.storage.data['P_Capex', tech]*model.storage.Pdis[tech]))
+        pcapex[tech] = safe_pyomo_value(model.storage.power_capex_cost_expr[tech])
         sum_all += pcapex[tech]
     
     pcapex['All'] = sum_all
@@ -336,7 +333,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     sum_all = 0.0
     sum_all_t = 0.0
     for tech in storage_tech_list:
-        ecapex[tech] = safe_pyomo_value(model.storage.CRF[tech]*MW_TO_KW*model.storage.data['E_Capex', tech]*model.storage.Ecap[tech])
+        ecapex[tech] = safe_pyomo_value(model.storage.energy_capex_cost_expr[tech])
         sum_all += ecapex[tech]
         tcapex[tech] = pcapex[tech] + ecapex[tech]
         sum_all_t += tcapex[tech]

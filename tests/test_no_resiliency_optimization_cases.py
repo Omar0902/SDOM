@@ -19,7 +19,7 @@ def test_optimization_model_ini_case_no_resiliency_24h():
     constraint_counts = get_n_eq_ineq_constraints( model )
 
     assert constraint_counts["equality"] == 194
-    assert constraint_counts["inequality"] == 546
+    assert constraint_counts["inequality"] == 549
 
 
 def test_optimization_model_res_case_no_resiliency_highs():
@@ -69,7 +69,7 @@ def test_optimization_model_res_case_no_resiliency_cbc():
         pytest.fail(f"{run_solver.__name__} failed with error: {e}")
 
     problem_info_dict = get_optimization_problem_info( best_result )
-    assert problem_info_dict["Number of constraints"] == 643
+    assert problem_info_dict["Number of constraints"] == 646
     assert problem_info_dict["Number of variables"] == 628
     assert problem_info_dict["Number of binary variables"] == 96
     assert problem_info_dict["Number of objectives"] == 1

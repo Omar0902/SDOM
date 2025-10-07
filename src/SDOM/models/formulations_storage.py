@@ -128,8 +128,10 @@ def soc_balance_rule(model, h, j):
             - model.storage.PD[h, j] / sqrt(model.storage.data['Eff', j])
 
 # Max cycle year
-def max_cycle_year_rule(model): #TODO check here this hardcoded Li-Ion
-    return sum(model.storage.PD[h, 'Li-Ion'] for h in model.h) <= (model.storage.MaxCycles / model.storage.data['Lifetime', 'Li-Ion']) * model.storage.Ecap['Li-Ion']
+def max_cycle_year_rule(model, j): #TODO check here this hardcoded Li-Ion
+    n_steps = model.n_steps_modeled
+    iterate = range(1, n_steps + 1)
+    return sum(model.PD[h, j] for h in iterate) <= (model.MaxCycles / model.data['Lifetime', j]) * model.Ecap[j]
 
 def add_storage_constraints( model ):
     """
@@ -166,4 +168,4 @@ def add_storage_constraints( model ):
     model.storage.MaxEcap = Constraint(model.storage.j, rule= lambda m,j: m.Ecap[j] <= m.data['Max_Duration', j] * m.Pdis[j] / sqrt(m.data['Eff', j]))
 
 
-    model.MaxCycleYear = Constraint(rule=max_cycle_year_rule)
+    model.storage.MaxCycleYear_constraint = Constraint( model.storage.j, rule=max_cycle_year_rule)

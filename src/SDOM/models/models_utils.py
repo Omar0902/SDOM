@@ -67,8 +67,23 @@ def add_lower_bound_paramenters(block,
 ####################################################################################|
 # ------------------------------------ Variables -----------------------------------|
 ####################################################################################|
-def add_generation_variables(block, set_hours, initialize=0):
-    block.generation = Var(set_hours, domain=NonNegativeReals, initialize=initialize)
+def add_generation_variables(block, *sets, domain=NonNegativeReals, initialize=0):
+    """
+    Adds a generation variable to the block over an arbitrary number of sets.
+
+    Parameters:
+    block: The Pyomo block to which the variable will be added.
+    *sets: Any number of iterable sets to define the variable's index.
+    initialize: Initial value for the variable.
+
+    Example:
+    add_generation_variables(block, set_hours)
+    add_generation_variables(block, set_plants, set_hours)
+    """
+    block.generation = Var(*sets, domain=domain, initialize=initialize)
+
+# def add_generation_variables(block, set_hours, initialize=0):
+#     block.generation = Var(set_hours, domain=NonNegativeReals, initialize=initialize)
 
 
 

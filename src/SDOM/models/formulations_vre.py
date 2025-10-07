@@ -2,7 +2,7 @@ from pyomo.core import Var, Constraint, Expression
 from pyomo.core import Var, Constraint, Expression
 from pyomo.environ import Param, NonNegativeReals
 from ..constants import VRE_PROPERTIES_NAMES, MW_TO_KW
-from .models_utils import fcr_rule, generic_fixed_om_cost_expr_rule, generic_capex_cost_expr_rule, sum_installed_capacity_by_plants_set_expr_rule, add_generic_fixed_costs
+from .models_utils import fcr_rule, generic_fixed_om_cost_expr_rule, generic_capex_cost_expr_rule, sum_installed_capacity_by_plants_set_expr_rule, add_generic_fixed_costs, add_generation_variables
 import pandas as pd
 
 ####################################################################################|
@@ -58,8 +58,7 @@ def add_vre_parameters(model, data):
 ####################################################################################|
 
 def _add_vre_variables(block, set_hours):
-
-    block.generation = Var(set_hours, domain=NonNegativeReals, initialize=0)  # Generated power or dispatch
+    add_generation_variables(block, set_hours, domain=NonNegativeReals, initialize=0)
     block.curtailment = Var(set_hours, domain=NonNegativeReals, initialize=0) # Curtailment 
     block.capacity_fraction = Var(block.plants_set, domain=NonNegativeReals, bounds=(0, 1), initialize=1) #fraction of the maximum allowable capacity that will be installed
 

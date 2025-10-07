@@ -1,7 +1,7 @@
 from pyomo.core import Var, Constraint, Expression
 from pyomo.environ import Set, Param, value, NonNegativeReals
 import logging
-from .models_utils import fcr_rule_thermal, generic_fixed_om_cost_expr_rule, different_fcr_capex_cost_expr_rule, sum_installed_capacity_by_plants_set_expr_rule, add_generic_fixed_costs
+from .models_utils import fcr_rule_thermal, generic_fixed_om_cost_expr_rule, different_fcr_capex_cost_expr_rule, sum_installed_capacity_by_plants_set_expr_rule, add_generic_fixed_costs, add_generation_variables
 from ..constants import MW_TO_KW, THERMAL_PROPERTIES_NAMES
 
 def initialize_thermal_sets(block, data):
@@ -68,8 +68,8 @@ def add_thermal_parameters(model, data):
 
 def add_thermal_variables(model):
     model.thermal.plant_installed_capacity = Var(model.thermal.plants_set, domain=NonNegativeReals, initialize=0)
-    model.thermal.generation = Var(model.h, model.thermal.plants_set, domain=NonNegativeReals,initialize=0)  # Generation from thermal units
-    #model.thermal.CapCC, model.thermal.GenCC
+    add_generation_variables(model.thermal, model.h, model.thermal.plants_set, domain=NonNegativeReals,  initialize=0)
+
     # Compute and set the upper bound for CapCC
     CapCC_upper_bound_value = max(
         value(model.demand.ts_parameter[h]) - value(model.nuclear.alpha) *

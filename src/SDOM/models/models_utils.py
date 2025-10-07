@@ -122,6 +122,17 @@ def different_fcr_capex_cost_expr_rule( block ):
 
 
 ####################################################################################|
+# ----------------------------------- Constraints ----------------------------------|
+####################################################################################|
+
+def generic_budget_rule(block, hhh):
+    budget_n_hours = block.budget_scalar
+    start = ( (hhh - 1) * budget_n_hours ) + 1
+    end = hhh * budget_n_hours + 1
+    list_budget = list(range(start, end))
+    return sum(block.generation[h] for h in list_budget) == sum(block.ts_parameter[h] for h in list_budget)
+
+####################################################################################|
 # -----------------------------------= Add_costs -----------------------------------|
 ####################################################################################|
 

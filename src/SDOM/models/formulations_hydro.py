@@ -1,6 +1,6 @@
 from pyexpat import model
 from pyomo.environ import Set, Param, value, NonNegativeReals
-from .models_utils import add_generation_variables, add_alpha_and_ts_parameters, add_budget_parameter, add_upper_bound_paramenters, add_lower_bound_paramenters
+from .models_utils import add_generation_variables, add_alpha_and_ts_parameters, add_budget_parameter, add_upper_bound_paramenters, add_lower_bound_paramenters, generic_budget_rule
 from pyomo.core import Var, Constraint, Expression
 
 from ..constants import VALID_HYDRO_FORMULATIONS_TO_BUDGET_MAP, MONTHLY_BUDGET_HOURS_AGGREGATION, DAILY_BUDGET_HOURS_AGGREGATION
@@ -39,29 +39,12 @@ def add_hydro_run_of_river_constraints(model, data):
     model.hydro.run_of_river_constraint = Constraint(model.h, rule=lambda m,h: m.generation[h] == m.alpha * m.ts_parameter[h] )
     return
 
-def monthly_hydro_budget_rule(block, hhh):
-    start = ( (hhh - 1) * MONTHLY_BUDGET_HOURS_AGGREGATION ) + 1
-    end = hhh * MONTHLY_BUDGET_HOURS_AGGREGATION + 1
-    list_budget = list(range(start, end))
-    return sum(block.generation[h] for h in list_budget) == sum(block.ts_parameter[h] for h in list_budget)
-
-
-def daily_hydro_budget_rule(block, hhh):
-    start = ( (hhh - 1) * DAILY_BUDGET_HOURS_AGGREGATION ) + 1
-    end = hhh * DAILY_BUDGET_HOURS_AGGREGATION + 1
-    list_budget = list(range(start, end))
-    return sum(block.generation[h] for h in list_budget) == sum(block.ts_parameter[h] for h in list_budget)
-
 
 def add_hydro_budget_constraints(model, data):
     
     model.hydro.upper_bound_ts_constraint = Constraint(model.h, rule=lambda m,h: m.generation[h] <= m.alpha * m.ts_parameter_upper_bound[h] )
     model.hydro.lower_bound_ts_constraint = Constraint(model.h, rule=lambda m,h: m.generation[h] >= m.alpha * m.ts_parameter_lower_bound[h] )
 
-    formulation = get_formulation(data, component='hydro')
-    if formulation == "MonthlyBudgetFormulation":
-        model.hydro.budget_constraint = Constraint(model.hydro.budget_set, rule = monthly_hydro_budget_rule )
-    elif formulation == "DailyBudgetFormulation":
-       model.hydro.budget_constraint = Constraint(model.hydro.budget_set, rule = daily_hydro_budget_rule )
+    model.hydro.budget_constraint = Constraint(model.hydro.budget_set, rule = generic_budget_rule )
     
     return

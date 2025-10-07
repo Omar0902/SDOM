@@ -6,21 +6,21 @@ import csv
 from pyomo.environ import sqrt
 
 from .common.utilities import safe_pyomo_value, check_file_exists, compare_lists, concatenate_dataframes
-from .constants import INPUT_CSV_NAMES, MW_TO_KW, VALID_HYDRO_FORMULATIONS_TO_BUDGET_MAP
+from .constants import INPUT_CSV_NAMES, MW_TO_KW, VALID_HYDRO_FORMULATIONS_TO_BUDGET_MAP, VALID_IMPORTS_EXPORTS_FORMULATIONS_TO_DESCRIPTION_MAP
 
 
-def check_formulation( formulation, valid_formulations ):
+def check_formulation( formulation:str, valid_formulations ):
     
     if formulation not in valid_formulations:
         raise ValueError(f"Invalid formulation '{formulation}' selected by the user in file 'formulations.csv'. Valid options are: {valid_formulations}")
     return
 
-def get_formulation(data, component:str ='hydro'):
+def get_formulation(data:dict, component:str ='hydro'):
     formulations = data["formulations"]
     return formulations.loc[ formulations["Component"].str.lower() == component.lower() ]["Formulation"].iloc[0]
 
 
-def load_data( input_data_dir = '.\\Data\\' ):
+def load_data( input_data_dir:str = '.\\Data\\' ):
     """
     Loads the required SDOM datasets from CSV files located in the specified input directory.
     Parameters:
@@ -152,7 +152,7 @@ def load_data( input_data_dir = '.\\Data\\' ):
     if not (hydro_formulation == "RunOfRiverFormulation"):
         logging.debug("- Hydro was set to MonthlyBudgetFormulation. Trying to load large hydro max/min data...")
         
-        input_file_path = check_file_exists(input_data_dir, INPUT_CSV_NAMES["large_hydro_max"], "large hydro Mximum  capacity data")
+        input_file_path = check_file_exists(input_data_dir, INPUT_CSV_NAMES["large_hydro_max"], "large hydro Maximum  capacity data")
         if input_file_path != "":
             large_hydro_max = pd.read_csv( input_file_path ).round(5)
         
@@ -161,8 +161,41 @@ def load_data( input_data_dir = '.\\Data\\' ):
             large_hydro_min = pd.read_csv( input_file_path ).round(5)
         data_dict["large_hydro_max"] = large_hydro_max
         data_dict["large_hydro_min"] = large_hydro_min
-        
+    
 
+    logging.debug("- Trying to load imports data...")    
+    imports_formulation = get_formulation(data_dict, component='imports')
+    check_formulation( imports_formulation, VALID_IMPORTS_EXPORTS_FORMULATIONS_TO_DESCRIPTION_MAP.keys() )
+    if (imports_formulation == "CapacityPriceNetLoadFormulation"):
+        logging.debug("- Imports was set to CapacityPriceNetLoadFormulation. Trying to load capacity and price...")
+        
+        input_file_path = check_file_exists(input_data_dir, INPUT_CSV_NAMES["cap_imports"], "Imports hourly upper bound capacity data")
+        if input_file_path != "":
+            cap_imports = pd.read_csv( input_file_path ).round(5)
+
+        input_file_path = check_file_exists(input_data_dir, INPUT_CSV_NAMES["price_imports"], "Imports hourly price data")
+        if input_file_path != "":
+            price_imports = pd.read_csv( input_file_path ).round(5)
+        data_dict["cap_imports"] = cap_imports
+        data_dict["price_imports"] = price_imports
+
+    
+    logging.debug("- Trying to load exports data...")
+    exports_formulation = get_formulation(data_dict, component='exports')
+    check_formulation( exports_formulation, VALID_IMPORTS_EXPORTS_FORMULATIONS_TO_DESCRIPTION_MAP.keys() )
+    if (exports_formulation == "CapacityPriceNetLoadFormulation"):
+        logging.debug("- Exports was set to CapacityPriceNetLoadFormulation. Trying to load capacity and price...")
+        
+        input_file_path = check_file_exists(input_data_dir, INPUT_CSV_NAMES["cap_exports"], "Exports hourly upper bound capacity data")
+        if input_file_path != "":
+            cap_exports = pd.read_csv( input_file_path ).round(5)
+
+        input_file_path = check_file_exists(input_data_dir, INPUT_CSV_NAMES["price_exports"], "Exports hourly price data")
+        if input_file_path != "":
+            price_exports = pd.read_csv( input_file_path ).round(5)
+        data_dict["cap_exports"] = cap_exports
+        data_dict["price_exports"] = price_exports
+    
     return data_dict
     
 

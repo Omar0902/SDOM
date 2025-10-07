@@ -1,11 +1,11 @@
 import os
 import pandas as pd
-from constants_test import REL_PATH_DATA_HYDRO_BUDGET_TEST, DICT_EXPECTED_DATA_KEYS_TO_TYPE
+from constants_test import REL_PATH_DATA_DAILY_HYDRO_BUDGET_IMP_EXP_TEST, DICT_EXPECTED_DATA_KEYS_TO_TYPE
 
 from sdom import load_data, initialize_model
 
 def test_load_data_folder_exist():
-    test_data_path = os.path.join(os.path.dirname(__file__), '..', REL_PATH_DATA_HYDRO_BUDGET_TEST)
+    test_data_path = os.path.join(os.path.dirname(__file__), '..', REL_PATH_DATA_DAILY_HYDRO_BUDGET_IMP_EXP_TEST)
     test_data_path = os.path.abspath(test_data_path)
 
     assert os.path.exists(test_data_path)
@@ -13,24 +13,20 @@ def test_load_data_folder_exist():
 
 
 def test_load_data_keys_and_types():
-    test_data_path = os.path.join(os.path.dirname(__file__), '..', REL_PATH_DATA_HYDRO_BUDGET_TEST)
+    test_data_path = os.path.join(os.path.dirname(__file__), '..', REL_PATH_DATA_DAILY_HYDRO_BUDGET_IMP_EXP_TEST)
     test_data_path = os.path.abspath(test_data_path)
     
     data = load_data( test_data_path )
     data_keys = data.keys()
-    
-    not_expected_keys_in_this_test = ["cap_imports", "cap_exports", "price_imports", "price_exports"]
+
     for key, expected_type in DICT_EXPECTED_DATA_KEYS_TO_TYPE.items():
-        if key in not_expected_keys_in_this_test:
-                assert key not in data_keys, f"Key '{key}' should not be present in hydro budget no exchange test data"
-                continue  # Skip these keys 
         assert key in data_keys, f"Missing expected key: {key}"
         assert isinstance(data[key], expected_type), f"Key '{key}' has incorrect type. Expected {expected_type}, got {type(data[key])}"
 
     
 
 # def test_load_data_param_values():
-#     test_data_path = os.path.join(os.path.dirname(__file__), '..', REL_PATH_DATA_HYDRO_BUDGET_TEST)
+#     test_data_path = os.path.join(os.path.dirname(__file__), '..', REL_PATH_DATA_DAILY_HYDRO_BUDGET_IMP_EXP_TEST)
 #     test_data_path = os.path.abspath(test_data_path)
     
 #     data = load_data( test_data_path )
@@ -43,7 +39,7 @@ def test_load_data_keys_and_types():
 #     assert abs( df.loc["r"].Value - 0.06 ) <= 0.0005
 
 # def test_load_data_thermal_values():
-#     test_data_path = os.path.join(os.path.dirname(__file__), '..', REL_PATH_DATA_HYDRO_BUDGET_TEST)
+#     test_data_path = os.path.join(os.path.dirname(__file__), '..', REL_PATH_DATA_DAILY_HYDRO_BUDGET_IMP_EXP_TEST)
 #     test_data_path = os.path.abspath(test_data_path)
 
 #     data = load_data( test_data_path )
@@ -70,7 +66,7 @@ def test_load_data_keys_and_types():
     
 
 # def test_load_data_storage_values():
-#     test_data_path = os.path.join(os.path.dirname(__file__), '..', REL_PATH_DATA_HYDRO_BUDGET_TEST)
+#     test_data_path = os.path.join(os.path.dirname(__file__), '..', REL_PATH_DATA_DAILY_HYDRO_BUDGET_IMP_EXP_TEST)
 #     test_data_path = os.path.abspath(test_data_path)
 
 #     data = load_data( test_data_path )

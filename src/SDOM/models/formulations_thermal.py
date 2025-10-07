@@ -140,8 +140,7 @@ def add_thermal_expressions(model):
 def add_thermal_constraints( model ):
     set_hours = model.h
     # Capacity of the backup generation
-    model.thermal.BackupGen = Constraint( set_hours, model.thermal.plants_set, rule = lambda m,h,bu: m.plant_installed_capacity[bu] >= m.generation[h,bu]  )
-
+    model.thermal.capacity_generation_constraint = Constraint( set_hours, model.thermal.plants_set, rule = lambda m,h,bu: m.plant_installed_capacity[bu] >= m.generation[h,bu]  )
 
 
 ####################################################################################|

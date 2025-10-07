@@ -1,4 +1,4 @@
-from pyomo.core import Var, Constraint
+from pyomo.core import Var, Constraint, Expression
 from pyomo.environ import Set, Param, Binary, NonNegativeReals, sqrt
 from ..constants import STORAGE_PROPERTIES_NAMES, MW_TO_KW
 from .models_utils import crf_rule
@@ -45,6 +45,47 @@ def add_storage_variables(model):
 
 
 ####################################################################################|
+# ----------------------------------- Expressions ----------------------------------|
+####################################################################################|
+
+def storage_power_capex_cost_expr_rule(block, j):
+     return (   block.CRF[j]*(
+                    MW_TO_KW * block.data['CostRatio', j] * \
+                    block.data['P_Capex', j]*block.Pcha[j]
+                    + MW_TO_KW *(1 - block.data['CostRatio', j]) * \
+                    block.data['P_Capex', j]*block.Pdis[j]
+                    )
+                    )
+
+def storage_energy_capex_cost_expr_rule(block, j):
+     return (   block.CRF[j]*(
+                    MW_TO_KW *block.data['E_Capex', j]*block.Ecap[j])
+                    )
+
+def storage_fixed_om_cost_expr_rule(block, j):
+     return (    MW_TO_KW *block.data['CostRatio', j] * \
+                block.data['FOM', j]*block.Pcha[j]
+                + MW_TO_KW *(1 - block.data['CostRatio', j]) * \
+                block.data['FOM', j]*block.Pdis[j]
+                    )
+
+def _add_storage_expressions(block):
+    block.power_capex_cost_expr = Expression(block.j, rule = storage_power_capex_cost_expr_rule )
+    block.energy_capex_cost_expr = Expression(block.j, rule = storage_energy_capex_cost_expr_rule )
+    block.capex_cost_expr = Expression(block.j,  rule = lambda m,j: m.power_capex_cost_expr[j] + m.energy_capex_cost_expr[j] )
+
+    block.fixed_om_cost_expr = Expression(block.j,  rule = storage_fixed_om_cost_expr_rule )
+
+    block.total_capex_cost = Expression( rule = sum( block.capex_cost_expr[j] for j in block.j ) )
+    block.total_fixed_om_cost = Expression( rule = sum( block.fixed_om_cost_expr[j] for j in block.j ) )
+
+
+def add_storage_expressions(model):
+    _add_storage_expressions(model.storage)
+     
+
+
+####################################################################################|
 # ----------------------------------- Add_costs -----------------------------------|
 ####################################################################################|
 def add_storage_fixed_costs(model):
@@ -58,20 +99,8 @@ def add_storage_fixed_costs(model):
     Costs sum for storage technologies, including capital and fixed O&M costs.
     """
     return ( # Storage Capex and Fixed O&M
-            sum(
-                model.storage.CRF[j]*(
-                    MW_TO_KW * model.storage.data['CostRatio', j] * \
-                    model.storage.data['P_Capex', j]*model.storage.Pcha[j]
-                    + MW_TO_KW *(1 - model.storage.data['CostRatio', j]) * \
-                    model.storage.data['P_Capex', j]*model.storage.Pdis[j]
-                    + MW_TO_KW *model.storage.data['E_Capex', j]*model.storage.Ecap[j]
-                )
-                + MW_TO_KW *model.storage.data['CostRatio', j] * \
-                model.storage.data['FOM', j]*model.storage.Pcha[j]
-                + MW_TO_KW *(1 - model.storage.data['CostRatio', j]) * \
-                model.storage.data['FOM', j]*model.storage.Pdis[j]
-                for j in model.storage.j
-            ) )
+            model.storage.total_capex_cost  + model.storage.total_fixed_om_cost 
+            )
 
 def add_storage_variable_costs(model):
     """

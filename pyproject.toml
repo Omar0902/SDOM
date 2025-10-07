@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sdom"
-version = "0.0.5"
+version = "0.0.6"
 readme = "README.md"
 
 dependencies = [
@@ -17,6 +17,7 @@ dependencies = [
 authors = [
     { name = "Omar Jose Guerra Fernandez", email = "OmarJose.GuerraFernandez@nrel.gov" },
     { name = "Mariya Koleva", email = "Mariya.Koleva@nrel.gov" },
+    { name = "Sebastian de Jesus Manrique Machado", email = "SebastiandeJesus.Machado@nrel.gov" },
 ]
 maintainers = [
     { name = "Omar Jose Guerra Fernandez", email = "OmarJose.GuerraFernandez@nrel.gov" },

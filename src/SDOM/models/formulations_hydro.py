@@ -41,14 +41,14 @@ def add_hydro_run_of_river_constraints(model, data):
 
 def monthly_hydro_budget_rule(block, hhh):
     start = ( (hhh - 1) * MONTHLY_BUDGET_HOURS_AGGREGATION ) + 1
-    end = hhh * MONTHLY_BUDGET_HOURS_AGGREGATION
+    end = hhh * MONTHLY_BUDGET_HOURS_AGGREGATION + 1
     list_budget = list(range(start, end))
     return sum(block.generation[h] for h in list_budget) == sum(block.ts_parameter[h] for h in list_budget)
 
 
 def daily_hydro_budget_rule(block, hhh):
     start = ( (hhh - 1) * DAILY_BUDGET_HOURS_AGGREGATION ) + 1
-    end = hhh * DAILY_BUDGET_HOURS_AGGREGATION
+    end = hhh * DAILY_BUDGET_HOURS_AGGREGATION + 1
     list_budget = list(range(start, end))
     return sum(block.generation[h] for h in list_budget) == sum(block.ts_parameter[h] for h in list_budget)
 
@@ -59,9 +59,9 @@ def add_hydro_budget_constraints(model, data):
     model.hydro.lower_bound_ts_constraint = Constraint(model.h, rule=lambda m,h: m.generation[h] >= m.alpha * m.ts_parameter_lower_bound[h] )
 
     formulation = get_formulation(data, component='hydro')
-    if formulation == "MonthlyBudgetHydroFormulation":
+    if formulation == "MonthlyBudgetFormulation":
         model.hydro.budget_constraint = Constraint(model.hydro.budget_set, rule = monthly_hydro_budget_rule )
-    elif formulation == "DailyBudgetHydroFormulation":
+    elif formulation == "DailyBudgetFormulation":
        model.hydro.budget_constraint = Constraint(model.hydro.budget_set, rule = daily_hydro_budget_rule )
     
     return

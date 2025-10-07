@@ -29,7 +29,7 @@ def add_large_hydro_bound_parameters(model, data):
 ####################################################################################|
 
 def add_hydro_variables(model):
-    add_generation_variables(model.hydro, model.h, initialize=0) # Generation from hydro units
+    add_generation_variables(model.hydro, model.h, domain=NonNegativeReals, initialize=0)
 
 ####################################################################################|
 # ----------------------------------- Constraints ----------------------------------|

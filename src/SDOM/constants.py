@@ -38,7 +38,7 @@ VRE_PROPERTIES_NAMES = ['trans_cap_cost', 'CAPEX_M', 'FOM_M']
 STORAGE_PROPERTIES_NAMES = ['P_Capex', 'E_Capex', 'Eff', 'Min_Duration',
                           'Max_Duration', 'Max_P', 'Coupled', 'FOM', 'VOM', 'Lifetime', 'CostRatio']
 
-THERMAL_PROPERTIES_NAMES = ['MinCapacity', 'MaxCapacity', 'LifeTime', 'Capex', 'HeatRate', 'FuelCost', 'VOM', 'FOM']
+THERMAL_PROPERTIES_NAMES = ['MinCapacity', 'MaxCapacity', 'Lifetime', 'Capex', 'HeatRate', 'FuelCost', 'VOM', 'FOM']
 
 #TODO this set is the col names of the StorageData_2050.csv file
 #STORAGE_SET_J_TECHS = ['Li-Ion', 'CAES', 'PHS', 'H2'] - THIS WAS REPLACED BY "data["STORAGE_SET_J_TECHS"]" which reads the cols of storage_data

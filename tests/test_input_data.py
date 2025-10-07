@@ -57,7 +57,7 @@ def test_load_data_thermal_values():
     for idx, row in df.iterrows():
         assert abs( row["MinCapacity"] - min_capacity_v[idx] ) <= 0.05
         assert abs( row["MaxCapacity"] - max_capacity_v[idx] ) <= 0.05
-        assert abs( row["LifeTime"] - lifetime_v[idx] ) <= 0.05
+        assert abs( row["Lifetime"] - lifetime_v[idx] ) <= 0.05
         assert abs( row["Capex"] - Capex_v[idx] ) <= 0.05
         assert abs( row["HeatRate"] - heat_rate_v[idx] ) <= 0.05
         assert abs( row["FuelCost"] - fuel_cost_v[idx] ) <= 0.05

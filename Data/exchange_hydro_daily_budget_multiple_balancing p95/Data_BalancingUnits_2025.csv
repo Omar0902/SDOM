@@ -1,4 +1,4 @@
-Plant_id,MinCapacity,MaxCapacity,LifeTime,Capex,HeatRate,FuelCost,VOM,FOM
+Plant_id,MinCapacity,MaxCapacity,Lifetime,Capex,HeatRate,FuelCost,VOM,FOM
 83g,83.82,83.82,30,0,1,141.1734694,7.5,0
 98g,80.52,80.52,30,0,1,150.2244898,7.5,0
 10c,9.69,9.69,30,0,1,18.44387755,7.5,0

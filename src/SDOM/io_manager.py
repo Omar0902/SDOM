@@ -432,6 +432,10 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
 
     summary_results = concatenate_dataframes( summary_results, vom, run=1, unit='$US', metric='VOM' )
 
+    fuel_cost = {}
+    fuel_cost['Thermal'] = safe_pyomo_value( model.thermal.total_fuel_cost_expr )
+    summary_results = concatenate_dataframes( summary_results, fuel_cost, run=1, unit='$US', metric='Fuel-Cost' )
+    
     ## OPEX
     opex = {}
     sum_all = 0.0

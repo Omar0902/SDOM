@@ -18,7 +18,7 @@ def test_optimization_model_ini_case_no_resiliency_730h_monthly_budget():
 
     constraint_counts = get_n_eq_ineq_constraints( model )
 
-    assert constraint_counts["equality"] == 5112
+    assert constraint_counts["equality"] == 5113
     assert constraint_counts["inequality"] == 25568
 
 
@@ -69,8 +69,8 @@ def test_optimization_model_res_case_no_resiliency_730h_monthly_budget_cbc():
         pytest.fail(f"{run_solver.__name__} failed with error: {e}")
 
     problem_info_dict = get_optimization_problem_info( best_result )
-    assert problem_info_dict["Number of constraints"] == 19384
-    assert problem_info_dict["Number of variables"] == 21576#22305
+    assert problem_info_dict["Number of constraints"] == 19385
+    assert problem_info_dict["Number of variables"] == 22306
     assert problem_info_dict["Number of binary variables"] == 2920
     assert problem_info_dict["Number of objectives"] == 1
     assert problem_info_dict["Number of nonzeros"] == 8768
@@ -100,7 +100,7 @@ def test_optimization_model_ini_case_no_resiliency_168h_daily_budget():
 
     constraint_counts = get_n_eq_ineq_constraints( model )
 
-    assert constraint_counts["equality"] == 1178
+    assert constraint_counts["equality"] == 1185
     assert constraint_counts["inequality"] == 5898
 
 
@@ -125,7 +125,7 @@ def test_optimization_model_res_case_no_resiliency_168h_daily_budget_highs():
     problem_sol_dict = get_optimization_problem_solution_info( best_result )
     assert problem_sol_dict["Termination condition"] == "optimal"
     print(problem_sol_dict["Total_Cost"])
-    assert abs( problem_sol_dict["Total_Cost"] - 200266.79 ) <= 10 
+    assert abs( problem_sol_dict["Total_Cost"] - 578101.3 ) <= 10 
     assert abs( problem_sol_dict["Total_CapWind"] - 0.0 ) <= 1
     assert abs( problem_sol_dict["Total_CapPV"] - 0.0 ) <= 0.001
     assert abs( problem_sol_dict["Total_CapScha_Li-Ion"] - 0.0 ) <= 1

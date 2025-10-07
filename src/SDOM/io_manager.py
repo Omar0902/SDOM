@@ -270,6 +270,55 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
 
     summary_results = concatenate_dataframes( summary_results, cap, run=1, unit='MW', metric='Capacity' )
     
+    ## Charge power capacity
+    storage_tech_list = list(model.storage.j)
+    charge = {}
+    sum_all = 0.0
+    for tech in storage_tech_list:
+        charge[tech] = safe_pyomo_value(model.storage.Pcha[tech])
+        sum_all += charge[tech]
+    charge['All'] = sum_all
+
+    summary_results = concatenate_dataframes( summary_results, charge, run=1, unit='MW', metric='Charge power capacity' )
+
+    ## Discharge power capacity
+    dcharge = {}
+    sum_all = 0.0
+
+    for tech in storage_tech_list:
+        dcharge[tech] = safe_pyomo_value(model.storage.Pdis[tech])
+        sum_all += dcharge[tech]
+    dcharge['All'] = sum_all
+
+    summary_results = concatenate_dataframes( summary_results, dcharge, run=1, unit='MW', metric='Discharge power capacity' )
+
+    ## Average power capacity
+    avgpocap = {}
+    sum_all = 0.0
+    for tech in storage_tech_list:
+        avgpocap[tech] = (charge[tech] + dcharge[tech]) / 2
+        sum_all += avgpocap[tech]
+    avgpocap['All'] = sum_all
+
+    summary_results = concatenate_dataframes( summary_results, avgpocap, run=1, unit='MW', metric='Average power capacity' )
+
+    ## Energy capacity
+    encap = {}
+    sum_all = 0.0
+    for tech in storage_tech_list:
+        encap[tech] = safe_pyomo_value(model.storage.Ecap[tech])
+        sum_all += encap[tech]
+    encap['All'] = sum_all
+
+    summary_results = concatenate_dataframes( summary_results, encap, run=1, unit='MWh', metric='Energy capacity' )
+
+    ## Discharge duration
+    dis_dur = {}
+    for tech in storage_tech_list:
+        dis_dur[tech] = safe_pyomo_value(sqrt(model.storage.data['Eff', tech]) * model.storage.Ecap[tech] / (model.storage.Pdis[tech] + 1e-15))
+
+    summary_results = concatenate_dataframes( summary_results, dis_dur, run=1, unit='h', metric='Duration' )
+
     ## Generation
     gen = {}
     gen['Thermal'] =  safe_pyomo_value( model.thermal.total_generation )
@@ -290,6 +339,17 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
 
     summary_results = concatenate_dataframes( summary_results, gen, run=1, unit='MWh', metric='Total generation' )
     
+    ## Storage energy discharging
+    sum_all = 0.0
+    stodisch = {}
+    for tech in storage_tech_list:
+        stodisch[tech] = safe_pyomo_value( sum( model.storage.PD[h, tech] for h in model.h ) )
+        sum_all += stodisch[tech]
+    stodisch['All'] = sum_all
+
+    summary_results = concatenate_dataframes( summary_results, stodisch, run=1, unit='MWh', metric='Storage energy discharging' )
+    
+
     ## Demand
     dem = {}
     dem['demand'] = sum(model.demand.ts_parameter[h] for h in model.h)
@@ -385,54 +445,6 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     opex['All'] = opex['Thermal'] + opex['Solar PV'] + opex['Wind'] + sum_all
 
     summary_results = concatenate_dataframes( summary_results, opex, run=1, unit='$US', metric='OPEX' )
-
-    ## Charge power capacity
-    charge = {}
-    sum_all = 0.0
-    for tech in storage_tech_list:
-        charge[tech] = safe_pyomo_value(model.storage.Pcha[tech])
-        sum_all += charge[tech]
-    charge['All'] = sum_all
-
-    summary_results = concatenate_dataframes( summary_results, charge, run=1, unit='MW', metric='Charge power capacity' )
-
-    ## Discharge power capacity
-    dcharge = {}
-    sum_all = 0.0
-
-    for tech in storage_tech_list:
-        dcharge[tech] = safe_pyomo_value(model.storage.Pdis[tech])
-        sum_all += dcharge[tech]
-    dcharge['All'] = sum_all
-
-    summary_results = concatenate_dataframes( summary_results, dcharge, run=1, unit='MW', metric='Discharge power capacity' )
-
-    ## Average power capacity
-    avgpocap = {}
-    sum_all = 0.0
-    for tech in storage_tech_list:
-        avgpocap[tech] = (charge[tech] + dcharge[tech]) / 2
-        sum_all += avgpocap[tech]
-    avgpocap['All'] = sum_all
-
-    summary_results = concatenate_dataframes( summary_results, avgpocap, run=1, unit='MW', metric='Average power capacity' )
-
-    ## Energy capacity
-    encap = {}
-    sum_all = 0.0
-    for tech in storage_tech_list:
-        encap[tech] = safe_pyomo_value(model.storage.Ecap[tech])
-        sum_all += encap[tech]
-    encap['All'] = sum_all
-
-    summary_results = concatenate_dataframes( summary_results, encap, run=1, unit='MWh', metric='Energy capacity' )
-
-    ## Discharge duration
-    dis_dur = {}
-    for tech in storage_tech_list:
-        dis_dur[tech] = safe_pyomo_value(sqrt(model.storage.data['Eff', tech]) * model.storage.Ecap[tech] / (model.storage.Pdis[tech] + 1e-15))
-
-    summary_results = concatenate_dataframes( summary_results, dis_dur, run=1, unit='h', metric='Duration' )
 
     ## Equivalent number of cycles
     cyc = {}

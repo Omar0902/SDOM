@@ -1,7 +1,7 @@
 from pyomo.core import Var, Constraint, Expression
 from pyomo.environ import Set, Param, value, NonNegativeReals
 import logging
-from .models_utils import fcr_rule_thermal, generic_fixed_om_cost_expr_rule, different_fcr_capex_cost_expr_rule, sum_installed_capacity_by_plants_set_expr_rule, add_generic_fixed_costs, add_generation_variables
+from .models_utils import crf_rule, generic_fixed_om_cost_expr_rule, different_fcr_capex_cost_expr_rule, sum_installed_capacity_by_plants_set_expr_rule, add_generic_fixed_costs, add_generation_variables
 from ..constants import MW_TO_KW, THERMAL_PROPERTIES_NAMES
 
 def initialize_thermal_sets(block, data):
@@ -58,7 +58,7 @@ def add_thermal_parameters(model, data):
     _add_thermal_parameters(model.thermal, df)
     
     model.thermal.r = Param( initialize = float(data["scalars"].loc["r"].Value) )  # Interest rate
-    model.thermal.FCR = Param( model.thermal.plants_set, initialize = fcr_rule_thermal ) #Capital Recovery Factor -THERMAL
+    model.thermal.FCR = Param( model.thermal.plants_set, initialize = crf_rule ) #Capital Recovery Factor -THERMAL
 
 ####################################################################################|
 # ------------------------------------ Variables -----------------------------------|

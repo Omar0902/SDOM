@@ -1,7 +1,7 @@
 import logging
 #from pympler import muppy, summary
 #from pympler import muppy, summary
-from pyomo.opt import SolverFactory, SolverStatus, TerminationCondition
+from pyomo.opt import SolverFactory, SolverStatus, TerminationCondition, check_available_solvers
 from pyomo.util.infeasible import log_infeasible_constraints
 from pyomo.environ import ConcreteModel, Objective, Block, minimize
 
@@ -15,6 +15,8 @@ from .models.formulations_system import objective_rule, add_system_constraints
 
 from .constants import MW_TO_KW
 from .models.formulations_hydro import add_hydro_variables, add_hydro_run_of_river_constraints, add_hydro_budget_constraints
+
+from .io_manager import get_formulation
 # ---------------------------------------------------------------------------------
 # Model initialization
 # Safe value function for uninitialized variables/parameters
@@ -118,7 +120,7 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
     add_thermal_constraints( model )
 
     logging.debug("-- Adding hydropower generation constraints...")
-    if data["formulations"].loc[ data["formulations"]["Component"].str.lower() == 'hydro' ]["Formulation"].iloc[0]  == "RunOfRiverFormulation":
+    if get_formulation(data, component="hydro")  == "RunOfRiverFormulation":
         add_hydro_run_of_river_constraints(model, data)
     else:
         add_hydro_budget_constraints(model, data)
@@ -315,7 +317,7 @@ def run_solver(model, solver_config_dict:dict):
     best_objective_value = float('inf')
 
     target_value = float(model.GenMix_Target.value)
-
+    
     logging.info(f"Running optimization for GenMix_Target = {target_value:.2f}")
     result = solver.solve(model, 
                           tee = solver_config_dict["solve_keywords"].get("tee", True),

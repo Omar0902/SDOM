@@ -12,7 +12,8 @@ from .models.formulations_storage import add_storage_parameters, initialize_stor
 from .models.formulations_resiliency import add_resiliency_parameters
 
 
-from .constants import MONTHLY_BUDGET_HOURS_AGGREGATION, DAILY_BUDGET_HOURS_AGGREGATION
+from .constants import VALID_HYDRO_FORMULATIONS_TO_BUDGET_MAP, MONTHLY_BUDGET_HOURS_AGGREGATION, DAILY_BUDGET_HOURS_AGGREGATION
+from .io_manager import get_formulation
 
 def initialize_vre_sets(data, block, vre_type: str):
      # Solar plant ID alignment
@@ -75,19 +76,17 @@ def initialize_sets( model, data, n_hours = 8760 ):
     logging.info(f"Storage technologies with coupled charge/discharge power: {list(model.storage.b)}")
 
     initialize_thermal_sets(model.thermal, data)
-
-    if data["formulations"].loc[ data["formulations"]["Component"].str.lower() == 'hydro' ]["Formulation"].iloc[0]  == "MonthlyBudgetFormulation":
-        n_hours_checked= check_n_hours(n_hours, MONTHLY_BUDGET_HOURS_AGGREGATION)
+   
+    hydro_formulation = get_formulation(data, component = 'hydro')
+    if "Budget" in hydro_formulation:
+        n_hours_checked= check_n_hours(n_hours, VALID_HYDRO_FORMULATIONS_TO_BUDGET_MAP[hydro_formulation])
         model.h = RangeSet(1, n_hours_checked)
-        create_budget_set( model, model.hydro, n_hours_checked, MONTHLY_BUDGET_HOURS_AGGREGATION )
-
-    elif data["formulations"].loc[ data["formulations"]["Component"].str.lower() == 'hydro' ]["Formulation"].iloc[0]  == "DailyBudgetFormulation":
-        n_hours_checked= check_n_hours(n_hours, DAILY_BUDGET_HOURS_AGGREGATION)
-        model.h = RangeSet(1, n_hours_checked)
-        create_budget_set( model, model.hydro, n_hours_checked, DAILY_BUDGET_HOURS_AGGREGATION )
+        model.storage.n_steps_modeled = Param( initialize = n_hours_checked )
+        create_budget_set( model, model.hydro, n_hours_checked, VALID_HYDRO_FORMULATIONS_TO_BUDGET_MAP[hydro_formulation] )
         
     else:
         model.h = RangeSet(1, n_hours)
+        model.storage.n_steps_modeled = Param( initialize = n_hours )
 
 def initialize_params(model, data):
     """

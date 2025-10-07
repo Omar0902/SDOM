@@ -19,7 +19,7 @@ def test_optimization_model_ini_case_no_resiliency_730h_monthly_budget():
     constraint_counts = get_n_eq_ineq_constraints( model )
 
     assert constraint_counts["equality"] == 5113
-    assert constraint_counts["inequality"] == 25568
+    assert constraint_counts["inequality"] == 25571
 
 
 def test_optimization_model_res_case_no_resiliency_730h_monthly_budget_highs():
@@ -69,7 +69,7 @@ def test_optimization_model_res_case_no_resiliency_730h_monthly_budget_cbc():
         pytest.fail(f"{run_solver.__name__} failed with error: {e}")
 
     problem_info_dict = get_optimization_problem_info( best_result )
-    assert problem_info_dict["Number of constraints"] == 19385
+    assert problem_info_dict["Number of constraints"] == 19388
     assert problem_info_dict["Number of variables"] == 22306
     assert problem_info_dict["Number of binary variables"] == 2920
     assert problem_info_dict["Number of objectives"] == 1
@@ -101,7 +101,7 @@ def test_optimization_model_ini_case_no_resiliency_168h_daily_budget():
     constraint_counts = get_n_eq_ineq_constraints( model )
 
     assert constraint_counts["equality"] == 1185
-    assert constraint_counts["inequality"] == 5898
+    assert constraint_counts["inequality"] == 5901
 
 
 def test_optimization_model_res_case_no_resiliency_168h_daily_budget_highs():

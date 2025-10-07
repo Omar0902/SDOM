@@ -15,7 +15,9 @@ def initialize_storage_sets(block, data):
 
 def add_storage_parameters(model, data):
     # Battery life and cycling
-    model.storage.MaxCycles = Param( initialize = float(data["scalars"].loc["MaxCycles"].Value) )
+    max_cycles_dict = data['storage_data'].loc['MaxCycles'].to_dict()
+
+    model.storage.MaxCycles = Param( model.storage.j,  initialize = max_cycles_dict )
     # Storage data initialization
     storage_dict = data["storage_data"].stack().to_dict()
     storage_tuple_dict = {(prop, tech): storage_dict[(prop, tech)] for prop in STORAGE_PROPERTIES_NAMES for tech in model.storage.j}
@@ -131,7 +133,7 @@ def soc_balance_rule(model, h, j):
 def max_cycle_year_rule(model, j): #TODO check here this hardcoded Li-Ion
     n_steps = model.n_steps_modeled
     iterate = range(1, n_steps + 1)
-    return sum(model.PD[h, j] for h in iterate) <= (model.MaxCycles / model.data['Lifetime', j]) * model.Ecap[j]
+    return sum(model.PD[h, j] for h in iterate) <= (model.MaxCycles[j] / model.data['Lifetime', j]) * model.Ecap[j]
 
 def add_storage_constraints( model ):
     """

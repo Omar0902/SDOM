@@ -38,7 +38,6 @@ def test_load_data_param_values():
     # Check some specific values in the scalars DataFrame
     assert abs( df.loc["LifeTimeVRE"].Value - 30 ) <= 0.05
     assert abs( df.loc["GenMix_Target"].Value - 1 ) <= 0.05
-    assert abs( df.loc["MaxCycles"].Value - 3250 ) <= 10
     assert abs( df.loc["r"].Value - 0.06 ) <= 0.0005
 
 def test_load_data_thermal_values():
@@ -84,10 +83,12 @@ def test_load_data_storage_values():
     Min_Duration_v = [1, 1, 1, 1]
     Max_Duration_v = [12, 24, 24, 6480]
     Max_P_v = [100000, 100000, 100000, 100000]
+    MaxCycles_v = [3250, 100000, 100000, 100000]
     FOM_v = [10.3, 4.120718067, 8.241436134, 47.38825777]
     VOM_v = [3.09, 4.120718067, 1.030179517, 0]
     Lifetime_v = [13, 30, 55, 18]
     CostRatio_v = [0.5, 0.325, 0.5, 0.49]
+    
 
     # Check some specific values in the storage_data DataFrame
     for i, tech in enumerate( data["STORAGE_SET_J_TECHS"] ):
@@ -97,6 +98,7 @@ def test_load_data_storage_values():
         assert abs( df.loc["Min_Duration", tech] - Min_Duration_v[i] ) <= 0.05
         assert abs( df.loc["Max_Duration", tech] - Max_Duration_v[i] ) <= 0.05
         assert abs( df.loc["Max_P", tech] - Max_P_v[i] ) <= 0.05
+        assert abs( df.loc["MaxCycles", tech] - MaxCycles_v[i] ) <= 0.05
         assert abs( df.loc["FOM", tech] - FOM_v[i] ) <= 0.05
         assert abs( df.loc["VOM", tech] - VOM_v[i] ) <= 0.05
         assert abs( df.loc["Lifetime", tech] - Lifetime_v[i] ) <= 0.05

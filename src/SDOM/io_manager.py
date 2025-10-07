@@ -207,7 +207,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     logging.debug("--Initializing results dictionaries...")
     gen_results = {'Scenario':[],'Hour': [], 'Solar PV Generation (MW)': [], 'Solar PV Curtailment (MW)': [],
                    'Wind Generation (MW)': [], 'Wind Curtailment (MW)': [],
-                   'Thermal Generation (MW)': [], 'Storage Charge/Discharge (MW)': []}
+                   'Thermal Generation (MW)': [], 'Hydro Generation (MW)': [], 'Storage Charge/Discharge (MW)': []}
 
     storage_results = {'Hour': [], 'Technology': [], 'Charging power (MW)': [],
                        'Discharging power (MW)': [], 'State of charge (MWh)': []}
@@ -221,8 +221,9 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
         wind_gen = safe_pyomo_value(model.wind.generation[h])
         wind_curt = safe_pyomo_value(model.wind.curtailment[h])
         gas_cc_gen = sum( safe_pyomo_value(model.thermal.generation[h, bu]) for bu in model.thermal.plants_set )
+        hydro = safe_pyomo_value(model.hydro.generation[h])
 
-        if None not in [solar_gen, solar_curt, wind_gen, wind_curt, gas_cc_gen]:
+        if None not in [solar_gen, solar_curt, wind_gen, wind_curt, gas_cc_gen, hydro]:
 #            gen_results['Scenario'].append(run)
             gen_results['Hour'].append(h)
             gen_results['Solar PV Generation (MW)'].append(solar_gen)
@@ -230,6 +231,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
             gen_results['Wind Generation (MW)'].append(wind_gen)
             gen_results['Wind Curtailment (MW)'].append(wind_curt)
             gen_results['Thermal Generation (MW)'].append(gas_cc_gen)
+            gen_results['Hydro Generation (MW)'].append(hydro)
 
             power_to_storage = sum(safe_pyomo_value(model.storage.PC[h, j]) or 0 for j in model.storage.j) - sum(safe_pyomo_value(model.storage.PD[h, j]) or 0 for j in model.storage.j)
             gen_results['Storage Charge/Discharge (MW)'].append(power_to_storage)
@@ -274,7 +276,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     gen['Solar PV'] = safe_pyomo_value(model.pv.total_generation)
     gen['Wind'] = safe_pyomo_value(model.wind.total_generation)
     gen['Other renewables'] = safe_pyomo_value(sum(model.other_renewables.ts_parameter[h] for h in model.h))
-    gen['Hydro'] = safe_pyomo_value(sum(model.hydro.ts_parameter[h] for h in model.h))
+    gen['Hydro'] = safe_pyomo_value(sum(model.hydro.generation[h] for h in model.h))
     gen['Nuclear'] = safe_pyomo_value(sum(model.nuclear.ts_parameter[h] for h in model.h))
 
     sum_all = 0.0
@@ -288,6 +290,12 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
 
     summary_results = concatenate_dataframes( summary_results, gen, run=1, unit='MWh', metric='Total generation' )
     
+    ## Demand
+    dem = {}
+    dem['demand'] = sum(model.demand.ts_parameter[h] for h in model.h)
+
+    summary_results = concatenate_dataframes( summary_results, dem, run=1, unit='MWh', metric='Total demand' )
+    
     ## Storage energy charging
     sum_all = 0.0
     stoch = {}
@@ -298,11 +306,6 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
 
     summary_results = concatenate_dataframes( summary_results, stoch, run=1, unit='MWh', metric='Storage energy charging' )
     
-    ## Demand
-    dem = {}
-    dem['demand'] = sum(model.demand.ts_parameter[h] for h in model.h)
-
-    summary_results = concatenate_dataframes( summary_results, dem, run=1, unit='MWh', metric='Total demand' )
     
     ## CAPEX
     capex = {}
@@ -428,11 +431,11 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     summary_results = concatenate_dataframes( summary_results, encap, run=1, unit='MWh', metric='Energy capacity' )
 
     ## Discharge duration
-    dur = {}
+    dis_dur = {}
     for tech in storage_tech_list:
-        dur[tech] = safe_pyomo_value(sqrt(model.storage.data['Eff', tech] * model.storage.Ecap[tech] / (model.storage.Pdis[tech] + 1e-15)))
+        dis_dur[tech] = safe_pyomo_value(sqrt(model.storage.data['Eff', tech]) * model.storage.Ecap[tech] / (model.storage.Pdis[tech] + 1e-15))
 
-    summary_results = concatenate_dataframes( summary_results, dur, run=1, unit='h', metric='Duration' )
+    summary_results = concatenate_dataframes( summary_results, dis_dur, run=1, unit='h', metric='Duration' )
 
     ## Equivalent number of cycles
     cyc = {}

@@ -9,13 +9,17 @@ def safe_pyomo_value(var):
         return value(var) if var is not None else None
     except ValueError:
         return None
+# Normalize base_name and file name for comparison: ignore spaces, "-", "_", and case
+def normalize_string(name:str) -> str:
+    return name.replace(' ', '').replace('-', '').replace('_', '').lower()
 
 def get_complete_path(filepath, file_name):
 
     base_name, ext = os.path.splitext(file_name)
     if ext.lower() == '.csv':
         for f in os.listdir(filepath):
-            if f.startswith(base_name) and f.endswith('.csv'):
+            normalized_f = normalize_string(f.split('.csv')[0])
+            if normalized_f.startswith( normalize_string( base_name) ) and f.lower().endswith('.csv'):
                 logging.debug(f"Found matching file: {f}")
                 return os.path.join(filepath, f)
     

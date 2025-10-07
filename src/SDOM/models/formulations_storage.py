@@ -49,25 +49,19 @@ def add_storage_variables(model):
 ####################################################################################|
 
 def storage_power_capex_cost_expr_rule(block, j):
-     return (   block.CRF[j]*(
-                    MW_TO_KW * block.data['CostRatio', j] * \
-                    block.data['P_Capex', j]*block.Pcha[j]
-                    + MW_TO_KW *(1 - block.data['CostRatio', j]) * \
-                    block.data['P_Capex', j]*block.Pdis[j]
+     return (   block.CRF[j] * (
+                    MW_TO_KW * block.data['CostRatio', j] * block.data['P_Capex', j]*block.Pcha[j]
+                    + MW_TO_KW * (1 - block.data['CostRatio', j]) * block.data['P_Capex', j]*block.Pdis[j]
                     )
-                    )
+                )
 
 def storage_energy_capex_cost_expr_rule(block, j):
-     return (   block.CRF[j]*(
-                    MW_TO_KW *block.data['E_Capex', j]*block.Ecap[j])
-                    )
+     return ( block.CRF[j] * ( MW_TO_KW *block.data['E_Capex', j]*block.Ecap[j] ) )
 
 def storage_fixed_om_cost_expr_rule(block, j):
-     return (    MW_TO_KW *block.data['CostRatio', j] * \
-                block.data['FOM', j]*block.Pcha[j]
-                + MW_TO_KW *(1 - block.data['CostRatio', j]) * \
-                block.data['FOM', j]*block.Pdis[j]
-                    )
+     return (    MW_TO_KW * block.data['CostRatio', j] * block.data['FOM', j]*block.Pcha[j]
+                + MW_TO_KW * (1 - block.data['CostRatio', j]) * block.data['FOM', j]*block.Pdis[j]
+                )
 
 def _add_storage_expressions(block):
     block.power_capex_cost_expr = Expression(block.j, rule = storage_power_capex_cost_expr_rule )

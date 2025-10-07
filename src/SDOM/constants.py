@@ -29,8 +29,10 @@ INPUT_CSV_NAMES = {
     'cap_wind': 'CapWind.csv', #'CapWind_2050.csv',
     'thermal_data': 'Data_BalancingUnits.csv', #'Data_BalancingUnits_2030(in).csv',
     'storage_data': 'StorageData.csv', #'StorageData_2050.csv',
-    #"imports": "Imports.csv", #'Imports_2019.csv',
-    #"exports": "Exports.csv", #'Exports_2019.csv',
+    "cap_imports": "Import_Cap.csv",
+    "cap_exports": "Export_Cap.csv",
+    "price_imports": "Import_Prices.csv",
+    "price_exports": "Export_Prices.csv",
     'scalars': 'scalars.csv', #'scalars.csv',
 }
 
@@ -51,6 +53,13 @@ VALID_HYDRO_FORMULATIONS_TO_BUDGET_MAP = {
     "MonthlyBudgetFormulation": MONTHLY_BUDGET_HOURS_AGGREGATION,
     "DailyBudgetFormulation": DAILY_BUDGET_HOURS_AGGREGATION,
     "RunOfRiverFormulation": RUN_OF_RIVER_AGGREGATION
+}
+
+VALID_IMPORTS_EXPORTS_FORMULATIONS_TO_DESCRIPTION_MAP = {
+    "NotModel": "No imports/exports considered in the model.",
+    #"FixedTimeSeriesFormulation": "Formulation to load a time series of import data and fixed it according to that.",
+    "CapacityPriceNetLoadFormulation": "Formulation to load a time series parameter with the import/export maximum capacity and import/export prices and dispatch it. Imports only allowed when net load is positive/negative",
+    #"CapacityPriceBudgetFormulation": "Formulation to load a time series parameter with the maximum capacity and import prices and dispatch it. Imports allowed always, but limited by a budget.",
 }
 
 #RESILIENCY CONSTANTS HARD-CODED

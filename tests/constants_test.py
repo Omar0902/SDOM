@@ -1,8 +1,9 @@
 import pandas as pd
 
 REL_PATH_DATA_RUN_OF_RIVER_TEST = 'Data/no_exchange_run_of_river'
-REL_PATH_DATA_HYDRO_BUDGET_TEST = 'Data/exchange_hydro_budget_multiple_balancing'
-REL_PATH_DATA_DAILY_HYDRO_BUDGET_TEST = 'Data/exchange_hydro_daily_budget_multiple_balancing p95'
+REL_PATH_DATA_HYDRO_BUDGET_TEST = 'Data/no_exchange_monthly_hydro_budget_multiple_balancing_p50'
+REL_PATH_DATA_DAILY_HYDRO_BUDGET_TEST = 'Data/no_exchange_hydro_daily_budget_multiple_balancing_p95'
+REL_PATH_DATA_DAILY_HYDRO_BUDGET_IMP_EXP_TEST = "Data/exchange_hydro_daily_budget_multiple_balancing_p95"
 
 DICT_EXPECTED_DATA_KEYS_TO_TYPE = {
     "solar_plants": list,
@@ -21,6 +22,8 @@ DICT_EXPECTED_DATA_KEYS_TO_TYPE = {
     "STORAGE_SET_J_TECHS": list,
     "STORAGE_SET_B_TECHS": list,
     "thermal_data": pd.DataFrame,
+    "cap_imports": pd.DataFrame,
+    "cap_exports": pd.DataFrame,
+    "price_imports": pd.DataFrame,
+    "price_exports": pd.DataFrame,
     "scalars": pd.DataFrame}
-
-   

@@ -18,9 +18,10 @@ def test_load_data_keys_and_types():
     
     data = load_data( test_data_path )
     data_keys = data.keys()
-
+    not_expected_keys_in_this_test = ["large_hydro_max", "large_hydro_min", "cap_imports", "cap_exports", "price_imports", "price_exports"]
     for key, expected_type in DICT_EXPECTED_DATA_KEYS_TO_TYPE.items():
-        if key == "large_hydro_max" or key == "large_hydro_min":
+        if key in not_expected_keys_in_this_test:
+                assert key not in data_keys, f"Key '{key}' should not be present in run of River test data"
                 continue  # Skip these keys as they are not for run of River
         assert key in data_keys, f"Missing expected key: {key}"
         assert isinstance(data[key], expected_type), f"Key '{key}' has incorrect type. Expected {expected_type}, got {type(data[key])}"

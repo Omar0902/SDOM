@@ -10,7 +10,7 @@ import pandas as pd
 ####################################################################################|
 def _add_vre_parameters(block, 
                       set_hours, 
-                      data: pd.DataFrame,
+                      data: dict,
                       key_filt_dict: str,
                       key_comp_data: str,
                       key_cf_data: str ):
@@ -34,7 +34,7 @@ def _add_vre_parameters(block,
     block.capacity_factor = Param( set_hours, block.plants_set, initialize = cf_vre_dict )
 
 
-def add_vre_parameters(model, data):
+def add_vre_parameters(model, data: dict):
     #add solar parameters
     _add_vre_parameters(model.pv, 
                       model.h, 

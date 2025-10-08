@@ -53,7 +53,7 @@ def _add_thermal_parameters(block, df):
     block.trans_cap_cost = Param(block.plants_set, initialize=0.0)
 
 
-def add_thermal_parameters(model, data):
+def add_thermal_parameters(model, data: dict):
     df = data["thermal_data"].set_index("Plant_id")
     _add_thermal_parameters(model.thermal, df)
     

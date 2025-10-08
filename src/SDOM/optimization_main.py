@@ -11,11 +11,11 @@ from .models.formulations_vre import add_vre_variables, add_vre_expressions, add
 from .models.formulations_thermal import add_thermal_variables, add_thermal_expressions, add_thermal_constraints
 from .models.formulations_resiliency import add_resiliency_variables, add_resiliency_constraints
 from .models.formulations_storage import add_storage_variables, add_storage_expressions, add_storage_constraints
-from .models.formulations_system import objective_rule, add_system_constraints
-from .models.formulations_imports_exports import add_imports_variables, add_exports_variables
+from .models.formulations_system import objective_rule, add_system_expressions, add_system_constraints
+from .models.formulations_imports_exports import add_imports_variables, add_exports_variables, add_imports_exports_cost_expressions, add_imports_constraints, add_exports_constraints
+from .models.formulations_hydro import add_hydro_variables, add_hydro_run_of_river_constraints, add_hydro_budget_constraints
 
 from .constants import MW_TO_KW
-from .models.formulations_hydro import add_hydro_variables, add_hydro_run_of_river_constraints, add_hydro_budget_constraints
 
 from .io_manager import get_formulation
 # ---------------------------------------------------------------------------------
@@ -49,11 +49,8 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
     logging.debug("Instantiating SDOM Pyomo optimization blocks...")
     model.hydro = Block()
 
-    if get_formulation(data, component="Imports") != "NotModel":
-        model.imports = Block()
-
-    if get_formulation(data, component="Exports") != "NotModel":
-        model.exports = Block()
+    model.imports = Block()
+    model.exports = Block()
 
     model.demand = Block()
     model.nuclear = Block()
@@ -106,11 +103,14 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
         logging.debug("-- Adding Imports variables...")
         add_imports_variables( model )
     
-    # Imports
+    # Exports
     if get_formulation(data, component="Exports") != "NotModel":
         logging.debug("-- Adding Exports variables...")
         add_exports_variables( model )
 
+    add_imports_exports_cost_expressions(model, data)
+
+    add_system_expressions(model)
     # -------------------------------- Objective function -------------------------------
     logging.info("Adding objective function to the model...")
     model.Obj = Objective( rule = objective_rule, sense = minimize )
@@ -142,7 +142,17 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
         add_hydro_run_of_river_constraints(model, data)
     else:
         add_hydro_budget_constraints(model, data)
-        
+    
+
+    # Imports
+    if get_formulation(data, component="Imports") != "NotModel":
+        logging.debug("-- Adding Imports constraints...")
+        add_imports_constraints( model, data )
+    
+    # Imports
+    if get_formulation(data, component="Exports") != "NotModel":
+        logging.debug("-- Adding Exports constraints...")
+        add_exports_constraints( model, data )
 
         #add_hydro_variables(model)
     

@@ -1,10 +1,10 @@
-from pyomo.core import Constraint
+from pyomo.core import Expression, Constraint
 
 
 from .formulations_vre import add_vre_fixed_costs
 from .formulations_thermal import add_thermal_fixed_costs, add_thermal_variable_costs
 from .formulations_storage import add_storage_fixed_costs, add_storage_variable_costs
-
+from .formulations_imports_exports import add_imports_exports_cost
 ####################################################################################|
 # ----------------------------------- Parameters -----------------------------------|
 ####################################################################################|
@@ -43,7 +43,24 @@ def objective_rule(model):
         add_storage_variable_costs(model)
     )
 
-    return fixed_costs + variable_costs
+    imports_exports_costs = add_imports_exports_cost(model)
+
+    return fixed_costs + variable_costs + imports_exports_costs
+
+
+####################################################################################|
+# ----------------------------------- Expressions ----------------------------------|
+####################################################################################|
+def net_load_rule(model, h):
+    return ( model.demand.ts_parameter[h] 
+            - model.pv.total_hourly_availability[h] - model.wind.total_hourly_availability[h] 
+            - model.nuclear.alpha * model.nuclear.ts_parameter[h] - model.other_renewables.alpha * model.other_renewables.ts_parameter[h]
+            - model.hydro.generation[h] )
+
+def add_system_expressions(model):
+    model.net_load = Expression(model.h, rule=net_load_rule)
+    return
+
 
 
 ####################################################################################|

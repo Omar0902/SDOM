@@ -12,6 +12,7 @@ from .models.formulations_thermal import add_thermal_variables, add_thermal_expr
 from .models.formulations_resiliency import add_resiliency_variables, add_resiliency_constraints
 from .models.formulations_storage import add_storage_variables, add_storage_expressions, add_storage_constraints
 from .models.formulations_system import objective_rule, add_system_constraints
+from .models.formulations_imports_exports import add_imports_variables, add_exports_variables
 
 from .constants import MW_TO_KW
 from .models.formulations_hydro import add_hydro_variables, add_hydro_run_of_river_constraints, add_hydro_budget_constraints
@@ -47,7 +48,13 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
 
     logging.debug("Instantiating SDOM Pyomo optimization blocks...")
     model.hydro = Block()
-    #model.imports = Block() #TODO implement this
+
+    if get_formulation(data, component="Imports") != "NotModel":
+        model.imports = Block()
+
+    if get_formulation(data, component="Exports") != "NotModel":
+        model.exports = Block()
+
     model.demand = Block()
     model.nuclear = Block()
     model.other_renewables = Block()
@@ -74,7 +81,6 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
     add_vre_expressions( model )
 
 
-    # Capacity of backup Thermal units
     logging.debug("-- Adding thermal generation variables...")
     add_thermal_variables( model )
 
@@ -94,6 +100,16 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
 
     logging.debug("-- Adding hydropower generation variables...")
     add_hydro_variables(model)
+
+    # Imports
+    if get_formulation(data, component="Imports") != "NotModel":
+        logging.debug("-- Adding Imports variables...")
+        add_imports_variables( model )
+    
+    # Imports
+    if get_formulation(data, component="Exports") != "NotModel":
+        logging.debug("-- Adding Exports variables...")
+        add_exports_variables( model )
 
     # -------------------------------- Objective function -------------------------------
     logging.info("Adding objective function to the model...")

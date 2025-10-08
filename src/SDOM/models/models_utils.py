@@ -16,6 +16,10 @@ def crf_rule( model, j ):
 ####################################################################################|
 # ----------------------------------- Parameters -----------------------------------|
 ####################################################################################|
+def get_filtered_ts_parameter_dict( hourly_set, data: dict, key_ts: str, key_col: str):
+    selected_data          = data[key_ts].set_index('*Hour')[key_col].to_dict()
+    filtered_selected_data = {h: selected_data[h] for h in hourly_set if h in selected_data}
+    return filtered_selected_data
 
 def add_alpha_parameter(block, data, key_scalars: str):
     if not hasattr(block, "alpha") and key_scalars != "":
@@ -23,7 +27,7 @@ def add_alpha_parameter(block, data, key_scalars: str):
 
 def add_alpha_and_ts_parameters( block, 
                                 hourly_set, 
-                                data, 
+                                data: dict, 
                                 key_scalars: str, 
                                 key_ts: str,
                                 key_col: str):
@@ -31,13 +35,11 @@ def add_alpha_and_ts_parameters( block,
     add_alpha_parameter(block, data, key_scalars)
 
     # Time-series parameter data initialization
-    selected_data          = data[key_ts].set_index('*Hour')[key_col].to_dict()
-    filtered_selected_data = {h: selected_data[h] for h in hourly_set if h in selected_data}
-
+    filtered_selected_data = get_filtered_ts_parameter_dict(hourly_set, data, key_ts, key_col)
     block.ts_parameter = Param( hourly_set, initialize = filtered_selected_data)
 
 
-def add_budget_parameter(block, formulation, valid_formulation_to_budget_map):
+def add_budget_parameter(block, formulation, valid_formulation_to_budget_map: dict):
     if not hasattr(block, "budget_scalar"):
         block.budget_scalar = Param( initialize = valid_formulation_to_budget_map[formulation])
 
@@ -53,7 +55,7 @@ def add_upper_bound_paramenters(block,
 
 def add_lower_bound_paramenters(block, 
                                 hourly_set, 
-                                data, 
+                                data: dict, 
                                 key_ts: str = "large_hydro_min", 
                                 key_col: str = "LargeHydro"):
     

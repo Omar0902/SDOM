@@ -788,10 +788,10 @@ def export_results(model, case):
     summary_results = pd.concat([summary_results, energy_cap], ignore_index=True)
     ## Discharge duration
     dur = {}
-    dur['LiIon'] = safe_pyomo_value(sqrt(model.StorageData['Eff','Li-Ion']*model.Ecap['Li-Ion']/(model.Pdis['Li-Ion'] + 1e-15)))
-    dur['CAES'] = safe_pyomo_value(sqrt(model.StorageData['Eff','CAES']*model.Ecap['CAES']/(model.Pdis['CAES'] + 1e-15)))
-    dur['PHS'] = safe_pyomo_value(sqrt(model.StorageData['Eff','PHS']*model.Ecap['PHS']/(model.Pdis['PHS'] + 1e-15)))
-    dur['H2'] = safe_pyomo_value(sqrt(model.StorageData['Eff','H2']*model.Ecap['H2']/(model.Pdis['H2'] + 1e-15)))
+    dur['LiIon'] = safe_pyomo_value(sqrt(model.StorageData['Eff','Li-Ion'])*model.Ecap['Li-Ion']/(model.Pdis['Li-Ion'] + 1e-15))
+    dur['CAES'] = safe_pyomo_value(sqrt(model.StorageData['Eff','CAES'])*model.Ecap['CAES']/(model.Pdis['CAES'] + 1e-15))
+    dur['PHS'] = safe_pyomo_value(sqrt(model.StorageData['Eff','PHS'])*model.Ecap['PHS']/(model.Pdis['PHS'] + 1e-15))
+    dur['H2'] = safe_pyomo_value(sqrt(model.StorageData['Eff','H2'])*model.Ecap['H2']/(model.Pdis['H2'] + 1e-15))
     duration = pd.DataFrame.from_dict(dur, orient='index', columns=['Optimal Value'])
     duration = duration.reset_index(names=['Technology'])
     duration['Run'] = 1

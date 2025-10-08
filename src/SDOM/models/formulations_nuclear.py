@@ -5,6 +5,6 @@ from .models_utils import add_alpha_and_ts_parameters
 # ----------------------------------- Parameters -----------------------------------|
 ####################################################################################|
 
-def add_nuclear_parameters(model, data):
+def add_nuclear_parameters(model, data: dict):
     add_alpha_and_ts_parameters(model.nuclear, model.h, data, "AlphaNuclear", "nuclear_data", "Nuclear")
     

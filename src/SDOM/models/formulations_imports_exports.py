@@ -20,12 +20,12 @@ def add_import_export_ts_parameters( block,
     return
 
 
-def add_imports_parameters(model, data):
+def add_imports_parameters(model, data: dict):
     add_import_export_ts_parameters( model.imports, model.h, data, "cap_imports", "Imports")
     add_import_export_ts_parameters( model.imports, model.h, data, "price_imports", "Imports_price")
     return
 
-def add_exports_parameters(model, data):
+def add_exports_parameters(model, data: dict):
     add_import_export_ts_parameters( model.exports, model.h, data, "cap_exports", "Exports")
     add_import_export_ts_parameters( model.exports, model.h, data, "price_exports", "Exports_price")
     return
@@ -57,7 +57,12 @@ def add_exports_variables(model):
 ####################################################################################|
 # ----------------------------------- Constraints ----------------------------------|
 ####################################################################################|
+def add_imports_constraints( model, data: dict ):
+    return
 
+
+def add_exports_constraints( model, data: dict ):
+    return
 
 
 ####################################################################################|

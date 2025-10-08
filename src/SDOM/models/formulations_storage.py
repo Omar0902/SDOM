@@ -3,7 +3,7 @@ from pyomo.environ import Set, Param, Binary, NonNegativeReals, sqrt
 from ..constants import STORAGE_PROPERTIES_NAMES, MW_TO_KW
 from .models_utils import crf_rule
 
-def initialize_storage_sets(block, data):
+def initialize_storage_sets(block, data: dict):
     block.j = Set( initialize = data['STORAGE_SET_J_TECHS'] )
     block.b = Set( within=block.j, initialize = data['STORAGE_SET_B_TECHS'] )
     
@@ -13,7 +13,7 @@ def initialize_storage_sets(block, data):
 # ----------------------------------- Parameters -----------------------------------|
 ####################################################################################|
 
-def add_storage_parameters(model, data):
+def add_storage_parameters(model, data: dict):
     # Battery life and cycling
     max_cycles_dict = data['storage_data'].loc['MaxCycles'].to_dict()
 

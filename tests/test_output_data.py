@@ -22,7 +22,7 @@ def test_output_files_creation_case_no_resiliency():
     case_name = 'test_data'
     export_results(model, case_name)
     
-    files_names = ["OutputGeneration_" + case_name, "OutputStorage_" + case_name, "OutputSummary_" + case_name]
+    files_names = ["OutputGeneration_" + case_name, "OutputThermalGeneration_" + case_name, "OutputStorage_" + case_name, "OutputSummary_" + case_name]
     for file_name in files_names:
         assert os.path.exists(os.path.join('./results_pyomo/', f"{file_name}.csv"))
 

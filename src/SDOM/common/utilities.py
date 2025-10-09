@@ -79,3 +79,9 @@ def concatenate_dataframes( df: pd.DataFrame,
     new_df['Metric'] = metric
     df = pd.concat([df, new_df], ignore_index=True)
     return df
+
+def get_dict_string_void_list_from_keys_in_list(keys: list) -> dict:
+    generic_dict = {}
+    for plant in keys:
+        generic_dict[str(plant)] = []
+    return generic_dict

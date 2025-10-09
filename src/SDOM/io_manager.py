@@ -5,7 +5,7 @@ import csv
 
 from pyomo.environ import sqrt
 
-from .common.utilities import safe_pyomo_value, check_file_exists, compare_lists, concatenate_dataframes
+from .common.utilities import safe_pyomo_value, check_file_exists, compare_lists, concatenate_dataframes, get_dict_string_void_list_from_keys_in_list
 from .constants import INPUT_CSV_NAMES, MW_TO_KW, VALID_HYDRO_FORMULATIONS_TO_BUDGET_MAP, VALID_IMPORTS_EXPORTS_FORMULATIONS_TO_DESCRIPTION_MAP
 
 
@@ -240,7 +240,11 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     logging.debug("--Initializing results dictionaries...")
     gen_results = {'Scenario':[],'Hour': [], 'Solar PV Generation (MW)': [], 'Solar PV Curtailment (MW)': [],
                    'Wind Generation (MW)': [], 'Wind Curtailment (MW)': [],
-                   'Thermal Generation (MW)': [], 'Hydro Generation (MW)': [], 'Storage Charge/Discharge (MW)': []}
+                   'All Thermal Generation (MW)': [], 'Hydro Generation (MW)': [],
+                   'Nuclear Generation (MW)': [], 'Other Renewables Generation (MW)': [],
+                   'Imports (MW)': [],
+                   'Storage Charge/Discharge (MW)': [],
+                   'Exports (MW)': [], "Load (MW)": []}
 
     storage_results = {'Hour': [], 'Technology': [], 'Charging power (MW)': [],
                        'Discharging power (MW)': [], 'State of charge (MWh)': []}
@@ -255,20 +259,33 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
         wind_curt = safe_pyomo_value(model.wind.curtailment[h])
         gas_cc_gen = sum( safe_pyomo_value(model.thermal.generation[h, bu]) for bu in model.thermal.plants_set )
         hydro = safe_pyomo_value(model.hydro.generation[h])
-
-        if None not in [solar_gen, solar_curt, wind_gen, wind_curt, gas_cc_gen, hydro]:
+        nuclear = safe_pyomo_value(model.nuclear.alpha * model.nuclear.ts_parameter[h]) if hasattr(model.nuclear, 'alpha') else 0
+        other_renewables = safe_pyomo_value(model.other_renewables.alpha * model.other_renewables.ts_parameter[h]) if hasattr(model.other_renewables, 'alpha') else 0
+        imports = safe_pyomo_value(model.imports.variable[h]) if hasattr(model.imports, 'variable') else 0
+        exports = safe_pyomo_value(model.exports.variable[h]) if hasattr(model.exports, 'variable') else 0
+        load = safe_pyomo_value(model.demand.ts_parameter[h]) if hasattr(model.demand, 'ts_parameter') else 0
+         # Only append results if all values are valid (not None)
+        if None not in [solar_gen, solar_curt, wind_gen, wind_curt, gas_cc_gen, hydro, imports, exports, load]:
 #            gen_results['Scenario'].append(run)
             gen_results['Hour'].append(h)
             gen_results['Solar PV Generation (MW)'].append(solar_gen)
             gen_results['Solar PV Curtailment (MW)'].append(solar_curt)
             gen_results['Wind Generation (MW)'].append(wind_gen)
             gen_results['Wind Curtailment (MW)'].append(wind_curt)
-            gen_results['Thermal Generation (MW)'].append(gas_cc_gen)
+            gen_results['All Thermal Generation (MW)'].append(gas_cc_gen)
             gen_results['Hydro Generation (MW)'].append(hydro)
+            gen_results['Nuclear Generation (MW)'].append(nuclear)
+            gen_results['Other Renewables Generation (MW)'].append(other_renewables)
+            gen_results['Imports (MW)'].append(imports)
 
             power_to_storage = sum(safe_pyomo_value(model.storage.PC[h, j]) or 0 for j in model.storage.j) - sum(safe_pyomo_value(model.storage.PD[h, j]) or 0 for j in model.storage.j)
             gen_results['Storage Charge/Discharge (MW)'].append(power_to_storage)
+            gen_results['Exports (MW)'].append(exports)
+            gen_results['Load (MW)'].append(load)
         gen_results['Scenario'].append(case)
+
+    
+
 
     # Extract storage results
     logging.debug("--Extracting storage results...")
@@ -361,6 +378,7 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
     gen['Hydro'] = safe_pyomo_value(sum(model.hydro.generation[h] for h in model.h))
     gen['Nuclear'] = safe_pyomo_value(sum(model.nuclear.ts_parameter[h] for h in model.h))
 
+    # Storage energy discharging
     sum_all = 0.0
     storage_tech_list = list(model.storage.j)
     for tech in storage_tech_list:
@@ -372,6 +390,11 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
 
     summary_results = concatenate_dataframes( summary_results, gen, run=1, unit='MWh', metric='Total generation' )
     
+    imp_exp = {}
+    imp_exp['Imports'] = safe_pyomo_value(sum(model.imports.variable[h] for h in model.h)) if hasattr(model.imports, 'variable') else 0
+    imp_exp['Exports'] = safe_pyomo_value(sum(model.exports.variable[h] for h in model.h)) if hasattr(model.exports, 'variable') else 0
+    summary_results = concatenate_dataframes( summary_results, imp_exp, run=1, unit='MWh', metric='Total Imports/Exports' )
+
     ## Storage energy discharging
     sum_all = 0.0
     stodisch = {}
@@ -483,6 +506,16 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
 
     summary_results = concatenate_dataframes( summary_results, opex, run=1, unit='$US', metric='OPEX' )
 
+    #IMPORTS/EXPORTS COSTS
+    cost_revenue = {}
+    cost_revenue["Imports Cost"] = safe_pyomo_value( model.imports.total_cost_expr )
+    summary_results = concatenate_dataframes( summary_results, cost_revenue, run=1, unit='$US', metric='Cost' )
+    cost_revenue = {}
+    cost_revenue["Exports Revenue"] = safe_pyomo_value( model.exports.total_cost_expr )
+    summary_results = concatenate_dataframes( summary_results, cost_revenue, run=1, unit='$US', metric='Revenue' )
+   
+
+
     ## Equivalent number of cycles
     cyc = {}
     for tech in storage_tech_list:
@@ -512,5 +545,25 @@ def export_results( model, case, output_dir = './results_pyomo/' ):
 
     # Save summary results to CSV
     logging.debug("-- Saving summary results to CSV...")
-    if len(summary_results)>0:
+    if len(summary_results) > 0:
         summary_results.to_csv(output_dir + f'OutputSummary_{case}.csv', index=False)
+
+
+
+    if len(model.thermal.plants_set) <= 1:
+        return
+    thermal_gen_columns = ['Hour'] + [str(plant) for plant in model.thermal.plants_set]
+    disaggregated_thermal_gen_results = get_dict_string_void_list_from_keys_in_list(thermal_gen_columns)
+   
+    for h in model.h:
+        disaggregated_thermal_gen_results['Hour'].append(h)
+        for plant in model.thermal.plants_set:
+            disaggregated_thermal_gen_results[plant].append(safe_pyomo_value(model.thermal.generation[h, plant]))
+
+    logging.debug("-- Saving disaggregated thermal generation results to CSV...")
+    if disaggregated_thermal_gen_results['Hour']:
+        with open(output_dir + f'OutputThermalGeneration_{case}.csv', mode='w', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=disaggregated_thermal_gen_results.keys())
+            writer.writeheader()
+            writer.writerows([dict(zip(disaggregated_thermal_gen_results, t))
+                             for t in zip(*disaggregated_thermal_gen_results.values())])

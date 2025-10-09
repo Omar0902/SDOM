@@ -119,7 +119,7 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
     logging.info("Adding constraints to the model...")
     #system Constraints
     logging.debug("-- Adding system constraints...")
-    add_system_constraints( model )    
+    add_system_constraints( model, data )    
 
     #resiliency Constraints
     if with_resilience_constraints:

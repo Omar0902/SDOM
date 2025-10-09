@@ -19,7 +19,7 @@ def test_optimization_model_ini_case_no_resiliency_168h_daily_budget():
     constraint_counts = get_n_eq_ineq_constraints( model )
 
     assert constraint_counts["equality"] == 1185
-    assert constraint_counts["inequality"] == 6237
+    assert constraint_counts["inequality"] == 6909
 
 
 def test_optimization_model_res_case_no_resiliency_168h_daily_budget_highs():
@@ -43,9 +43,9 @@ def test_optimization_model_res_case_no_resiliency_168h_daily_budget_highs():
     problem_sol_dict = get_optimization_problem_solution_info( best_result )
     assert problem_sol_dict["Termination condition"] == "optimal"
     print(problem_sol_dict["Total_Cost"])
-    assert abs( problem_sol_dict["Total_Cost"] + 113831459.95 ) <= 10 
-    assert abs( problem_sol_dict["Total_CapWind"] - 0.0 ) <= 1
-    assert abs( problem_sol_dict["Total_CapPV"] - 0.0 ) <= 0.001
+    assert abs( problem_sol_dict["Total_Cost"] + 77686751.88 ) <= 10 
+    assert abs( problem_sol_dict["Total_CapWind"] - 1.0 ) <= 0.001
+    assert abs( problem_sol_dict["Total_CapPV"] - 1.0 ) <= 0.001
     assert abs( problem_sol_dict["Total_CapScha_Li-Ion"] - 0.0 ) <= 1
     assert abs( problem_sol_dict["Total_CapScha_CAES"] - 0.0 ) <= 1
     assert abs( problem_sol_dict["Total_CapScha_PHS"] - 0.0 ) <= 1

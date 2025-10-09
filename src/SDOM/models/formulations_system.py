@@ -5,6 +5,7 @@ from .formulations_vre import add_vre_fixed_costs
 from .formulations_thermal import add_thermal_fixed_costs, add_thermal_variable_costs
 from .formulations_storage import add_storage_fixed_costs, add_storage_variable_costs
 from .formulations_imports_exports import add_imports_exports_cost
+from ..io_manager import get_formulation
 ####################################################################################|
 # ----------------------------------- Parameters -----------------------------------|
 ####################################################################################|
@@ -67,12 +68,25 @@ def add_system_expressions(model):
 # ----------------------------------- Constraints ----------------------------------|
 ####################################################################################|
 # Energy supply demand
+
 def supply_balance_rule(model, h):
     return (
         model.demand.ts_parameter[h] + sum(model.storage.PC[h, j] for j in model.storage.j) - sum(model.storage.PD[h, j] for j in model.storage.j)
         - model.nuclear.alpha * model.nuclear.ts_parameter[h] - model.hydro.generation[h] - model.other_renewables.alpha * model.other_renewables.ts_parameter[h]
         - model.pv.generation[h] - model.wind.generation[h]
-        - sum(model.thermal.generation[h, bu] for bu in model.thermal.plants_set) == 0
+        - sum(model.thermal.generation[h, bu] for bu in model.thermal.plants_set)
+        == 0
+    )
+
+def imp_exp_supply_balance_rule(model, h):
+    return (
+        model.demand.ts_parameter[h] + sum(model.storage.PC[h, j] for j in model.storage.j) - sum(model.storage.PD[h, j] for j in model.storage.j)
+        - model.nuclear.alpha * model.nuclear.ts_parameter[h] - model.hydro.generation[h] - model.other_renewables.alpha * model.other_renewables.ts_parameter[h]
+        - model.pv.generation[h] - model.wind.generation[h]
+        - sum(model.thermal.generation[h, bu] for bu in model.thermal.plants_set)
+        - model.imports.variable[h]
+        + model.exports.variable[h]
+        == 0
     )
 
 # Generation mix target
@@ -81,7 +95,7 @@ def genmix_share_rule(model):
     return model.thermal.total_generation <= (1 - model.GenMix_Target)*sum(model.demand.ts_parameter[h] + sum(model.storage.PC[h, j] for j in model.storage.j)
                         - sum(model.storage.PD[h, j] for j in model.storage.j) for h in model.h)
 
-def add_system_constraints(model):
+def add_system_constraints(model, data):
     """
     Adds system constraints to the optimization model.
     
@@ -91,8 +105,12 @@ def add_system_constraints(model):
     Returns:
     None
     """
-    # Supply balance constraint
-    model.SupplyBalance = Constraint(model.h, rule=supply_balance_rule)
+    if (get_formulation(data, component="Exports") != "NotModel") & (get_formulation(data, component="Imports") != "NotModel"):
+        # Supply balance constraint
+        model.SupplyBalance = Constraint(model.h, rule=imp_exp_supply_balance_rule)
+    else:
+        model.SupplyBalance = Constraint(model.h, rule=supply_balance_rule)
+        
     
     # Generation mix share constraint
     model.GenMix_Share = Constraint(rule=genmix_share_rule)

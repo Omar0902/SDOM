@@ -54,9 +54,9 @@ def add_exports_variables(model):
 ####################################################################################|
 def _add_imports_exports_cost_expressions(block, hourly_set, data: dict, component: str):
     if get_formulation(data, component=component) != "NotModel":
-        block.total_cost = Expression( rule = sum(block.ts_price_parameter[h] * block.variable[h] for h in hourly_set) )
+        block.total_cost_expr = Expression( rule = sum(block.ts_price_parameter[h] * block.variable[h] for h in hourly_set) )
     else:
-        block.total_cost = Expression( rule = 0 )
+        block.total_cost_expr = Expression( rule = 0 )
     return
 
 def add_imports_exports_cost_expressions(model, data: dict):
@@ -73,20 +73,54 @@ def _add_imports_exports_capacity_constraint(block, hourly_set):
     block.capacity_constraint = Constraint(hourly_set, rule=lambda m,h: m.variable[h] <= m.ts_capacity_parameter[h] )
     return
 
-def add_imports_constraints( model, data: dict ):
-    _add_imports_exports_capacity_constraint(model.imports, model.h)
-    #TODO How to generalize constraint of net load?
-    # model.imports.net_load_constraint = Constraint(
-    #     model.h,
-    #     rule=lambda m, h: m.variable[h] <= max(0, value(m.net_load[h]))
-    # )
+def add_import_export_binary_variable(model, big_m_constant):
 
+    if hasattr(model, 'aux_imp_exp_binary_variable'):
+        return
+    
+    model.aux_imp_exp_binary_variable = Var(model.h, domain=Binary, initialize=0)
+    
+    model.imp_exp_aux_bigM_constraint_positive = Constraint(
+        model.h,
+        rule=lambda m, h: m.net_load[h] <= big_m_constant * m.aux_imp_exp_binary_variable[h]
+    )
+    model.imp_exp_aux_bigM_constraint_negative = Constraint(
+        model.h,
+        rule=lambda m, h: - m.net_load[h] + 1e-6 <= big_m_constant * (1 - m.aux_imp_exp_binary_variable[h])
+    )
+    return
+
+ 
+def add_imports_constraints( model, data: dict ):
+    big_m_constant = 1e10
+    _add_imports_exports_capacity_constraint(model.imports, model.h)
+    add_import_export_binary_variable(model, big_m_constant)
+    
+
+    model.imp_net_load_constraint = Constraint(
+        model.h,
+        rule=lambda m, h: m.imports.variable[h] <= m.aux_imp_exp_binary_variable[h] * big_m_constant
+    )
+
+    #TODO How to generalize constraint of net load?
+    # model.imports.aux_variable = Var(model.h, domain=NonNegativeReals, initialize=0)
+    # model.imports.aux_net_load_constraint = Constraint(
+    #     model.h, 
+    #     rule=lambda m, h: m.aux_variable[h] >= model.net_load[h])
     return
 
 
 def add_exports_constraints( model, data: dict ):
+    big_m_constant = 1e10
     _add_imports_exports_capacity_constraint(model.exports, model.h)
     #TODO How to generalize constraint of net load? - > for thermal generation
+    add_import_export_binary_variable(model, big_m_constant)
+
+    model.exp_net_load_constraint = Constraint(
+        model.h,
+        rule=lambda m, h: m.exports.variable[h] <= ( 1 - m.aux_imp_exp_binary_variable[h] ) * big_m_constant
+    )
+
     return
 
 
@@ -94,4 +128,4 @@ def add_exports_constraints( model, data: dict ):
 # -----------------------------------= Add_costs -----------------------------------|
 ####################################################################################|
 def add_imports_exports_cost(model):
-    return model.imports.total_cost - model.exports.total_cost
+    return model.imports.total_cost_expr - model.exports.total_cost_expr

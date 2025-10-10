@@ -92,35 +92,28 @@ def add_import_export_binary_variable(model, big_m_constant):
 
  
 def add_imports_constraints( model, data: dict ):
-    big_m_constant = 1e10
+    big_m_constant = 1e6 #TODO make a logic to get Big M constant from input data/parameters
     _add_imports_exports_capacity_constraint(model.imports, model.h)
     add_import_export_binary_variable(model, big_m_constant)
     
 
     model.imp_net_load_constraint = Constraint(
         model.h,
-        rule=lambda m, h: m.imports.variable[h] <= m.aux_imp_exp_binary_variable[h] * big_m_constant
+        rule=lambda m, h: m.imports.variable[h] <= m.aux_imp_exp_binary_variable[h] * model.demand.ts_parameter[h]
     )
-
-    #TODO How to generalize constraint of net load?
-    # model.imports.aux_variable = Var(model.h, domain=NonNegativeReals, initialize=0)
-    # model.imports.aux_net_load_constraint = Constraint(
-    #     model.h, 
-    #     rule=lambda m, h: m.aux_variable[h] >= model.net_load[h])
     return
 
 
 def add_exports_constraints( model, data: dict ):
-    big_m_constant = 1e10
+    big_m_constant = 1e6 #TODO make a logic to get Big M constant from input data/parameters
     _add_imports_exports_capacity_constraint(model.exports, model.h)
-    #TODO How to generalize constraint of net load? - > for thermal generation
-    add_import_export_binary_variable(model, big_m_constant)
 
+    add_import_export_binary_variable(model, big_m_constant)
+    max_capacity_exports = max( model.exports.ts_capacity_parameter[h] for h in model.h )
     model.exp_net_load_constraint = Constraint(
         model.h,
-        rule=lambda m, h: m.exports.variable[h] <= ( 1 - m.aux_imp_exp_binary_variable[h] ) * big_m_constant
+        rule=lambda m, h: m.exports.variable[h] <= ( 1 - m.aux_imp_exp_binary_variable[h] ) * max_capacity_exports
     )
-
     return
 
 

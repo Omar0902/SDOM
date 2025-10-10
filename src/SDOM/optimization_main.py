@@ -296,7 +296,7 @@ def get_default_solver_config_dict(solver_name="cbc", executable_path=".\\Solver
         "solver_name": "appsi_" + solver_name,
         "options":{
             #"loglevel": 3,
-            "mip_rel_gap": 0.0,
+            "mip_rel_gap": 0.002,
             #"keepfiles": True,
             #"logfile": "solver_log.txt", # The filename used to store output for shell solvers
             },

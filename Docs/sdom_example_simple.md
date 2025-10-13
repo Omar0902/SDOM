@@ -1,3 +1,8 @@
+# Contents
+
+- [1. Getting Started: Running SDOM with a Python Script](#1-getting-started-running-sdom-with-a-python-script)
+- [2. Outputs](#2-outputs)
+
 # 1. Getting Started: Running SDOM with a Python Script
 
 This section explains the steps involved in running the SDOM model using Python, with code snippets for each step:

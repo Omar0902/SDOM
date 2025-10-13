@@ -93,8 +93,7 @@ We recommend to use `uv`, a Python manager for virtual environments and packages
 
 - b. Create a new virtual environment named `.venv`:
 
-            ```
-            powershell
+            ```powershell
             uv venv .venv
             ```
         This command creates a Python virtual environment in the `.venv` directory.
@@ -113,8 +112,7 @@ We recommend to use `uv`, a Python manager for virtual environments and packages
 
 - e. Install the Logging package to be able to see sdom info, warning and error messages and log those:
 
-            ```
-            powershell
+            ```powershell
             uv pip install logging
             ```
 
@@ -127,7 +125,7 @@ We recommend to use `uv`, a Python manager for virtual environments and packages
 
     You should see output similar to:
             
-            ```
+            ```powershell
             Package         Version
             --------------- -----------
             highspy         1.11.0

@@ -7,14 +7,17 @@ SDOM is particularly well-suited for figure out the required capacity to meet a 
 - 📉 Assessing curtailment and operational strategies under various grid scenarios
 
 ## Table of contents
-- [HOW SDOM WORKS?](#how-sdom-works)
-- [KEY FEATURES](#key-features)
-  - [OPTIMIZATION SCOPE](#optimization-scope)
-  - [NOTES ON MODEL EXPANSION](#notes-on-model-expansion)
-- [GETTING STARTED WITH SDOM](#getting-started-with-sdom)
-- [PUBLICATIONS AND USE CASES OF SDOM](#publications-and-use-cases-of-sdom)
-- [SDOM EXAMPLE (Demonstration script)](#sdom-example-(demonstration-script))
-- [CONTRIBUTING GUIDELINES](#contributing-guidelines)
+- [How SDOM Works](#how-sdom-works)
+- [Key Features](#key-features)
+- [Optimization Scope](#optimization-scope)
+- [Notes on Model Expansion](#notes-on-model-expansion)
+- [Getting Started with SDOM](#getting-started-with-sdom)
+  - [System Setup and Prerequisites](#system-setup-and-prerequisites)
+  - [Install SDOM](#install-sdom)
+  - [SDOM Input Files](#sdom-input-files)
+- [Publications and Use Cases of SDOM](#publications-and-use-cases-of-sdom)
+- [SDOM Demonstration/Example](#sdom-demonstrationexample)
+- [Contributing Guidelines](#contributing-guidelines)
 
 
 # How SDOM Works?
@@ -60,7 +63,7 @@ An illustrative figure below shows the flow from inputs to optimization results,
   
   - In order offer a full open-source solution also was developed this python package. This version requires python 3.10+.
 
-- **Solver Compatibility:** Currently the SDOM python version is only compatible with [open-source CBC solver](https://www.coin-or.org/Cbc/cbcuserguide.html). In this repo the [windows executable for cbc](./cbc.exe) is provided. You will need to provide the path of cbc solver to run SDOM as illustrated in our [script demonstration](#sdom-example-(demonstration-script))
+- **Solver Compatibility:** Currently the SDOM python version has been tested using [open-source CBC solver](https://www.coin-or.org/Cbc/cbcuserguide.html) and [HiGHS open-source solver](https://highs.dev/) through highspy module. In this repo the [windows executable for cbc](./cbc.exe) is provided. You will need to provide the path of cbc solver to run SDOM as illustrated in our [script demonstration](#sdom-example-(demonstration-script))
 
 ## Optimization Scope
 📉
@@ -90,14 +93,14 @@ We recommend to use `uv`, a Python manager for virtual environments and packages
 
 - b. Create a new virtual environment named `.venv`:
 
-            ```powershell
+            ```
+            powershell
             uv venv .venv
             ```
         This command creates a Python virtual environment in the `.venv` directory.
 
 - c. Activate your virtual environment and install the SDOM package:
 
-            ```powershell
             uv pip install sdom
             ```
         
@@ -137,38 +140,16 @@ We recommend to use `uv`, a Python manager for virtual environments and packages
             tzdata          2025.2
             ```
 
+## SDOM Input Files
+For detailed information about SDOM input files, please refer to the [SDOM Input Documentation](Docs/sdom_Inputs.md).
 
 # PUBLICATIONS AND USE CASES OF SDOM
 📄
-- **Original SDOM paper**:
-  - [Guerra, O. J., Eichman, J., & Denholm, P. (2021). Optimal energy storage portfolio for high and ultrahigh carbon-free and renewable power systems. *Energy Environ. Sci.*, 14(10), 5132-5146. https://doi.org/10.1039/D1EE01835C.](https://pubs.rsc.org/en/content/articlelanding/2021/ee/d1ee01835c)
-  - [NREL media relations (2021). Energy Storage Ecosystem Offers Lowest-Cost Path to 100% Renewable Power.](https://www.nrel.gov/news/detail/program/2021/energy-storage-ecosystem-offers-lowest-cost-path-to-100-renewable-power)
+For a comprehensive list of publications and use cases, please refer to the [SDOM Publications Documentation](Docs/sdom_publications.md).
 
-- [SDOM GAMS version software registration](https://www.osti.gov/biblio/code-111266)
-
-- Uses cases in the "Renewables in Latin America and the Caribbean" or RELAC initiative (Uruguay, Peru, El Salvador):
-  - [Guerra, O. J., et al. (2023). Accelerated Energy Storage Deployment in RELAC Countries. *National Renewable Energy Laboratory (NREL)*.](https://research-hub.nrel.gov/en/publications/accelerated-energy-storage-deployment-in-relac-countries)
-
-- **Webinar video**:
-  - [Guerra, O. J., et al. (2022). Optimizing Energy Storage for Ultra High Renewable Electricity Systems. Conference for Colorado Renewable Energy society.](https://www.youtube.com/watch?v=SYTnN6Z65kI) 
-
-# SDOM EXAMPLE (Demonstration script)
+# SDOM DEMONSTRATION/EXAMPLE
 Please see an [SDOM demo script on this github repo.](https://github.com/SebastianManriqueM/pySDOM_demo)
 
 # CONTRIBUTING GUIDELINES
 💻
-## General Guidelines
-
-- Follow [PEP 8](https://www.python.org/dev/peps/pep-0008/) for code style and formatting.
-- Write clear, concise, and well-documented code.
-- Add docstrings to all public classes, methods, and functions.
-- Include unit tests for new features and bug fixes.
-- Use descriptive commit messages.
-- Open issues or discussions for significant changes before submitting a pull request.
-- Ensure all tests pass before submitting code.
-- Keep dependencies minimal and document any new requirements.
-- Review and update documentation as needed.
-- Be respectful and collaborative in all communications.
-
-Please see a complete developers guide here:
-[Developers Guide](./Developers_guide.md) 
+[Developers Guide](Docs/sdom_Developers_guide.md) 

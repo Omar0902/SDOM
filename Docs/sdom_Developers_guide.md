@@ -1,5 +1,18 @@
 # GUIDELINES FOR DEVELOPING SDOM
 
+## General Guidelines
+
+- Follow [PEP 8](https://www.python.org/dev/peps/pep-0008/) for code style and formatting.
+- Write clear, concise, and well-documented code.
+- Add docstrings to all public classes, methods, and functions.
+- Include unit tests for new features and bug fixes.
+- Use descriptive commit messages.
+- Open issues or discussions for significant changes before submitting a pull request.
+- Ensure all tests pass before submitting code.
+- Keep dependencies minimal and document any new requirements.
+- Review and update documentation as needed.
+- Be respectful and collaborative in all communications.
+
 
 ## Table of Contents
 - [GUIDELINES FOR DEVELOPING SDOM](#guidelines-for-developing-sdom)
@@ -69,15 +82,15 @@ The SDOM python version source code have a folder called "tests". This folder co
 
 - To run a test python script you can use:
 ```powershell
-pytest tests/TEST_SCRIPT_NAME.py
+uv run pytest tests/TEST_SCRIPT_NAME.py
 ```
 - For instance to run the tests of the script called "test_no_resiliency_optimization_cases.py" you should run
 ```powershell
-pytest tests/test_no_resiliency_optimization_cases.py
+uv run pytest tests/test_no_resiliency_optimization_cases.py
 ```
 - This is an example of what you should see:
 ```powershell
-pytest tests/test_no_resiliency_optimization_cases.py
+uv run pytest tests/test_no_resiliency_optimization_cases.py
 ================================================================== test session starts ==================================================================
 platform win32 -- Python 3.12.4, pytest-8.4.1, pluggy-1.6.0
 rootdir: C:\Users\smachado\repositories\pySDOM\SDOM

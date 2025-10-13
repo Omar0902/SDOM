@@ -15,6 +15,7 @@ SDOM is particularly well-suited for figure out the required capacity to meet a 
   - [System Setup and Prerequisites](#system-setup-and-prerequisites)
   - [Install SDOM](#install-sdom)
   - [SDOM Input Files](#sdom-input-files)
+  - [SDOM simple script example](#sdom-simple-script-example)
 - [Publications and Use Cases of SDOM](#publications-and-use-cases-of-sdom)
 - [SDOM Demonstration/Example](#sdom-demonstrationexample)
 - [Contributing Guidelines](#contributing-guidelines)

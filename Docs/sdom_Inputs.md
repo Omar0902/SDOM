@@ -242,3 +242,7 @@ These files contain
 |-----------------|-----------------------------------------------------------------------------------------------------|--------------|
 | *Hour           | Number of the hour of the year, from 1 to 8760 (You can teh number of hours you prefer).            |Int           |
 | Imports_price/Exports_price| The estimated hourly electricity price for importing/exporting energy in USD/MWh.        |float         |
+
+
+# 3. Continue to a simple SDOM example
+Now that you have all the input files required to run SDOM, [see here an script example to run sdom model](sdom_example_simple.md)

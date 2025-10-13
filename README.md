@@ -11,6 +11,7 @@ SDOM is particularly well-suited for figure out the required capacity to meet a 
 - [KEY FEATURES](#key-features)
   - [OPTIMIZATION SCOPE](#optimization-scope)
   - [NOTES ON MODEL EXPANSION](#notes-on-model-expansion)
+- [GETTING STARTED WITH SDOM](#getting-started-with-sdom)
 - [PUBLICATIONS AND USE CASES OF SDOM](#publications-and-use-cases-of-sdom)
 - [SDOM EXAMPLE (Demonstration script)](#sdom-example-(demonstration-script))
 - [CONTRIBUTING GUIDELINES](#contributing-guidelines)
@@ -67,6 +68,75 @@ SDOM performs cost minimization across a 1-year operation window using a copper 
 
 ## Notes on Model Expansion
 While SDOM currently supports a 1-year horizon, multiyear analyses could provide deeper insights into how interannual variability affects storage needs. Chronological, simulation-based approaches are better suited for this but present significant computational challenges—especially at hourly resolution. Extending SDOM to support multiyear optimization is left as future work.
+
+# GETTING STARTED WITH SDOM
+## System Setup and Prerequisites 
+
+- a. You'll need to install [python](https://www.python.org/downloads/)
+  - After the installation make sure the [python enviroment variable is set](https://realpython.com/add-python-to-path/).
+- b. Also, You'll need an IDE (Integrated Development Environment), we recommend to install [MS VS code](https://code.visualstudio.com/)
+- d. We alse recommend to install extensions such as:
+  - [edit CSV](https://marketplace.visualstudio.com/items?itemName=janisdd.vscode-edit-csv): To edit and interact with input csv files for SDOM directly in vs code.
+  - [vscode-pdf](https://marketplace.visualstudio.com/items?itemName=tomoki1207.pdf): to read and see pdf files directly in vscode.
+
+
+## Install SDOM
+
+It is recommended to load the packages in a virtual enviroment. 
+
+We recommend to use `uv`, a Python manager for virtual environments and packages.  
+
+- a. Install `uv` following the instructions at [uv on PyPI](https://pypi.org/project/uv/).
+
+- b. Create a new virtual environment named `.venv`:
+
+            ```powershell
+            uv venv .venv
+            ```
+        This command creates a Python virtual environment in the `.venv` directory.
+
+- c. Activate your virtual environment and install the SDOM package:
+
+            ```powershell
+            uv pip install sdom
+            ```
+        
+- d. Install the python module according to your solver. We'll use here [HiGHS open-source solver](https://highs.dev/)
+
+          ```powershell
+            uv pip install highspy
+            ```
+
+- e. Install the Logging package to be able to see sdom info, warning and error messages and log those:
+
+            ```powershell
+            uv pip install logging
+            ```
+
+- f. Verify your environment by listing installed packages:
+
+
+            ```powershell
+            uv pip list
+            ```
+
+    You should see output similar to:
+            
+            
+            Package         Version
+            --------------- -----------
+            highspy         1.11.0
+            logging         0.4.9.6
+            numpy           2.3.3
+            pandas          2.3.3
+            ply             3.11
+            pyomo           6.9.4
+            pytz            2025.2
+            sdom            0.0.7
+            six             1.17.0
+            tzdata          2025.2
+            ```
+
 
 # PUBLICATIONS AND USE CASES OF SDOM
 📄

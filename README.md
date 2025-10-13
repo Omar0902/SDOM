@@ -101,18 +101,20 @@ We recommend to use `uv`, a Python manager for virtual environments and packages
 
 - c. Activate your virtual environment and install the SDOM package:
 
+            ```powershell
             uv pip install sdom
             ```
         
 - d. Install the python module according to your solver. We'll use here [HiGHS open-source solver](https://highs.dev/)
 
-          ```powershell
+            ```powershell
             uv pip install highspy
             ```
 
 - e. Install the Logging package to be able to see sdom info, warning and error messages and log those:
 
-            ```powershell
+            ```
+            powershell
             uv pip install logging
             ```
 
@@ -125,7 +127,7 @@ We recommend to use `uv`, a Python manager for virtual environments and packages
 
     You should see output similar to:
             
-            
+            ```
             Package         Version
             --------------- -----------
             highspy         1.11.0

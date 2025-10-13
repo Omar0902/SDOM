@@ -143,6 +143,9 @@ We recommend to use `uv`, a Python manager for virtual environments and packages
 ## SDOM Input Files
 For detailed information about SDOM input files, please refer to the [SDOM Input Documentation](Docs/sdom_Inputs.md).
 
+## SDOM simple script example
+For an script about how to run SDOM, please refer to the [SDOM simple script](Docs/sdom_example_simple.md).
+
 # PUBLICATIONS AND USE CASES OF SDOM
 📄
 For a comprehensive list of publications and use cases, please refer to the [SDOM Publications Documentation](Docs/sdom_publications.md).

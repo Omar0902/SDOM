@@ -2,6 +2,7 @@
 
 - [1. Getting Started: Running SDOM with a Python Script](#1-getting-started-running-sdom-with-a-python-script)
 - [2. Outputs](#2-outputs)
+- [3. Next Section - Debugging and Exploring SDOM Pyomo Model](#3-next-section---debugging-and-exploring-sdom-pyomo-model)
 
 # 1. Getting Started: Running SDOM with a Python Script
 
@@ -164,3 +165,7 @@ In the path specified by "output_dir", sdom will writhe the following output csv
 | OutputStorage_CASENAME.csv           | Hourly storage operation results (charging/discharging and SOC). |
 | OutputSummary_CASENAME.csv           | Summary of key simulation results and statistics.        |
 | OutputThermalGeneration_CASENAME.csv | Hourly results for thermal generation plants.             |
+
+
+# 3. Next Section - Debugging and Exploring SDOM Pyomo Model
+Now, continue to the next section, [Debugging and Exploring SDOM Pyomo Model](sdom_Exploring_pyomo_model_example.md)

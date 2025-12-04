@@ -997,7 +997,7 @@ loop (Runs,
      PUT 'VOM', 'Import Cost', Runs.tl, ImportsCost(Runs):0:5, 'US$' /);
      
 loop (Runs,
-     PUT 'VOM', 'Export Cost', Runs.tl, ExportsCost(Runs):0:5, 'US$' /);
+     PUT 'VOM', 'Export Revenue', Runs.tl, ExportsCost(Runs):0:5, 'US$' /);
      
 loop (Runs,
      PUT 'VOM', 'Demand Charges', Runs.tl, DemandCharges(Runs):0:5, 'US$' /);

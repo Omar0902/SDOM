@@ -881,6 +881,12 @@ loop ((Runs,j),
 loop (Runs,
      PUT 'Total generation', 'All', Runs.tl, (TotalGenGasCC(Runs) + TotalGenPV(Runs) + TotalGenWind(Runs) + TotalOtherRen(Runs) + TotalHydro(Runs) + TotalNuclear(Runs) + sum(j,TotalGenS(Runs,j))):0:5, 'MWh' /);
      
+loop (Runs,
+     PUT 'Imports', 'Total Imports/Exports', Runs.tl, sum(h,ImportsPower(Runs,h)):0:5, 'MWh' /);
+     
+loop (Runs,
+     PUT 'Exports', 'Total Imports/Exports', Runs.tl, sum(h,ExportsPower(Runs,h)):0:5, 'MWh' /);
+     
 loop ((Runs,j),
      PUT 'Storage energy charging', j.tl, Runs.tl, TotalPCarge(Runs,j):0:5, 'MWh' /);
      

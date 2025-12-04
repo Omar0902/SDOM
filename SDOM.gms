@@ -15,6 +15,7 @@ $setGlobal sim_year         2030
 $setGlobal NumberOfPeriods  8760
 $setGlobal OutageDur        24
 $setGlobal ResilienceOption 1
+$setGlobal DemandCharges    1
 $setGlobal indir            Data
 $setGlobal outdir           Outputs
 $setGlobal case_name        test
@@ -24,8 +25,16 @@ $call mkdir "%outdir%" > nul 2> nul
 Set h hours in the analysis period /1*%NumberOfPeriods%/
 
     h_step1(h) hours in the analysis period /1*%OutageDur%/
+    
+    m months /1*12/
 
-Alias (h, hh)
+Alias (h, hh, hhh)
+
+
+Set    bu Balancing units(dispatchable power plants) 
+/
+$include %indir%\%case_name%\Set_bu(BalancingUnits).txt
+/
 
 Set    k potential solar PV plants
 /
@@ -58,6 +67,55 @@ Set    sp properties of storage technologies
 $include %indir%\%case_name%\Set_sp_StorTechProperties.csv
 /
 ;
+
+Set
+
+hm(h,m)  /
+          (1*744).1
+          (745*1416).2
+          (1417*2160).3
+          (2161*2880).4
+          (2881*3624).5
+          (3625*4344).6
+          (4345*5088).7
+          (5089*5832).8
+          (5833*6552).9
+          (6553*7296).10
+          (7297*8016).11
+          (8017*8760).12
+
+          /
+;
+
+Scalar
+    begin_year   weekday index of Jan 1 2030 /1/  
+* Jan 1 2030 is a Tuesday → W0 = 1
+    begin_peak /7/
+    end_peak /18/ ;
+    
+
+Set
+    peak(h)   yes if hour h is weekday 7am–7pm;
+
+Scalar
+    day_idx, hour, week_idx;
+
+Loop(h,
+        day_idx    = floor(ord(h)-1)/24;
+        hour = mod(ord(h),24);
+        week_idx    = mod(begin_year + day_idx, begin_peak);
+        peak(h) = no;
+    If ( (week_idx <= 4) and (hour >= begin_peak) and (hour <= end_peak),
+        peak(h) = yes;
+        );
+    );
+
+
+Set
+
+offpeak(h) off peak hours set ;
+
+offpeak(h)$(not peak(h)) = yes ;
 
 Set Runs runs for the analysis /1/
 
@@ -161,6 +219,64 @@ $Offdelim
 /
 ;
 
+Parameter fixed_dem_rate(h) fixed demand charges in $ per MW
+
+/
+$Ondelim
+$include %indir%\%case_name%\fixed_dem_charges.csv
+$Offdelim
+/
+;
+
+Parameter variable_dem_rate(h) variable demand charges in $ per MW
+
+/
+$Ondelim
+$include %indir%\%case_name%\var_dem_charges.csv
+$Offdelim
+/
+;
+
+Parameter ImportCap(h) Max import power (MW)
+/
+$Ondelim
+$include %indir%\%case_name%\Import_Cap_%sim_year%.csv
+$Offdelim
+/
+
+Parameter ExportCap(h) Max export power (MW)
+/
+$Ondelim
+$include %indir%\%case_name%\Export_Cap_%sim_year%.csv
+$Offdelim
+/
+;
+
+Parameter ImportPrices(h) Prices for power imports ($ per MWh)
+/
+$Ondelim
+$include %indir%\%case_name%\Import_Prices_%sim_year%.csv
+$Offdelim
+/
+
+Parameter ExportPrices(h) Prices for power exports ($ per MWh)
+/
+$Ondelim
+$include %indir%\%case_name%\Export_Prices_%sim_year%.csv
+$Offdelim
+/
+;
+
+*ImportPrices(h) = 0*ImportPrices(h) ;
+*ExportPrices(h) = 0*ExportPrices(h) ;
+
+Parameter LargeHydroBudget(h) Generation from large hydro power plants for every hour in the analysis period (MW)
+/
+$Ondelim
+$include %indir%\%case_name%\lahy_hourly_%sim_year%.csv
+$Offdelim
+/
+
 Table CFSolar(h,k) Hourly capacity factor for solar PV plants (fraction)
 $Ondelim
 $include %indir%\%case_name%\CFSolar_%sim_year%.csv
@@ -187,11 +303,18 @@ $include %indir%\%case_name%\StorageData_%sim_year%.csv
 $Offdelim
 ;
 
+Table DataBU(bu,*) Properties of the balancing units
+$Ondelim
+$include %indir%\%case_name%\Data_Balancing_Units_%sim_year%.csv
+$Offdelim
+
 
 Parameter CRF(j) Capital recovery factor for storage technology j
+Parameter CRF_GasCC(bu) Capital recovery factor for balancing unit bu
 ;
 
 CRF(j) = (r*(1+r)**StorageData('Lifetime',j))/((1+r)**StorageData('Lifetime',j)-1);
+CRF_GasCC(bu) = (r*(1+r)**DataBU(bu,'LifeTime'))/((1+r)**DataBU(bu,'LifeTime')-1);
 
 Free variable
          TSC Total electricity supply cost
@@ -209,15 +332,31 @@ Positive Variables
          CurtPV(h) Generated solar PV power during hour h
          GenWind(h) Generated wind power during hour h
          CurtWind(h) Generated wind power during hour h
-         CapCC Capacity requirements for backup gas combined cycle units (MW)
-         GenCC(h) Generation from backup gas combined cycle units (MWh)
+         CapCC(bu) Capacity requirements for backup gas combined cycle units (MW)
+         GenCC(h,bu) Generation from backup gas combined cycle units (MWh)
          Ypv(k) Capacity selection for solar PV plant k
          Ywind(w) Capacity selection for wind plant w
-
+         
+         Imports(h) power imports (MWh)
+         Exports(h) power exports (MWh)
+         
+         Fixed_dem_charge(m) Fiexed demand charges ($)
+         Peak_variable_dem_charge(m) Peak variable demand charges ($)
+         Offpeak_variable_dem_charge(m) Off-peak variable demand charges ($)
 ;
 
 Ypv.up(k)   = 1;
 Ywind.up(w) = 1;
+Ypv.fx(k)   = 1;
+Ywind.fx(w) = 1;
+
+Imports.up(h) = ImportCap(h);
+Exports.up(h) = ExportCap(h);
+Imports.up(h) = max (0, Load(h)-sum(k,CFSolar(h,k)*CapSolar(k,'capacity'))-sum(w, CFWind(h,w)*CapWind(w,'capacity'))- AlphaNuclear*Nuclear(h)-AlphaLargHy*LargeHydroBudget(h)-AlphaOtheRe*OtherRenewables(h));
+Imports.up(h) = max (0, Load(h)-sum(k,CFSolar(h,k)*CapSolar(k,'capacity'))-sum(w, CFWind(h,w)*CapWind(w,'capacity'))- AlphaNuclear*Nuclear(h)-AlphaLargHy*LargeHydroBudget(h)-AlphaOtheRe*OtherRenewables(h));
+
+ExportCap(h)= 1.0*ExportCap(h);
+
 
 Binary variables
          Ystorage(j,h) 1 if storage technology j is charging during hour h (0 otherwise)
@@ -226,29 +365,31 @@ Binary variables
 
 Equations
          Obj objective function
-         Supply(h) Electricity supply during hour h
+         Supply Electricity supply during hour h
          GenMix_Share Equation for VRE target
-         SolarBal(h) Balance of availability of solar PV power during hour h
-         WindBal(h) Balance of availability of wind power during hour h
-         ChargSt(j,h) Constraint for charging the storage devices
-         DischargSt(j,h) Constraint for discharging the storage devices
-         MaxPC(j,h) Maximum charging power for storage technology j during hour h
-         MaxPD(j,h) Maximum discharging power for storage technology j during hour h
-         MaxSOC(j,h) Maximum SOC for storage technology j during hour h
-         SOCBal(j,h) SOC balance storage technology j during hour h > 1
-         IniBal(j,h) Initial (h = 1) SOC balance for storage technology j
-         MaxPcha(j) Maximum charge power capacity for storage technology j
-         MaxPdis(j) Maximum discharge power capacity for storage technology j
-         PchaPdis(b) Coupling of charge and discharge power capacity for battery technology b
-         MinEcap(j) Minimum energy capacity for storage technology j
-         MaxEcap(j) Maximum energy capacity for storage technology j
-         BackupGen(h) Required capacity from backup combined cycle units
+         SolarBal Balance of availability of solar PV power during hour h
+         WindBal Balance of availability of wind power during hour h
+         HydroBudget
+         ChargSt Constraint for charging the storage devices
+         DischargSt Constraint for discharging the storage devices
+         MaxPC Maximum charging power for storage technology j during hour h
+         MaxPD Maximum discharging power for storage technology j during hour h
+         MaxSOC Maximum SOC for storage technology j during hour h
+         SOCBal SOC balance storage technology j during hour h > 1
+         IniBal Initial (h = 1) SOC balance for storage technology j
+         MaxPcha Maximum charge power capacity for storage technology j
+         MaxPdis Maximum discharge power capacity for storage technology j
+         PchaPdis Coupling of charge and discharge power capacity for battery technology b
+         MinEcap Minimum energy capacity for storage technology j
+         MaxEcap Maximum energy capacity for storage technology j
+         BackupGen Required capacity from backup combined cycle units
          MaxCycleYear Maximum number of cycles per year for Li-Ion batteries
          
          SupplyDes Electricity supply during hour h in the design stage for resilience design
          GenMix_ShareDes Equation for VRE target in the design stage for resilience design
          SolarBalDes Balance of availability of solar PV power during hour h the design stage for resilience design
          WindBalDes Balance of availability of wind power during hour h the design stage for resilience design
+         HydroBudgetDes
          ChargStDes Constraint for charging the storage devices the design stage for resilience design
          DischargStDes  Constraint for discharging the storage devices the design for resilience design
          MaxPCDes Maximum charging power for storage technology j during hour h the design for resilience design
@@ -261,7 +402,12 @@ Equations
          BackupEnergy Energy requirement for back-up storage     
          MinPdisBackup Minimum dispatch power
          MinEcapBackup Minimum energy capacity 
-         BackupEnergyOutage State of charge requirement to be kept in hours outside of outages 
+         BackupEnergyOutage State of charge requirement to be kept in hours outside of outages
+         
+         Fixed_demand_charge Fixed monthly demand charges 
+         Peak_variable_demand_charge Variable monthly demand charges corresponding to peak hours
+         Offpeak_variable_demand_charge Variable monthly demand charges corresponding to offpeak hours
+
 ;
 
 Obj..    TSC =e= sum(k, (FCR_VRE*(1000*CapSolar(k,'CAPEX_M') + CapSolar(k,'trans_cap_cost')) + 1000*CapSolar(k,'FOM_M'))*CapSolar(k,'capacity')*Ypv(k)) +
@@ -272,15 +418,21 @@ Obj..    TSC =e= sum(k, (FCR_VRE*(1000*CapSolar(k,'CAPEX_M') + CapSolar(k,'trans
 
                  sum(j, 1000*StorageData('CostRatio',j)*StorageData('FOM',j)*Pcha(j) + 1000*(1-StorageData('CostRatio',j))*StorageData('FOM',j)*Pdis(j) + StorageData('VOM',j)*sum(h,PD(j,h)))+
 
-                 FCR_GasCC*1000*CapexGasCC*CapCC + GasPrice*HR*sum(h, GenCC(h)) + FOM_GasCC*1000*CapCC + VOM_GasCC*sum(h, GenCC(h));
+                  sum(bu,CRF_GasCC(bu)*1000*DataBU(bu,'Capex')*CapCC(bu) + DataBU(bu,'FuelCost')*DataBU(bu,'HeatRate')*sum(h, GenCC(h,bu)) + DataBU(bu,'FOM')*1000*CapCC(bu) + DataBU(bu,'VOM')*sum(h, GenCC(h,bu))) 
+                 
+                 + sum(h, ImportPrices(h)*Imports(h))- sum(h, ExportPrices(h)*Exports(h))
+                 
+                 + sum(m,Fixed_dem_charge(m) + Peak_variable_dem_charge(m) + Offpeak_variable_dem_charge(m));
 
-SupplyDes(h)$(h_step1(h) and %ResilienceOption%=1)..      Load(h)+sum(j, PC(j,h))-AlphaNuclear*Nuclear(h)-AlphaLargHy*LargeHydro(h)-AlphaOtheRe*OtherRenewables(h)-GenPV(h)-GenWind(h)-sum(j,PD(j,h))-GenCC(h)=e=0;
+SupplyDes(h)$(h_step1(h) and %ResilienceOption%=1)..      Load(h)+sum(j, PC(j,h)) + Exports(h) - AlphaNuclear*Nuclear(h) - AlphaLargHy*LargeHydro(h) - AlphaOtheRe*OtherRenewables(h) - GenPV(h) - GenWind(h) - sum(j,PD(j,h)) - sum(bu,GenCC(h,bu)) - Imports(h) =e= 0;
 
-GenMix_ShareDes..   sum(h$h_step1(h), GenCC(h)) =l= (1-GenMix_Target)*sum(h$h_step1(h),Load(h) + sum(j, PC(j,h)) - sum(j,PD(j,h)) );
+GenMix_ShareDes..   sum(h$h_step1(h), sum(bu, GenCC(h,bu)) + Imports(h)) =l= (1-GenMix_Target)*sum(h$h_step1(h),Load(h) + sum(j, PC(j,h)) - sum(j,PD(j,h)) );
 
 SolarBalDes(h)$(h_step1(h) and %ResilienceOption%=1)..    GenPV(h)+ CurtPV(h) =e= sum(k, CFSolar(h,k)*CapSolar(k,'capacity')*Ypv(k));
 
 WindBalDes(h)$(h_step1(h) and %ResilienceOption%=1)..     GenWind(h)+ CurtWind(h) =e= sum(w, CFWind(h,w)*CapWind(w,'capacity')*Ywind(w));
+
+HydroBudgetDes(hhh)$(h_step1(hhh) and %ResilienceOption%=1).. sum (h$(ord(h)> 24*(ord(hhh)-1) and ord(h)<=24*ord(hhh)),LargeHydro(h)) =e= sum (h$(ord(h)> 24*(ord(hhh)-1) and ord(h)<=24*ord(hhh)),LargeHydroBudget(h));  
 
 ChargStDes(j,h)$(h_step1(h) and %ResilienceOption%=1)..   PC(j,h) =l= StorageData('Max_P',j)*Ystorage(j,h);
 
@@ -292,13 +444,21 @@ MaxPDDes(j,h)$(h_step1(h) and %ResilienceOption%=1)..     PD(j,h) =l= Pdis(j);
 
 MaxSOCDes(j,h)$(h_step1(h) and %ResilienceOption%=1)..    SOC(j,h) =l= Ecap(j);
 
-Supply(h)..      Load(h)+sum(j, PC(j,h))-AlphaNuclear*Nuclear(h)-AlphaLargHy*LargeHydro(h)-AlphaOtheRe*OtherRenewables(h)-GenPV(h)-GenWind(h)-sum(j,PD(j,h))-GenCC(h)=e=0;
+Supply(h)..      Load(h)+sum(j, PC(j,h)) + Exports(h) -AlphaNuclear*Nuclear(h)-AlphaLargHy*LargeHydro(h)-AlphaOtheRe*OtherRenewables(h)-GenPV(h)-GenWind(h)-sum(j,PD(j,h))-sum(bu, GenCC(h,bu)) - Imports(h) =e=0;
 
-GenMix_Share..   sum(h, GenCC(h)) =l= (1-GenMix_Target)*sum(h,Load(h) + sum(j, PC(j,h)) - sum(j,PD(j,h)) );
+GenMix_Share..   sum(h, sum(bu, GenCC(h,bu)) + Imports(h)) =l= (1-GenMix_Target)*sum(h,Load(h) + sum(j, PC(j,h)) - sum(j,PD(j,h)));
+
+Fixed_demand_charge(hm(h,m))$(%DemandCharges%=1)..  Fixed_dem_charge(m) =g= fixed_dem_rate(h) * Imports(h) ;
+
+Peak_variable_demand_charge(hm(h,m))$(peak(h) and %DemandCharges%=1)..  Peak_variable_dem_charge(m) =g= variable_dem_rate(h) * Imports(h);
+
+Offpeak_variable_demand_charge(hm(h,m))$(offpeak(h) and %DemandCharges%=1)..  OffPeak_variable_dem_charge(m) =g= variable_dem_rate(h) * Imports(h) ;
 
 SolarBal(h)..    GenPV(h)+ CurtPV(h) =e= sum(k, CFSolar(h,k)*CapSolar(k,'capacity')*Ypv(k));
 
 WindBal(h)..     GenWind(h)+ CurtWind(h) =e= sum(w, CFWind(h,w)*CapWind(w,'capacity')*Ywind(w));
+
+HydroBudget(hhh).. sum (h$(ord(h)> 24*(ord(hhh)-1) and ord(h)<=24*ord(hhh)),LargeHydro(h)) =e= sum (h$(ord(h)> 24*(ord(hhh)-1) and ord(h)<=24*ord(hhh)),LargeHydroBudget(h));  
 
 ChargSt(j,h)..   PC(j,h) =l= StorageData('Max_P',j)*Ystorage(j,h);
 
@@ -328,9 +488,9 @@ MinEcap(j)..     Ecap(j) =g= StorageData('Min_Duration',j)*(1/sqrt(StorageData('
 
 MaxEcap(j)..     Ecap(j) =l= StorageData('Max_Duration',j)*(1/sqrt(StorageData('Eff',j)))*Pdis(j);
 
-BackupGenDes(h)$h_step1(h)..   CapCC =g= GenCC(h);
+BackupGenDes(bu,h)$h_step1(h)..   CapCC(bu) =g= GenCC(h,bu);
 
-BackupGen(h)..   CapCC =g= GenCC(h);
+BackupGen(bu,h)..   CapCC(bu) =g= GenCC(h,bu);
 
 MaxCycleYear..   sum(h,PD('Li-Ion',h)) =l= (MaxCycles/StorageData('Lifetime','Li-Ion'))*Ecap('Li-Ion') ;
 
@@ -351,8 +511,12 @@ Model TechMix
                 /Obj
                  Supply
                  GenMix_Share
+                 Fixed_demand_charge
+                 Peak_variable_demand_charge
+                 Offpeak_variable_demand_charge
                  SolarBal
                  WindBal
+                 HydroBudget
                  ChargSt
                  DischargSt
                  MaxPC
@@ -375,6 +539,7 @@ Model SDOM_ResDesign
                  GenMix_ShareDes
                  SolarBalDes
                  WindBalDes
+                 HydroBudgetDes
                  ChargStDes
                  DischargStDes
                  MaxPCDes
@@ -397,8 +562,12 @@ Model SDOM_ResOutage
                 /Obj
                  Supply
                  GenMix_Share
+                 Fixed_demand_charge
+                 Peak_variable_demand_charge
+                 Offpeak_variable_demand_charge
                  SolarBal
                  WindBal
+                 HydroBudget
                  ChargSt
                  DischargSt
                  MaxPC
@@ -418,7 +587,7 @@ Model SDOM_ResOutage
                  
 
 
-option optcr=0.005;
+option optcr=0.05;
 
 Option resLim = 1000000;
 
@@ -469,6 +638,10 @@ Parameter
          SolarPVCurt(Runs,h) Curtailment from solar PV plants
          WindCurt(Runs,h) Curtailment from wind plants
          GenGasCC(Runs,h) Generation from gas CC unit
+         ImportsPower(Runs,h) Power Imports
+         ExportsPower(Runs,h) Power Imports
+         HydroGene(Runs,h) Hydropower generation 
+         StorageGasCC2Storage(Runs,h) Power from Storage and Gas CC to Storage
          SelectedSolarPV(Runs,k) Selected Solar PV plants
          SelectedWind(Runs,w) Selected Wind plants
          SolarCapex(Runs) Total Capex for solar PV
@@ -495,6 +668,9 @@ Parameter
          GasCC_FOM(Runs) Total Gas CC FOM
          GasCC_VOM(Runs) Total Gas CC VOM
          GasCC_FUEL(Runs) Total Gas CC fuel cost
+         ImportsCost(Runs) Total cost of imports
+         ExportsCost(Runs) Total cost of exports
+         DemandCharges(Runs) Total demand charges
 ;
 
 if(%ResilienceOption%=1,
@@ -503,7 +679,9 @@ if(%ResilienceOption%=1,
          Ypv.fx(k)   = 0;
          Ywind.fx(w) = 0;
          Load(h) = critical_peak_load ; 
-         CapCC.fx = 0 ;
+         CapCC.fx(bu) = 0 ;
+         Imports.fx(h) = 0 ;
+         Exports.fx(h) = 0 ; 
          GenMix_Target = 0 ;
          LargeHydro(h) = 0 ;
          OtherRenewables(h) = 0;
@@ -511,8 +689,12 @@ if(%ResilienceOption%=1,
          Solve SDOM_ResDesign using mip minimizing TSC;
 
          Load(h) = Load_step2(h) ; 
-         CapCC.up = smax (h, Load(h)-AlphaNuclear*Nuclear(h)-AlphaLargHy*LargeHydro(h)-AlphaOtheRe*OtherRenewables(h));
-         GenCC.fx(h)$(ord(h)>= outage_start_hour and ord(h)<= outage_start_hour + max_backup_power_dur) =0;
+         CapCC.up(bu) = smax (h, Load(h)-AlphaNuclear*Nuclear(h)-AlphaLargHy*LargeHydro(h)-AlphaOtheRe*OtherRenewables(h));
+         GenCC.fx(h,bu)$(ord(h)>= outage_start_hour and ord(h)<= outage_start_hour + max_backup_power_dur) =0;
+         Imports.up(h) = ImportCap(h);
+         Exports.up(h) = ExportCap(h);
+         Imports.up(h) = max (0, Load(h)-sum(k,CFSolar(h,k)*CapSolar(k,'capacity'))-sum(w, CFWind(h,w)*CapWind(w,'capacity'))- AlphaNuclear*Nuclear(h)-AlphaLargHy*LargeHydroBudget(h)-AlphaOtheRe*OtherRenewables(h));
+         Imports.up(h) = max (0, Load(h)-sum(k,CFSolar(h,k)*CapSolar(k,'capacity'))-sum(w, CFWind(h,w)*CapWind(w,'capacity'))- AlphaNuclear*Nuclear(h)-AlphaLargHy*LargeHydroBudget(h)-AlphaOtheRe*OtherRenewables(h));
          GenMix_Target = GenMix_Target_step2 ;
          Pdis.lo(j) = Pdis.l(j) ;
          Pcha.lo(j) = Pcha.l(j) ;
@@ -522,13 +704,13 @@ if(%ResilienceOption%=1,
          Solve SDOM_ResOutage using mip minimizing TSC;
     
          TotalCost(Runs) = TSC.l;
-         TotalCapCC(Runs) = CapCC.l;
+         TotalCapCC(Runs) = sum(bu,CapCC.l(bu));
          TotalCapPV(Runs) = sum(k, CapSolar(k,'capacity')*Ypv.l(k));
          TotalCapWind(Runs) = sum(w, CapWind(w,'capacity')*Ywind.l(w));
          TotalCapScha(Runs,j) = Pcha.l(j);
          TotalCapSdis(Runs,j) = Pdis.l(j);
          TotalEcapS(Runs,j) = Ecap.l(j);
-         TotalGenGasCC(Runs) = sum(h,GenCC.l(h));
+         TotalGenGasCC(Runs) = sum((h,bu),GenCC.l(h,bu));
          TotalGenPV(Runs) = sum(h, GenPV.l(h));
          TotalGenWind(Runs) = sum(h, GenWind.l(h));
          TotalGenS(Runs,j) = sum((h),PD.l(j,h));
@@ -545,9 +727,14 @@ if(%ResilienceOption%=1,
          WindGen(Runs,h) = GenWind.l(h);
          SolarPVCurt(Runs,h) = CurtPV.l(h);
          WindCurt(Runs,h) = CurtWind.l(h);
-         GenGasCC(Runs,h) = GenCC.l(h);
+         GenGasCC(Runs,h) = sum(bu,GenCC.l(h,bu));
+         ImportsPower(Runs,h) = Imports.l(h);
+         ExportsPower(Runs,h) = Exports.l(h);
+         HydroGene(Runs,h) = LargeHydro(h);
          SelectedSolarPV(Runs,k) = Ypv.l(k);
          SelectedWind(Runs,w) = Ywind.l(w);
+         StorageGasCC2Storage(Runs,h) = (sum(j, PD.l(j,h)) + sum(bu,GenCC.l(h,bu)))$(Load(h)-AlphaNuclear*Nuclear(h)-AlphaLargHy*LargeHydro(h)-AlphaOtheRe*OtherRenewables(h)-GenPV.l(h)-GenWind.l(h) <= 0) +
+                                     sum(j, PC.l(j,h))$(Load(h)-AlphaNuclear*Nuclear(h)-AlphaLargHy*LargeHydro(h)-AlphaOtheRe*OtherRenewables(h)-GenPV.l(h)-GenWind.l(h) > 0) ;
          SolarCapex(Runs) = sum(k, (FCR_VRE*(1000*CapSolar(k,'CAPEX_M') + CapSolar(k,'trans_cap_cost'))*CapSolar(k,'capacity')*Ypv.l(k)));
          WindCapex(Runs) = sum(w, (FCR_VRE*(1000*CapWind(w,'CAPEX_M') + CapWind(w,'trans_cap_cost'))*CapWind(w,'capacity')*Ywind.l(w)));
          SolarFOM(Runs) = sum(k, 1000*CapSolar(k,'FOM_M')*CapSolar(k,'capacity')*Ypv.l(k));
@@ -568,25 +755,30 @@ if(%ResilienceOption%=1,
          PHS_VOM(Runs) = StorageData('VOM','PHS')*sum(h,PD.l('PHS',h));
          H2_FOM(Runs) = 1000*StorageData('CostRatio','H2')*StorageData('FOM','H2')*Pcha.l('H2') + 1000*(1-StorageData('CostRatio','H2'))*StorageData('FOM','H2')*Pdis.l('H2') ;
          H2_VOM(Runs) = StorageData('VOM','H2')*sum(h,PD.l('H2',h));
-         GasCC_Capex(Runs) = FCR_GasCC*1000*CapexGasCC*CapCC.l;
-         GasCC_FOM(Runs) = FOM_GasCC*1000*CapCC.l;
-         GasCC_VOM(Runs) = VOM_GasCC*sum(h, GenCC.l(h));
-         GasCC_FUEL(Runs) = GasPrice*HR*sum(h, GenCC.l(h));
+         GasCC_Capex(Runs) = FCR_GasCC*1000*CapexGasCC*sum(bu,CapCC.l(bu));
+         GasCC_FOM(Runs) = FOM_GasCC*1000*sum(bu,CapCC.l(bu));
+         GasCC_VOM(Runs) = VOM_GasCC*sum((h,bu), GenCC.l(h,bu));
+         GasCC_FUEL(Runs) = GasPrice*HR*sum((h,bu), GenCC.l(h,bu));
+         ImportsCost(Runs) = sum(h, ImportPrices(h)*Imports.l(h));
+         ExportsCost(Runs) = -sum(h, ExportPrices(h)*Exports.l(h));
+         DemandCharges(Runs) = sum(m,Fixed_dem_charge.l(m) + Peak_variable_dem_charge.l(m) + Offpeak_variable_dem_charge.l(m)) ;
     
         );
     elseif %ResilienceOption%=0,
         loop (Runs,
-         CapCC.up = smax (h, Load(h)-AlphaNuclear*Nuclear(h)-AlphaLargHy*LargeHydro(h)-AlphaOtheRe*OtherRenewables(h));
+         CapCC.up(bu) = smax (h, Load(h)-AlphaNuclear*Nuclear(h)-AlphaLargHy*LargeHydro(h)-AlphaOtheRe*OtherRenewables(h));
+         CapCC.up(bu) = DataBU(bu,'MaxCapacity');
+         CapCC.lo(bu) = DataBU(bu,'MinCapacity');
          Solve TechMix using mip minimizing TSC;
     
          TotalCost(Runs) = TSC.l;
-         TotalCapCC(Runs) = CapCC.l;
+         TotalCapCC(Runs) = sum(bu,CapCC.l(bu));
          TotalCapPV(Runs) = sum(k, CapSolar(k,'capacity')*Ypv.l(k));
          TotalCapWind(Runs) = sum(w, CapWind(w,'capacity')*Ywind.l(w));
          TotalCapScha(Runs,j) = Pcha.l(j);
          TotalCapSdis(Runs,j) = Pdis.l(j);
          TotalEcapS(Runs,j) = Ecap.l(j);
-         TotalGenGasCC(Runs) = sum(h,GenCC.l(h));
+         TotalGenGasCC(Runs) = sum((h,bu),GenCC.l(h,bu));
          TotalGenPV(Runs) = sum(h, GenPV.l(h));
          TotalGenWind(Runs) = sum(h, GenWind.l(h));
          TotalGenS(Runs,j) = sum((h),PD.l(j,h));
@@ -603,9 +795,14 @@ if(%ResilienceOption%=1,
          WindGen(Runs,h) = GenWind.l(h);
          SolarPVCurt(Runs,h) = CurtPV.l(h);
          WindCurt(Runs,h) = CurtWind.l(h);
-         GenGasCC(Runs,h) = GenCC.l(h);
+         GenGasCC(Runs,h) = sum(bu,GenCC.l(h,bu));
+         ImportsPower(Runs,h) = Imports.l(h);
+         ExportsPower(Runs,h) = Exports.l(h);
+         HydroGene(Runs,h) = LargeHydro(h);
          SelectedSolarPV(Runs,k) = Ypv.l(k);
          SelectedWind(Runs,w) = Ywind.l(w);
+         StorageGasCC2Storage(Runs,h) = (sum(j, PD.l(j,h)) + sum(bu,GenCC.l(h,bu)))$(Load(h)-AlphaNuclear*Nuclear(h)-AlphaLargHy*LargeHydro(h)-AlphaOtheRe*OtherRenewables(h)-GenPV.l(h)-GenWind.l(h) <= 0) +
+                                     sum(j, PC.l(j,h))$(Load(h)-AlphaNuclear*Nuclear(h)-AlphaLargHy*LargeHydro(h)-AlphaOtheRe*OtherRenewables(h)-GenPV.l(h)-GenWind.l(h) > 0) ;
          SolarCapex(Runs) = sum(k, (FCR_VRE*(1000*CapSolar(k,'CAPEX_M') + CapSolar(k,'trans_cap_cost'))*CapSolar(k,'capacity')*Ypv.l(k)));
          WindCapex(Runs) = sum(w, (FCR_VRE*(1000*CapWind(w,'CAPEX_M') + CapWind(w,'trans_cap_cost'))*CapWind(w,'capacity')*Ywind.l(w)));
          SolarFOM(Runs) = sum(k, 1000*CapSolar(k,'FOM_M')*CapSolar(k,'capacity')*Ypv.l(k));
@@ -626,10 +823,13 @@ if(%ResilienceOption%=1,
          PHS_VOM(Runs) = StorageData('VOM','PHS')*sum(h,PD.l('PHS',h));
          H2_FOM(Runs) = 1000*StorageData('CostRatio','H2')*StorageData('FOM','H2')*Pcha.l('H2') + 1000*(1-StorageData('CostRatio','H2'))*StorageData('FOM','H2')*Pdis.l('H2') ;
          H2_VOM(Runs) = StorageData('VOM','H2')*sum(h,PD.l('H2',h));
-         GasCC_Capex(Runs) = FCR_GasCC*1000*CapexGasCC*CapCC.l;
-         GasCC_FOM(Runs) = FOM_GasCC*1000*CapCC.l;
-         GasCC_VOM(Runs) = VOM_GasCC*sum(h, GenCC.l(h));
-         GasCC_FUEL(Runs) = GasPrice*HR*sum(h, GenCC.l(h));
+         GasCC_Capex(Runs) = FCR_GasCC*1000*CapexGasCC*sum(bu,CapCC.l(bu));
+         GasCC_FOM(Runs) = FOM_GasCC*1000*sum(bu,CapCC.l(bu));
+         GasCC_VOM(Runs) = VOM_GasCC*sum((h,bu), GenCC.l(h,bu));
+         GasCC_FUEL(Runs) = GasPrice*HR*sum((h,bu), GenCC.l(h,bu));
+         ImportsCost(Runs) = sum(h, ImportPrices(h)*Imports.l(h));
+         ExportsCost(Runs) = -sum(h, ExportPrices(h)*Exports.l(h));
+         DemandCharges(Runs) = sum(m,Fixed_dem_charge.l(m) + Peak_variable_dem_charge.l(m) + Offpeak_variable_dem_charge.l(m)) ;
     
         );
 );
@@ -794,6 +994,15 @@ loop (Runs,
      PUT 'VOM', 'H2', Runs.tl, (GasCC_VOM(Runs) + GasCC_FUEL(Runs) + Li_Ion_VOM(Runs) + CAES_VOM(Runs) + PHS_VOM(Runs) + H2_VOM(Runs)):0:5, 'US$' /);
      
 loop (Runs,
+     PUT 'VOM', 'Import Cost', Runs.tl, ImportsCost(Runs):0:5, 'US$' /);
+     
+loop (Runs,
+     PUT 'VOM', 'Export Cost', Runs.tl, ExportsCost(Runs):0:5, 'US$' /);
+     
+loop (Runs,
+     PUT 'VOM', 'Demand Charges', Runs.tl, DemandCharges(Runs):0:5, 'US$' /);
+     
+loop (Runs,
      PUT 'OPEX', 'GasCC', Runs.tl, (GasCC_FOM(Runs) + GasCC_VOM(Runs) + GasCC_FUEL(Runs)):0:5, 'US$' /);
      
 loop (Runs,
@@ -867,9 +1076,9 @@ put_utility 'ren' / '%outdir%\%case_name%\%sim_year%_OutputGeneration_SDOM_%FNAM
 csvGen.pc = 5;
 PUT csvGen;
 
-PUT 'Scenario', 'Hour','Solar PV Generation (MW)', 'Solar PV Curtailment (MW)', 'Wind Generation (MW)', 'Wind Curtailment (MW)', 'Gas CC Generation (MW)', 'Power from Storage and Gas CC to Storage (MW)' /;
+PUT 'Scenario', 'Hour','Solar PV Generation (MW)', 'Solar PV Curtailment (MW)', 'Wind Generation (MW)', 'Wind Curtailment (MW)', 'Gas CC Generation (MW)', 'Power from Storage and Gas CC to Storage (MW)', 'Imports (MW)', 'Exports (MW)', 'Hydropower (MW)' /;
 loop ((Runs,h),
-     PUT Runs.tl, h.tl, SolarPVGen(Runs,h):0:5, SolarPVCurt(Runs,h):0:5, WindGen(Runs,h):0:5, WindCurt(Runs,h):0:5, GenGasCC(Runs,h):0:5 /);
+     PUT Runs.tl, h.tl, SolarPVGen(Runs,h):0:5, SolarPVCurt(Runs,h):0:5, WindGen(Runs,h):0:5, WindCurt(Runs,h):0:5, GenGasCC(Runs,h):0:5, StorageGasCC2Storage(Runs,h):0:5, ImportsPower(Runs,h):0:5, ExportsPower(Runs,h):0:5, HydroGene(Runs,h):0:5 /);
 Putclose ;
 
 

@@ -1,3 +1,17 @@
+"""Constants and configuration mappings for the SDOM optimization model.
+
+This module defines:
+- Unit conversion factors
+- Logging color codes
+- CSV input file name mappings
+- Technology property name lists
+- Valid formulation options and mappings
+- Aggregation intervals for different hydro formulations
+- Resiliency constraint parameters
+
+All constants use UPPER_CASE naming convention per PEP 8.
+"""
+
 # INCLUDE HERE ALL THE CONSTATS AND USE UPPER CASE NAMES
 
 MW_TO_KW = 1000.0

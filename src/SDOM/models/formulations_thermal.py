@@ -1,3 +1,16 @@
+"""Thermal generation formulations for the SDOM optimization model.
+
+This module implements dispatchable fossil fuel generation modeling including:
+- Multiple balancing units (e.g., natural gas combined cycle, combustion turbines)
+- Capacity investment decisions with min/max constraints
+- Hourly dispatch decisions
+- Fuel costs based on heat rates and fuel prices
+- Variable and fixed operating costs
+
+Thermal generation provides reliability and flexibility to meet demand when
+renewable generation is insufficient.
+"""
+
 from pyomo.core import Var, Constraint, Expression
 from pyomo.environ import Set, Param, value, NonNegativeReals
 import logging
@@ -5,6 +18,24 @@ from .models_utils import crf_rule, generic_fixed_om_cost_expr_rule, different_f
 from ..constants import MW_TO_KW, THERMAL_PROPERTIES_NAMES
 
 def initialize_thermal_sets(block, data):
+    """
+    Initializes thermal generation unit sets for the optimization model.
+    
+    Creates sets for thermal balancing units (plants) and their properties. Each
+    unit represents a dispatchable thermal generation technology that can be
+    built and operated to meet system needs.
+    
+    Args:
+        block: Pyomo Block object (typically model.thermal) where sets will be added.
+        data (dict): Dictionary containing 'thermal_data' DataFrame with plant
+            characteristics indexed by 'Plant_id'.
+    
+    Side Effects:
+        Creates block attributes:
+        - block.plants_set (Set): Thermal plant/unit identifiers
+        - block.properties_set (Set): Parameter names (costs, capacities, etc.)
+        Logs information about configured thermal units.
+    """
     # Initialize THERMAL properties
     block.plants_set = Set( initialize = data['thermal_data']['Plant_id'].astype(str).tolist() )
     block.properties_set = Set( initialize = THERMAL_PROPERTIES_NAMES )
@@ -149,13 +180,29 @@ def add_thermal_constraints( model ):
 ####################################################################################|
 def add_thermal_fixed_costs(model):
     """
-    Add cost-related variables for thermal units to the model.
-
-    Parameters:
-    model: The optimization model to which thermal cost variables will be added.
-
+    Calculates total annual fixed costs for all thermal generation units.
+    
+    Fixed costs include annualized capital expenditures (CAPEX) and annual fixed
+    operation and maintenance (FOM) costs. These costs are incurred regardless of
+    how much the thermal units actually generate.
+    
+    Mathematical Formulation:
+        $$C_{thermal,fixed} = \sum_{bu} (FCR_{bu} \cdot CAPEX_{bu} \cdot Cap_{bu} + FOM_{bu} \cdot Cap_{bu})$$
+    
+    Where:
+        - $FCR_{bu}$: Fixed charge rate for unit bu (annualization factor)
+        - $CAPEX_{bu}$: Capital cost per kW for unit bu ($US/kW)
+        - $Cap_{bu}$: Installed capacity for unit bu (MW)
+        - $FOM_{bu}$: Fixed O&M cost per kW-year for unit bu ($US/kW-year)
+    
+    Args:
+        model: The Pyomo ConcreteModel instance with thermal cost expressions defined.
+    
     Returns:
-    Costs sum for each thermal unit, including capital and fixed O&M costs.
+        Expression: Total annual fixed costs for thermal generation ($US/year).
+    
+    Notes:
+        Used in the objective function as part of total system fixed costs.
     """
     return (
         add_generic_fixed_costs(model.thermal)
@@ -163,13 +210,29 @@ def add_thermal_fixed_costs(model):
 
 def add_thermal_variable_costs(model):
     """
-    Add variable costs (Fuel cost + VOM cost) for thermal units to the model.
-
-    Parameters:
-    model: The optimization model to which thermal variable costs will be added.
-
+    Calculates total annual variable costs for all thermal generation units.
+    
+    Variable costs include fuel costs (based on heat rate and fuel price) and
+    variable operation and maintenance (VOM) costs. These costs are proportional
+    to actual generation output.
+    
+    Mathematical Formulation:
+        $$C_{thermal,variable} = \sum_{bu} \sum_h [(FuelPrice_{bu} \cdot HR_{bu} + VOM_{bu}) \cdot G_{bu}(h)]$$
+    
+    Where:
+        - $FuelPrice_{bu}$: Fuel price for unit bu ($US/MMBtu)
+        - $HR_{bu}$: Heat rate for unit bu (MMBtu/MWh)
+        - $VOM_{bu}$: Variable O&M cost for unit bu ($US/MWh)
+        - $G_{bu}(h)$: Generation from unit bu in hour h (MW)
+    
+    Args:
+        model: The Pyomo ConcreteModel instance with thermal variables and parameters.
+    
     Returns:
-    Variable costs sum for thermal units, including fuel costs.
+        Expression: Total annual variable costs for thermal generation ($US/year).
+    
+    Notes:
+        Fuel costs typically dominate variable costs for natural gas units.
     """
     return (
         model.thermal.total_fuel_cost_expr + model.thermal.total_vom_cost_expr

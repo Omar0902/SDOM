@@ -16,6 +16,27 @@ from .constants import VALID_HYDRO_FORMULATIONS_TO_BUDGET_MAP
 from .io_manager import get_formulation
 
 def initialize_vre_sets(data, block, vre_type: str):
+    """
+    Initializes Variable Renewable Energy (VRE) plant sets for solar or wind resources.
+    
+    This function aligns capacity factor data with capacity and cost data, filters out
+    plants with missing critical information, and creates Pyomo sets for the optimization
+    model. It ensures data consistency between CF profiles and plant characteristics.
+    
+    Args:
+        data (dict): Dictionary containing input data including capacity factors (cf_solar/cf_wind)
+            and capacity/cost information (cap_solar/cap_wind).
+        block: Pyomo Block object (e.g., model.pv or model.wind) where the sets will be added.
+        vre_type (str): Type of VRE technology, either 'solar' or 'wind'.
+    
+    Side Effects:
+        - Creates block.plants_set: Pyomo Set containing valid plant IDs.
+        - Adds 'filtered_cap_{vre_type}_dict' and 'complete_{vre_type}_data' to data dictionary.
+    
+    Examples:
+        >>> initialize_vre_sets(data, model.pv, vre_type='solar')
+        >>> print(list(model.pv.plants_set))  # ['plant001', 'plant002', ...]
+    """
      # Solar plant ID alignment
     vre_plants_cf = data[f'cf_{vre_type}'].columns[1:].astype(str).tolist()
     vre_plants_cap = data[f'cap_{vre_type}']['sc_gid'].astype(str).tolist()
@@ -40,6 +61,26 @@ def initialize_vre_sets(data, block, vre_type: str):
 
 
 def check_n_hours(n_hours: int, interval: int):
+    """
+    Validates and adjusts the simulation horizon to be compatible with budget aggregation intervals.
+    
+    For budget formulations (daily or monthly), the number of hours must be a multiple of
+    the aggregation interval. This function checks the compatibility and rounds up if necessary,
+    logging a warning when adjustments are made.
+    
+    Args:
+        n_hours (int): Requested number of hours to simulate (e.g., 8760 for a full year).
+        interval (int): Budget aggregation interval in hours (e.g., 24 for daily, 730 for monthly).
+    
+    Returns:
+        int: Adjusted number of hours that is a multiple of the interval.
+    
+    Examples:
+        >>> check_n_hours(8760, 24)  # 8760 is divisible by 24
+        8760
+        >>> check_n_hours(8700, 730)  # 8700 is not divisible by 730
+        8760  # Logs warning and rounds up to 12*730
+    """
     if n_hours % interval == 0:
         return n_hours
     else:
@@ -51,6 +92,28 @@ def create_budget_set( model,
                       block, 
                       n_hours_checked:int, 
                       budget_hours_aggregation:int ):
+    """
+    Creates a Pyomo set for hydro budget constraints based on aggregation intervals.
+    
+    This function divides the simulation horizon into budget periods (e.g., daily or monthly)
+    and creates indices for budget constraints. Each budget period represents a time window
+    within which hydro generation must satisfy cumulative energy limits.
+    
+    Args:
+        model: The Pyomo ConcreteModel instance (needed to reference model.h).
+        block: Pyomo Block where the budget_set will be added (typically model.hydro).
+        n_hours_checked (int): Total number of hours in the simulation (must be multiple
+            of budget_hours_aggregation).
+        budget_hours_aggregation (int): Hours per budget period (24 for daily, 730 for monthly).
+    
+    Side Effects:
+        Creates block.budget_set: Pyomo Set with indices [1, 2, ..., num_periods] representing
+        each budget period.
+    
+    Examples:
+        >>> create_budget_set(model, model.hydro, 8760, 730)  # 12 monthly periods
+        >>> print(list(model.hydro.budget_set))  # [1, 2, 3, ..., 12]
+    """
     breakpoints  = list(range(budget_hours_aggregation, n_hours_checked+1, budget_hours_aggregation))
     indices = list(range(1, len(breakpoints) + 1))
     
@@ -59,11 +122,28 @@ def create_budget_set( model,
 
 def initialize_sets( model, data, n_hours = 8760 ):
     """
-    Initialize model sets from the provided data dictionary.
+    Initializes all model sets including time horizon, technology sets, and budget sets.
+    
+    This function orchestrates set initialization for all model components:
+    - VRE plants (solar PV and wind)
+    - Storage technologies
+    - Thermal generation units
+    - Time horizon (hourly set)
+    - Hydro budget periods (if applicable)
+    
+    The time horizon is adjusted based on the selected hydro formulation to ensure
+    compatibility with budget aggregation intervals.
     
     Args:
-        model: The optimization model instance to initialize.
-        data: A dictionary containing model parameters and data.
+        model: The Pyomo ConcreteModel instance to initialize.
+        data (dict): Dictionary containing all input data loaded from CSV files.
+        n_hours (int, optional): Number of hours to simulate. Defaults to 8760 (full year).
+    
+    Side Effects:
+        - Creates model.h: Pyomo RangeSet for hourly time steps
+        - Creates sets in model.pv, model.wind, model.storage, model.thermal blocks
+        - Creates model.hydro.budget_set if using budget formulation
+        - Logs information about configured technologies
     """
     initialize_vre_sets(data, model.pv, vre_type='solar')
     initialize_vre_sets(data, model.wind, vre_type='wind')
@@ -90,12 +170,30 @@ def initialize_sets( model, data, n_hours = 8760 ):
 
 def initialize_params(model, data):
     """
-    Initialize model parameters from the provided data dictionary.
+    Initializes all model parameters from the loaded input data.
+    
+    This function populates Pyomo parameters for all model components by calling
+    component-specific parameter initialization functions. Parameters include:
+    - Economic parameters (discount rate, generation mix targets)
+    - Time-series data (load, capacity factors, hydro availability)
+    - Technology characteristics (costs, efficiencies, capacities)
+    - Formulation-specific parameters (budgets, bounds, prices)
+    
+    The function handles conditional parameter initialization based on selected
+    formulations (e.g., hydro budget bounds only for budget formulations).
     
     Args:
-        model: The optimization model instance to initialize.
-        data: A dictionary containing model parameters and data.
-        filtered_cap_solar_dict
+        model: The Pyomo ConcreteModel instance with initialized sets.
+        data (dict): Dictionary containing all input data including scalars, time series,
+            and formulation specifications.
+    
+    Side Effects:
+        - Adds Pyomo Param objects to model and all block objects
+        - Logs debug information about parameter initialization progress
+    
+    Notes:
+        This function should be called after initialize_sets() to ensure all required
+        sets are defined before parameters that reference them.
     """
     model.r = Param( initialize = float(data["scalars"].loc["r"].Value) )  # Discount rate
 

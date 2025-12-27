@@ -1,3 +1,16 @@
+"""Variable Renewable Energy (VRE) formulations for the SDOM optimization model.
+
+This module implements solar PV and wind generation modeling including:
+- Site-specific capacity factor time series
+- Capacity investment decisions with spatial resolution
+- Curtailment variables for managing oversupply
+- Transmission/interconnection costs
+- Fixed O&M and annualized capital costs
+
+VRE resources provide zero-marginal-cost energy but with temporal variability
+requiring balancing from other resources.
+"""
+
 from pyomo.core import Var, Constraint, Expression
 from pyomo.core import Var, Constraint, Expression
 from pyomo.environ import Param, NonNegativeReals
@@ -106,13 +119,32 @@ def add_vre_expressions(model):
 
 def add_vre_fixed_costs(model):
     """
-    Add cost-related variables for variable renewable energy (VRE) to the model.
+    Calculates total annual fixed costs for Variable Renewable Energy (VRE) resources.
     
-    Parameters:
-    model: The optimization model to which VRE cost variables will be added.
+    Fixed costs for VRE (solar PV and wind) include annualized capital expenditures
+    (CAPEX) for generation equipment and transmission interconnection, plus annual
+    fixed operation and maintenance (FOM) costs. VRE has no fuel costs and negligible
+    variable O&M.
+    
+    Mathematical Formulation:
+        $$C_{VRE,fixed} = \sum_{tech \in \{PV,wind\}} \sum_k FCR \cdot (CAPEX_k + TransCost_k) \cdot Cap_k + FOM_k \cdot Cap_k$$
+    
+    Where:
+        - $FCR$: Fixed charge rate for VRE (same for all sites)
+        - $CAPEX_k$: Generation equipment cost for site k ($US/kW)
+        - $TransCost_k$: Transmission/interconnection cost for site k ($US/kW)
+        - $Cap_k$: Installed capacity at site k (MW)
+        - $FOM_k$: Fixed O&M for site k ($US/kW-year)
+    
+    Args:
+        model: The Pyomo ConcreteModel instance with VRE cost expressions defined.
     
     Returns:
-    Costs sum for solar PV and wind energy, including capital and fixed O&M costs.
+        Expression: Total annual fixed costs for solar PV and wind ($US/year).
+    
+    Notes:
+        VRE costs have declined significantly, making renewable-heavy portfolios
+        increasingly cost-competitive.
     """
     # Solar PV Capex and Fixed O&M
     return ( 
@@ -129,13 +161,35 @@ def vre_balance_rule(block, h):
 
 def add_vre_balance_constraints(model):
     """
-    Add constraints related to variable renewable energy (VRE) to the model.
+    Adds energy balance constraints for Variable Renewable Energy (VRE) resources.
     
-    Parameters:
-    model: The optimization model to which VRE constraints will be added.
+    For each VRE technology (solar PV and wind), these constraints ensure that
+    available generation (based on capacity factors and installed capacity) equals
+    actual generation plus any curtailed generation.
+    
+    Mathematical Formulation (for each hour h and technology):
+        $$G_{used}(h) + G_{curtailed}(h) = \sum_k CF_k(h) \cdot Cap_k \cdot \alpha_k$$
+    
+    Where:
+        - $G_{used}(h)$: Generation delivered to the grid in hour h (MW)
+        - $G_{curtailed}(h)$: Generation curtailed (wasted) in hour h (MW)
+        - $CF_k(h)$: Capacity factor for site k in hour h (0-1)
+        - $Cap_k$: Maximum capacity at site k (MW)
+        - $\alpha_k$: Capacity deployment fraction for site k (0-1, decision variable)
+    
+    Curtailment occurs when VRE generation exceeds instantaneous demand or when
+    it's more economical to waste energy than to store or export it.
+    
+    Args:
+        model: The Pyomo ConcreteModel instance with VRE variables defined.
+    
+    Side Effects:
+        Adds constraints to model:
+        - model.pv.balance[h]: Solar PV energy balance for each hour
+        - model.wind.balance[h]: Wind energy balance for each hour
     
     Returns:
-    None
+        None
     """
     # Solar balance constraint
     model.pv.balance = Constraint(model.h, rule=vre_balance_rule)

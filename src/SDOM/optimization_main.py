@@ -25,22 +25,62 @@ from .io_manager import get_formulation
 def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, model_name="SDOM_Model"):
     """
     Initializes and configures a Pyomo optimization model for the SDOM framework.
-    This function sets up the model structure, including sets, parameters, variables, 
-    objective function, and constraints for power system optimization. It supports 
-    optional resilience constraints and allows customization of the model name and 
-    simulation horizon.
+    
+    Sets up the complete model structure including sets (time periods, technologies,
+    balancing units), parameters (costs, technical specifications, time series data),
+    decision variables (capacity, generation, storage operation), objective function
+    (minimize total system cost), and constraints (supply-demand balance, technology-specific
+    operational limits, policy requirements).
+    
+    Model Structure:
+        - **Objective**: Minimize total annual system cost (CAPEX + OPEX + fuel)
+        - **Decision Variables**: Technology capacities, hourly dispatch, storage operation,
+          imports/exports
+        - **Constraints**: Energy balance, capacity limits, storage dynamics, hydro budgets,
+          ramping limits, policy constraints (GenMix shares, emissions)
+        - **Technologies**: Solar PV, Wind, Storage (Li-Ion, CAES, PHS, H2), Thermal,
+          Hydro, Nuclear, Other Renewables, Imports/Exports
+    
     Args:
-        data (dict): Input data required for model initialization, including system 
-            parameters, time series, and technology characteristics.
-        n_hours (int, optional): Number of hours to simulate (default is 8760, 
-            representing a full year).
-        with_resilience_constraints (bool, optional): If True, adds resilience-related 
-            constraints to the model (default is False).
-        model_name (str, optional): Name to assign to the Pyomo model instance 
-            (default is "SDOM_Model").
+        data (dict): Input data dictionary loaded from CSV files containing:
+            - Time series: load, capacity factors, generation profiles
+            - Technology parameters: costs, efficiencies, lifetimes
+            - System scalars: discount rate, planning reserve margin
+            - Formulation specifications: hydro model type, import/export settings
+        n_hours (int, optional): Number of hours to simulate. Defaults to 8760 (full year).
+            Use smaller values for faster testing (e.g., 168 for one week).
+        with_resilience_constraints (bool, optional): If True, adds resilience-related
+            constraints such as N-1 contingency requirements or diversity mandates.
+            Defaults to False.
+        model_name (str, optional): Name assigned to the Pyomo ConcreteModel instance.
+            Useful for distinguishing multiple model runs. Defaults to "SDOM_Model".
+    
     Returns:
-        ConcreteModel: A fully initialized Pyomo ConcreteModel object ready for 
-            optimization.
+        ConcreteModel: A fully initialized Pyomo ConcreteModel object with all sets,
+            parameters, variables, objective function, and constraints defined. Ready for
+            solving with run_solver().
+    
+    Side Effects:
+        Logs INFO and DEBUG messages about model instantiation progress to the configured
+        logging system.
+    
+    Examples:
+        >>> data = load_data('./Data/base_case/')
+        >>> model = initialize_model(data)
+        >>> print(model.name)  # 'SDOM_Model'
+        >>> print(len(model.h))  # 8760
+        
+        >>> # Test model with one week of data
+        >>> model_test = initialize_model(data, n_hours=168, model_name="Test_Week")
+        
+        >>> # Model with resilience constraints
+        >>> model_resilient = initialize_model(data, with_resilience_constraints=True)
+    
+    Notes:
+        - This function does not solve the model; use run_solver() to optimize
+        - Formulation choices (e.g., hydro budget vs run-of-river) are specified in
+          the input data formulations.csv file
+        - Model building takes ~1-10 seconds depending on n_hours and complexity
     """
 
     logging.info("Instantiating SDOM Pyomo optimization model...")
@@ -172,43 +212,68 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
 # Results collection function
 def collect_results( model ):
     """
-    Collects and computes results from a Pyomo optimization model for an energy system.
-    This function extracts key results from the provided Pyomo model instance, including total costs,
-    installed capacities, generation, dispatch, and detailed cost breakdowns for various technologies
-    (solar PV, wind, gas, and multiple storage types such as Li-Ion, CAES, PHS, and H2).
-    The results are returned as a dictionary with descriptive keys.
+    Extracts and organizes optimization results from a solved Pyomo model.
+    
+    Collects comprehensive results including objective value, installed capacities,
+    annual generation totals, hourly dispatch profiles, and detailed cost breakdowns
+    for all technologies. Results are organized into a dictionary for easy access
+    and post-processing analysis.
+    
     Parameters
     ----------
     model : pyomo.core.base.PyomoModel.ConcreteModel
-        The Pyomo model instance containing the optimization results and parameters.
+        The solved Pyomo model instance containing optimized variables and computed parameters.
+    
     Returns
     -------
     results : dict
-        A dictionary containing the following keys and their corresponding computed values:
-            - 'Total_Cost': Total objective value of the model.
-            - 'Total_CapCC': Installed capacity of gas combined cycle.
-            - 'Total_CapPV': Total installed capacity of solar PV.
-            - 'Total_CapWind': Total installed capacity of wind.
-            - 'Total_CapScha': Installed charging power capacity for each storage type.
-            - 'Total_CapSdis': Installed discharging power capacity for each storage type.
-            - 'Total_EcapS': Installed energy capacity for each storage type.
-            - 'Total_GenPV': Total generation from solar PV.
-            - 'Total_GenWind': Total generation from wind.
-            - 'Total_GenS': Total storage discharge for each storage type.
-            - 'SolarPVGen': Hourly solar PV generation.
-            - 'WindGen': Hourly wind generation.
-            - 'GenGasCC': Hourly gas combined cycle generation.
-            - 'SolarCapex', 'WindCapex': Annualized capital expenditures for solar and wind.
-            - 'SolarFOM', 'WindFOM': Fixed O&M costs for solar and wind.
-            - 'Storage1PowerCapex', 'Storage1EnergyCapex', 'Storage1FOM', 'Storage1VOM': Cost breakdowns for Storage1.
-            - 'Storage2PowerCapex', 'Storage2EnergyCapex', 'Storage2FOM', 'Storage2VOM': Cost breakdowns for Storage2.
-            -  ...
-            - 'StoragenPowerCapex', 'StoragenEnergyCapex', 'StoragenFOM', 'StoragenVOM': Cost breakdowns for Storagen.
-            - 'GasCCCapex', 'GasCCFuel', 'GasCCFOM', 'GasCCVOM': Cost breakdowns for gas combined cycle.
+        A dictionary containing optimization results with the following categories:
+        
+        **System-Level Metrics:**
+            - 'Total_Cost' (float): Total system cost objective value ($US/year)
+        
+        **Installed Capacities (MW or MWh):**
+            - 'Total_CapPV' (float): Total solar PV capacity (MW)
+            - 'Total_CapWind' (float): Total wind capacity (MW)
+            - 'Total_CapCC' (float): Total thermal (gas combined cycle) capacity (MW)
+            - 'Total_CapScha' (dict): Storage charging power capacity by technology (MW)
+            - 'Total_CapSdis' (dict): Storage discharging power capacity by technology (MW)
+            - 'Total_EcapS' (dict): Storage energy capacity by technology (MWh)
+        
+        **Annual Generation Totals (MWh/year):**
+            - 'Total_GenPV' (float): Annual solar PV generation
+            - 'Total_GenWind' (float): Annual wind generation
+            - 'Total_GenS' (dict): Annual storage discharge by technology
+        
+        **Hourly Dispatch Profiles (arrays of length n_hours):**
+            - 'SolarPVGen' (list): Hourly solar PV generation (MW)
+            - 'WindGen' (list): Hourly wind generation (MW)
+            - 'GenGasCC' (list): Hourly thermal generation (MW)
+        
+        **Cost Breakdowns ($US/year):**
+            - Solar: 'SolarCapex', 'SolarFOM'
+            - Wind: 'WindCapex', 'WindFOM'
+            - Storage (per technology j): 'Storage{j}PowerCapex', 'Storage{j}EnergyCapex',
+              'Storage{j}FOM', 'Storage{j}VOM'
+            - Thermal: 'GasCCCapex', 'GasCCFuel', 'GasCCFOM', 'GasCCVOM'
+    
+    Examples
+    --------
+    >>> model = run_solver(model, solver_config={'solver': 'cbc'})
+    >>> results = collect_results(model)
+    >>> print(f"Total Cost: ${results['Total_Cost']:,.0f}/year")
+    Total Cost: $4,523,891,234/year
+    >>> print(f"Solar PV Capacity: {results['Total_CapPV']:,.0f} MW")
+    Solar PV Capacity: 12,345 MW
+    >>> hourly_solar = results['SolarPVGen']
+    >>> max_solar_hour = max(hourly_solar)
+    
     Notes
     -----
-    - The function assumes the existence of a helper function `safe_pyomo_value` to safely extract values from Pyomo variables.
-    - The model is expected to have specific sets and parameters (e.g., model.pv.plants_set, model.wind.plants_set, model.storage.j, model.h, and various cost parameters).
+    - Uses safe_pyomo_value() to handle undefined variables gracefully
+    - Assumes standard SDOM model structure with expected variable names
+    - Storage results are indexed by technology (j) from model.storage.j set
+    - Hourly profiles useful for detailed operational analysis and visualization
     """
 
     logging.info("Collecting SDOM results...")
@@ -263,14 +328,28 @@ def collect_results( model ):
 
 def configure_solver(solver_config_dict:dict):
     """
-    Configure and return a Pyomo solver instance.
-
-    Parameters:
-    - solver_name (str): Name of the solver (e.g., 'xpress', 'highs', 'cbc', 'gurobi').
-    - solver_options (dict): Optional dictionary of solver-specific options.
-
+    Configures and returns a Pyomo solver instance with specified options.
+    
+    This function initializes a solver from Pyomo's SolverFactory, applies user-specified
+    options (e.g., MIP gap tolerance, time limits), and validates solver availability.
+    It handles both local executable solvers (CBC) and direct API solvers (Xpress, HiGHS).
+    
+    Args:
+        solver_config_dict (dict): Dictionary containing solver configuration with keys:
+            - 'solver_name' (str): Solver identifier ('cbc', 'xpress_direct', 'appsi_highs', etc.)
+            - 'executable_path' (str, optional): Path to solver executable (for CBC)
+            - 'options' (dict, optional): Solver-specific options (e.g., {'mip_rel_gap': 0.001})
+    
     Returns:
-    - solver (SolverFactory): Configured Pyomo solver instance.
+        SolverFactory: Configured Pyomo solver instance ready to solve optimization problems.
+    
+    Raises:
+        RuntimeError: If the specified solver is not available on the system.
+    
+    Examples:
+        >>> config = get_default_solver_config_dict('cbc')
+        >>> solver = configure_solver(config)
+        >>> result = solver.solve(model)
     """
 
     
@@ -292,6 +371,39 @@ def configure_solver(solver_config_dict:dict):
     return solver
 
 def get_default_solver_config_dict(solver_name="cbc", executable_path=".\\Solver\\bin\\cbc.exe"):
+    """
+    Returns a default solver configuration dictionary with standard settings.
+    
+    This convenience function provides pre-configured solver settings for common solvers
+    used in SDOM. It includes reasonable default options for MIP gap tolerance, logging,
+    and solution loading behavior.
+    
+    Args:
+        solver_name (str, optional): Name of the solver to configure. Supported values:
+            - 'cbc': Open-source COIN-OR Branch and Cut solver (default)
+            - 'xpress': FICO Xpress commercial solver
+            - 'highs': Open-source HiGHS solver
+            Defaults to 'cbc'.
+        executable_path (str, optional): Path to the CBC solver executable. Only used
+            when solver_name='cbc'. Defaults to '.\\Solver\\bin\\cbc.exe'.
+    
+    Returns:
+        dict: Solver configuration dictionary with keys:
+            - 'solver_name' (str): Formatted solver name for SolverFactory
+            - 'executable_path' (str): Path to executable (CBC only)
+            - 'options' (dict): Solver options (MIP gap, etc.)
+            - 'solve_keywords' (dict): Arguments for solver.solve() call
+    
+    Examples:
+        >>> config = get_default_solver_config_dict('cbc')
+        >>> config['options']['mip_rel_gap']
+        0.002
+        >>> solver = configure_solver(config)
+    
+    Notes:
+        Default MIP gap is 0.2% (0.002). Adjust via config['options']['mip_rel_gap']
+        for different solution quality/speed tradeoffs.
+    """
     solver_dict = {
         "solver_name": "appsi_" + solver_name,
         "options":{
@@ -324,18 +436,55 @@ def get_default_solver_config_dict(solver_name="cbc", executable_path=".\\Solver
 # Run solver function
 def run_solver(model, solver_config_dict:dict):
     """
-    Solves the given optimization model using the CBC solver, optionally running multiple times with varying target values.
+    Solves the optimization model using a configured solver.
+    
+    Executes the optimization, handles solution status checking, collects results
+    if optimal, and logs infeasible constraints if the solve fails. Supports multiple
+    solver configurations through the solver_config_dict parameter.
+    
     Args:
-        model: The Pyomo optimization model to be solved. The model must have an attribute 'GenMix_Target' that can be set.
-        log_file_path (str, optional): Path to the solver log file. Defaults to './solver_log.txt'.
-        optcr (float, optional): The relative MIP gap (optimality criterion) for the solver. Defaults to 0.0.
-        num_runs (int, optional): Number of optimization runs to perform, each with a different 'GenMix_Target' value. Defaults to 1.
-        cbc_executable_path (str, optional): Path to the CBC solver executable. If None, uses the default CBC solver.
+        model (ConcreteModel): The Pyomo optimization model to solve. Must be fully
+            initialized with all sets, parameters, variables, objective, and constraints.
+        solver_config_dict (dict): Solver configuration dictionary containing:
+            - 'solver_name' (str): Solver identifier ('cbc', 'xpress_direct', 'appsi_highs')
+            - 'executable_path' (str, optional): Path to solver executable (CBC)
+            - 'options' (dict): Solver options like {'mip_rel_gap': 0.002}
+            - 'solve_keywords' (dict): Arguments for solver.solve() including:
+                - 'tee' (bool): Print solver output to console
+                - 'load_solutions' (bool): Load solution into model variables
+                - 'timelimit' (int): Maximum solve time in seconds
+                - 'report_timing' (bool): Report solve timing statistics
+                - 'keepfiles' (bool): Keep intermediate solver files for debugging
+    
     Returns:
-        tuple: A tuple containing:
-            - results_over_runs (list): List of dictionaries with results from each run, including 'GenMix_Target' and other collected results.
-            - best_result (dict or None): The result dictionary with the lowest 'Total_Cost' found across all runs, or None if no optimal solution was found.
-            - result (SolverResults): The Pyomo solver results object from the last run.
+        tuple: A 3-element tuple containing:
+            - results_over_runs (list): List with one dict of collected results (includes
+              'GenMix_Target', installed capacities, generation totals, costs). Empty if
+              solve failed.
+            - best_result (dict or None): Same as results_over_runs[0] if optimal, else None
+            - result (SolverResults): Pyomo solver results object with status, termination
+              condition, solve time, and objective value
+    
+    Examples:
+        >>> model = initialize_model(data)
+        >>> config = get_default_solver_config_dict('cbc')
+        >>> results_list, best, solver_result = run_solver(model, config)
+        >>> if best is not None:
+        ...     print(f"Optimal cost: ${best['Total_Cost']:,.0f}")
+        Optimal cost: $4,523,891,234
+        
+        >>> # Use Xpress with custom gap
+        >>> xpress_config = get_default_solver_config_dict('xpress')
+        >>> xpress_config['options']['mip_rel_gap'] = 0.001  # 0.1% gap
+        >>> results_list, best, solver_result = run_solver(model, xpress_config)
+    
+    Raises:
+        Logs warning if solver doesn't find optimal solution and logs infeasible constraints.
+    
+    Notes:
+        - For CBC, typical solve times: 1-30 minutes for 8760-hour problems
+        - If termination_condition != optimal, check solver log for infeasibilities
+        - GenMix_Target parameter must exist on model (VRE policy constraint)
     """
 
     logging.info("Starting to solve SDOM model...")

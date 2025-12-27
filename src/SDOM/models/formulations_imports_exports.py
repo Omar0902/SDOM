@@ -1,3 +1,15 @@
+"""Imports and exports formulations for international electricity trade.
+
+This module implements cross-border electricity trade modeling including:
+- Hourly import/export capacity limits (interconnection constraints)
+- Time-varying electricity prices for imports and exports
+- Binary logic to prevent simultaneous import/export
+- Net load-based trade restrictions (imports when demand > generation)
+
+Trade provides economic opportunities and system flexibility by accessing
+external markets, but is subject to transmission capacity constraints.
+"""
+
 from pyomo.core import Var, Expression, Constraint
 from pyomo.environ import *
 from .models_utils import get_filtered_ts_parameter_dict
@@ -121,4 +133,35 @@ def add_exports_constraints( model, data: dict ):
 # -----------------------------------= Add_costs -----------------------------------|
 ####################################################################################|
 def add_imports_exports_cost(model):
+    """
+    Calculates net annual costs for cross-border electricity imports and exports.
+    
+    This function computes the difference between total import costs (money paid
+    to buy electricity from neighbors) and export revenues (money earned by selling
+    electricity to neighbors). A positive value indicates net import costs, while
+    a negative value indicates net export revenues.
+    
+    Mathematical Formulation:
+        $$C_{net,trade} = C_{imports} - R_{exports}$$
+        $$C_{imports} = \sum_h Price_{import}(h) \cdot Import(h)$$
+        $$R_{exports} = \sum_h Price_{export}(h) \cdot Export(h)$$
+    
+    Where:
+        - $Price_{import}(h)$: Import price in hour h ($US/MWh)
+        - $Import(h)$: Quantity imported in hour h (MW)
+        - $Price_{export}(h)$: Export price in hour h ($US/MWh)
+        - $Export(h)$: Quantity exported in hour h (MW)
+    
+    Args:
+        model: The Pyomo ConcreteModel instance with import/export cost expressions.
+    
+    Returns:
+        Expression: Net annual trade costs ($US/year). Positive = net importer,
+                   negative = net exporter.
+    
+    Notes:
+        - Used in the objective function to account for cross-border trade economics
+        - Import and export prices typically follow different market dynamics
+        - Binary constraint ensures imports and exports don't occur simultaneously
+    """
     return model.imports.total_cost_expr - model.exports.total_cost_expr

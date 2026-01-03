@@ -186,7 +186,7 @@ def initialize_params(model, data):
         None
     
     Notes:
-        - Creates model.r (discount rate) and model.GenMix_Target (carbon-free target)
+        - Creates Pyomo parameters model.r (discount rate) and model.GenMix_Target (carbon-free target)
         - Initializes time-series parameters for each hour in model.h
         - For budget hydro formulations, adds upper/lower bound parameters
         - Conditionally adds import/export parameters based on formulation selection

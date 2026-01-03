@@ -46,7 +46,7 @@ def configure_logging(level=logging.INFO, log_file=None):
         None
     
     Notes:
-        The format includes timestamp and log level: 'YYYY-MM-DD HH:MM:SS - LEVEL - message'
+        The format includes timestamp and log level: 'YYYY-MM-DD HH:MM:SS-new line-LEVEL - message'
         Color formatting is applied via the ColorFormatter class using ANSI codes.
         Multiple calls will reconfigure the logging system.
     """

@@ -134,15 +134,15 @@ def add_alpha_and_ts_parameters( block,
 def add_budget_parameter(block, formulation, valid_formulation_to_budget_map: dict):
     """Add a budget aggregation parameter to a block based on the selected formulation.
     
-    Creates a scalar Pyomo Param indicating the number of hours to aggregate for
-    budget constraints (e.g., 730 for monthly, 24 for daily budgets). Used primarily
-    for hydropower budget formulations.
+    Creates a scalar Pyomo Param indicating the number of hours in each budget period
+    (i.e., the budget period interval in hours, e.g., 730 for monthly, 24 for daily
+    budgets). Used primarily for hydropower budget formulations.
     
     Args:
         block: The Pyomo Block where the parameter will be added.
         formulation (str): The selected formulation name (e.g., 'MonthlyBudgetFormulation').
         valid_formulation_to_budget_map (dict): Mapping from formulation names to
-            aggregation intervals in hours.
+        budget period intervals in hours.
     
     Returns:
         None
@@ -265,7 +265,7 @@ def sum_installed_capacity_by_plants_set_expr_rule( block ):
         block: The Pyomo Block containing plant_installed_capacity Var and plants_set Set.
     
     Returns:
-        pyomo.core.expr.numeric_expr: A Pyomo expression representing the sum of
+        Pyomo expression: A Pyomo expression representing the sum of
             installed capacities.
     
     Notes:
@@ -308,11 +308,10 @@ def generic_capex_cost_expr_rule( block ):
             plant_installed_capacity Var, and plants_set Set.
     
     Returns:
-        pyomo.core.expr.numeric_expr: Pyomo expression for total annualized CAPEX.
+        Pyomo Expression: Pyomo expression for total annualized CAPEX.
     
     Notes:
-        Formula: sum over plants of [(CAPEX_M[k]*MW_TO_KW + trans_cap_cost[k]) * capacity[k]]
-        Does NOT include FCR in this expression - FCR is applied externally.
+        Formula: sum over plants of [(CAPEX_M[k]*MW_TO_KW + trans_cap_cost[k]) * capacity[k]].
         CAPEX_M is in $/kW, trans_cap_cost in $, capacity in MW.
     """
     return sum( ( (MW_TO_KW * block.CAPEX_M[k] + block.trans_cap_cost[k]))\

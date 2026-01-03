@@ -10,38 +10,101 @@ from .constants import INPUT_CSV_NAMES, MW_TO_KW, VALID_HYDRO_FORMULATIONS_TO_BU
 
 
 def check_formulation( formulation:str, valid_formulations ):
+    """Validate that a formulation string is in the list of valid formulations.
+    
+    Checks if the user-specified formulation (from formulations.csv) is valid for
+    the component being configured. Raises an error with helpful message if invalid.
+    
+    Args:
+        formulation (str): The formulation name specified by user (e.g.,
+            'MonthlyBudgetFormulation', 'RunOfRiverFormulation').
+        valid_formulations: Iterable (typically dict.keys()) containing all valid
+            formulation names for the component.
+    
+    Returns:
+        None
+    
+    Raises:
+        ValueError: If formulation is not in valid_formulations, with a message
+            listing all valid options.
+    
+    Notes:
+        This function is called during data loading to validate formulation.csv entries.
+    """
     
     if formulation not in valid_formulations:
         raise ValueError(f"Invalid formulation '{formulation}' selected by the user in file 'formulations.csv'. Valid options are: {valid_formulations}")
     return
 
 def get_formulation(data:dict, component:str ='hydro'):
+    """Retrieve the selected formulation for a specific model component.
+    
+    Extracts the formulation name from the loaded formulations DataFrame for a
+    given component (e.g., hydro, imports, exports). Used throughout model
+    initialization to conditionally add constraints based on formulation.
+    
+    Args:
+        data (dict): Dictionary containing the 'formulations' DataFrame loaded from
+            formulations.csv.
+        component (str, optional): Component name to look up (case-insensitive).
+            Examples: 'hydro', 'Imports', 'Exports'. Defaults to 'hydro'.
+    
+    Returns:
+        str: The formulation name for the specified component (e.g.,
+            'MonthlyBudgetFormulation', 'CapacityPriceNetLoadFormulation', 'NotModel').
+    
+    Notes:
+        Performs case-insensitive matching on component name.
+        Returns the first matching formulation (expects unique component names).
+    """
     formulations = data["formulations"]
     return formulations.loc[ formulations["Component"].str.lower() == component.lower() ]["Formulation"].iloc[0]
 
 
 def load_data( input_data_dir:str = '.\\Data\\' ):
-    """
-    Loads the required SDOM datasets from CSV files located in the specified input directory.
-    Parameters:
-        input_data_dir (str): Path to the directory containing the input CSV files. Defaults to '.\\Data\\'.
+    """Load all required SDOM input datasets from CSV files in the specified directory.
+    
+    Reads and validates all input CSV files needed for SDOM optimization including
+    VRE data, fixed generation profiles, storage characteristics, thermal units,
+    scalars, and formulation specifications. Performs data consistency checks and
+    filters datasets based on completeness.
+    
+    Args:
+        input_data_dir (str, optional): Path to directory containing input CSV files.
+            Defaults to '.\\Data\\'. Should contain all required files defined in
+            constants.INPUT_CSV_NAMES.
+    
     Returns:
-        dict: A dictionary containing the following keys and their corresponding loaded data:
-            - "solar_plants" (list): List of solar plant identifiers.
-            - "wind_plants" (list): List of wind plant identifiers.
-            - "load_data" (pd.DataFrame): Hourly load data for the year 2050.
-            - "nuclear_data" (pd.DataFrame): Hourly nuclear generation data for 2019.
-            - "large_hydro_data" (pd.DataFrame): Hourly large hydro generation data for 2019.
-            - "other_renewables_data" (pd.DataFrame): Hourly other renewables generation data for 2019.
-            - "cf_solar" (pd.DataFrame): Solar capacity factors for 2050.
-            - "cf_wind" (pd.DataFrame): Wind capacity factors for 2050.
-            - "cap_solar" (pd.DataFrame): Solar plant capacities for 2050.
-            - "cap_wind" (pd.DataFrame): Wind plant capacities for 2050.
-            - "storage_data" (pd.DataFrame): Storage data for 2050, indexed by the first column.
-            - "scalars" (pd.DataFrame): Scalar parameters, indexed by the "Parameter" column.
+        dict: Dictionary containing loaded and processed data with keys:
+            - 'formulations' (pd.DataFrame): Component formulation specifications
+            - 'solar_plants', 'wind_plants' (list): Plant IDs for VRE technologies
+            - 'cf_solar', 'cf_wind' (pd.DataFrame): Hourly capacity factors
+            - 'cap_solar', 'cap_wind' (pd.DataFrame): Plant CAPEX and capacity data
+            - 'load_data' (pd.DataFrame): Hourly electricity demand
+            - 'nuclear_data' (pd.DataFrame): Hourly nuclear generation
+            - 'large_hydro_data' (pd.DataFrame): Hourly hydropower generation/availability
+            - 'large_hydro_max', 'large_hydro_min' (pd.DataFrame): Hydro bounds
+              (if budget formulation)
+            - 'other_renewables_data' (pd.DataFrame): Hourly other renewable generation
+            - 'storage_data' (pd.DataFrame): Storage technology characteristics
+            - 'STORAGE_SET_J_TECHS', 'STORAGE_SET_B_TECHS' (list): Storage tech identifiers
+            - 'thermal_data' (pd.DataFrame): Thermal balancing unit parameters
+            - 'scalars' (pd.DataFrame): System-level scalar parameters
+            - 'import_cap', 'export_cap', 'import_prices', 'export_prices' (pd.DataFrame):
+              Trade data (if import/export formulation active)
+            - 'complete_solar_data', 'complete_wind_data' (pd.DataFrame): Filtered VRE data
+            - 'filtered_cap_solar_dict', 'filtered_cap_wind_dict' (dict): Capacity mappings
+    
+    Raises:
+        FileNotFoundError: If any required input file is missing from input_data_dir.
+        ValueError: If formulation specifications are invalid.
+    
     Notes:
-        - All numeric data is rounded to 5 decimal places.
-        - Some columns are explicitly converted to string type for consistency.
+        - All numeric data rounded to 5 decimal places for consistency
+        - VRE plant lists filtered to include only plants with complete data
+        - Conditionally loads hydro bounds and import/export data based on formulations
+        - Uses flexible filename matching via normalize_string() for CSV files
+        - Logs detailed progress at debug level for troubleshooting data loading issues
     """
     logging.info("Loading SDOM input data...")
     
@@ -206,31 +269,44 @@ def load_data( input_data_dir:str = '.\\Data\\' ):
 # ---------------------------------------------------------------------------------
 
 def export_results( model, case, output_dir = './results_pyomo/' ):
-    """
-    Exports optimization results from a Pyomo model to CSV files.
-    This function extracts generation, storage, and summary results from the provided Pyomo model instance,
-    organizes them into dictionaries and pandas DataFrames, and writes them to CSV files in the specified output directory.
-    Parameters
-    ----------
-    model : pyomo.environ.ConcreteModel
-        The Pyomo model instance containing the optimization results.
-    case : str or int
-        Identifier for the current simulation case or scenario. Used in output filenames.
-    output_dir : str, optional
-        Directory path where the output CSV files will be saved. Defaults to './results_pyomo/'.
-    Outputs
-    -------
-    OutputGeneration_{case}.csv : CSV file
-        Contains hourly generation and curtailment results for each technology and scenario.
-    OutputStorage_{case}.csv : CSV file
-        Contains hourly storage operation results (charging, discharging, state of charge) for each storage technology.
-    OutputSummary_{case}.csv : CSV file
-        Contains summary metrics including total cost, capacities, generation, demand, CAPEX, OPEX, and other key results.
-    Notes
-    -----
-    - The function assumes the model contains specific variables and sets (e.g., GenPV, CurtPV, GenWind, PC, PD, SOC, etc.).
-    - The function creates the output directory if it does not exist.
-    - Results are only written if relevant data is available (e.g., non-empty results).
+    """Export optimization results from a solved Pyomo model to CSV files.
+    
+    Extracts generation dispatch, storage operation, and summary results from the
+    model and writes them to three CSV files in the specified directory. Creates
+    output directory if it doesn't exist.
+    
+    Args:
+        model: Solved Pyomo ConcreteModel instance with all variables populated.
+        case (str or int): Case identifier used in output filenames to distinguish
+            between different scenarios or runs.
+        output_dir (str, optional): Directory path for output files. Defaults to
+            './results_pyomo/'. Directory will be created if it doesn't exist.
+    
+    Returns:
+        None
+    
+    Output Files:
+        OutputGeneration_{case}.csv: Hourly dispatch results containing:
+            - Scenario, Hour, Solar PV/Wind generation and curtailment
+            - Thermal, hydro, nuclear, other renewables generation
+            - Storage net charge/discharge, imports, exports
+            - Load (demand)
+        
+        OutputStorage_{case}.csv: Hourly storage operation for each technology:
+            - Hour, Technology, Charging power (MW), Discharging power (MW)
+            - State of charge (MWh)
+        
+        OutputSummary_{case}.csv: Summary metrics including:
+            - Total costs (objective value, CAPEX, OPEX components)
+            - Installed capacities by technology
+            - Total generation by technology
+            - Demand statistics
+            - Cost breakdowns (VRE, storage, thermal CAPEX/FOM/VOM)
+    
+    Notes:
+        Uses safe_pyomo_value() to handle uninitialized variables gracefully.
+        All power values in MW, energy values in MWh.
+        Results include curtailment calculations for VRE technologies.
     """
 
     logging.info("Exporting SDOM results...")

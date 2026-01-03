@@ -16,10 +16,10 @@
     - [2.9. Imports/Exports (Optional files)](#29-importsexports-optional-files)
         - [2.9.1. Import_Cap.csv/Export_Cap.csv](#291-import_capcsvexport_capcsv)
         - [2.9.2. import_prices.csv/export_prices.csv](#292-import_pricescsvexport_pricescsv)
-- [3. Next Section - Running SDOM with a simple script](#3-next-section---running-sdom-with-a-simple-script)
+- [3. Next Section - Getting Started: Running SDOM with a Python Script](#3-next-section---getting-started-running-sdom-with-a-python-script)
 
 # 1. Input Files Folder
-All the csv files you'll use in an SDOM simulation should be in one single folder. In this case, sample files are located at the route: "sample_data\br_test_daily_b".
+All the csv files you'll use in an SDOM optimization runs should be in one single folder. In this case, sample files are located at the route: "sample_data\br_test_daily_b".
 
 This folder will be specified as a string containing the path in sdom when you do:
 
@@ -32,7 +32,7 @@ In the next section each file will be listed and the data it is supossed to be i
 
 > **⚠️ Attention:**  
 >  - Make sure all required CSV files are present in the specified folder before starting the simulation.
->  - Please keep the root names of each file. For instance, in the sample files you can change "2025" for whatever you prefer, but keeping the root name. For example, for "CapSolar_2025.csv" file you need to keep the root name as "CapSolar".
+>  - Please keep the root names of each file. For instance, in the sample files you can change "2025" for whatever you prefer, but keeping the root name. For example, for "CapSolar_2025.csv" file you need to keep the root name as "CapSolar_".
 >  - Please do not change the column names of each csv files.
 
 # 2. CSV input files
@@ -41,7 +41,7 @@ In this section the SDOM input csv files will be grouped by technology, so all t
 
 ## 2.1. formulations.csv
 
-This file specifies the modeling approach (formulation) for each major system component in the SDOM simulation. Each row assigns a formulation to a component, determining how SDOM will represent its behavior and constraints during optimization.
+This file the user selects the modeling approach (formulation) for each major system component in the SDOM optimization model. Each row assigns a formulation to a component, determining how SDOM will represent its behavior and constraints during optimization.
 
 
 **Important Notes:**
@@ -88,16 +88,25 @@ This file lists all candidate sites for solar PV and wind energy deployment. For
 
 
 ### 2.2.2 CFSolar.csv/CFWind.csv
-This file defines the hourly solar/wind capacity factors for each one of the potential sites defined in 2.1.1. THis information can be obtained using, for instance [NREL SAM simulations](https://sam.nrel.gov/download.html) or [reV](https://www.nrel.gov/gis/renewable-energy-potential).
+This file defines the hourly solar/wind capacity factors for each one of the potential sites defined in 2.1.1. This information can be obtained using, for instance [NLR SAM simulations](https://sam.nrel.gov/download.html) or [reV](https://www.nrel.gov/gis/renewable-energy-potential).
 
 **CSV file columns:**
 | Field/Column    | Description                                                                                         |Expected type |
 |-----------------|-----------------------------------------------------------------------------------------------------|--------------|
-| Hour            | Number of the hour of the year, from 1 to 8760 (You can teh number of hours you prefer).            |Int           |
+| Hour            | Number of the hour of the year, from 1 to 8760 (You can choose the number of hours you prefer)*.            |Int           |
 | Col for each id | The estimated capacity factor at each hour of the year for each site in MWh/installed MW.          |float         |
 
 
+> **\*⚠️ Attention:**  
+>  - Ensure that your input files contain a number of hours equal to or greater than the `n_hours` parameter specified when calling the `initialize_model()` function:
 
+```
+model = initialize_model(
+    data,
+    n_hours=n_steps,
+    with_resilience_constraints=with_resilience_constraints
+)
+```
 ## 2.3. Data_BalancingUnits.csv
 
 This file contains essential data for thermal generation plants or aggregated units that participate in system balancing. Each row represents a plant or group of plants, specifying their technical and economic parameters required for SDOM optimization.
@@ -200,7 +209,7 @@ This CSV input file provides key technical and economic parameters for diverse e
 
 **Cost Data Sources**
 Some sources to get cost data for storage technologies are:
- - [NREL Annual Technology Baseline (ATB)](https://atb.nrel.gov/electricity/2024/utility-scale_battery_storage)
+ - [NLR Annual Technology Baseline (ATB)](https://atb.nrel.gov/electricity/2024/utility-scale_battery_storage)
  - [PNNL “Energy Storage Cost and Performance Database v2024”](https://www.pnnl.gov/projects/esgc-cost-performance/download-reports)
 
 
@@ -245,5 +254,5 @@ These files contain
 | Imports_price/Exports_price| The estimated hourly electricity price for importing/exporting energy in USD/MWh.        |float         |
 
 
-# 3. Next Section - Running SDOM with a simple script
+# 3. Next Section - Getting Started: Running SDOM with a Python Script
 Now that you have all the input files required to run SDOM, [see here an script example to run sdom model](sdom_example_simple.md)

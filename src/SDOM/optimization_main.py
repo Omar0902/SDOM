@@ -278,7 +278,7 @@ def configure_solver(solver_config_dict:dict):
               loglevel)
     
     Returns:
-        pyomo.opt.base.solvers.SolverFactory: Configured solver instance ready to
+        Solver instance: Configured solver instance ready to
             solve optimization models.
     
     Raises:

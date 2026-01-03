@@ -262,15 +262,31 @@ def collect_results( model ):
 
 
 def configure_solver(solver_config_dict:dict):
-    """
-    Configure and return a Pyomo solver instance.
-
-    Parameters:
-    - solver_name (str): Name of the solver (e.g., 'xpress', 'highs', 'cbc', 'gurobi').
-    - solver_options (dict): Optional dictionary of solver-specific options.
-
+    """Configure and instantiate a Pyomo solver based on configuration dictionary.
+    
+    Creates a SolverFactory instance with the specified solver and applies any
+    provided options. Handles solver-specific initialization (e.g., executable
+    paths for CBC).
+    
+    Args:
+        solver_config_dict (dict): Configuration dictionary containing:
+            - 'solver_name' (str): Solver identifier (e.g., 'cbc', 'appsi_highs',
+              'xpress_direct', 'gurobi')
+            - 'executable_path' (str): Path to solver executable (required for CBC,
+              optional for others)
+            - 'options' (dict): Solver-specific options to apply (e.g., mip_rel_gap,
+              loglevel)
+    
     Returns:
-    - solver (SolverFactory): Configured Pyomo solver instance.
+        pyomo.opt.base.solvers.SolverFactory: Configured solver instance ready to
+            solve optimization models.
+    
+    Raises:
+        RuntimeError: If the specified solver is not available on the system.
+    
+    Notes:
+        CBC solver requires explicit executable_path. Other solvers use system PATH.
+        Solver availability is checked before returning the instance.
     """
 
     
@@ -292,6 +308,34 @@ def configure_solver(solver_config_dict:dict):
     return solver
 
 def get_default_solver_config_dict(solver_name="cbc", executable_path=".\\Solver\\bin\\cbc.exe"):
+    """Generate a default solver configuration dictionary with standard SDOM settings.
+    
+    Creates a pre-configured dictionary for solver initialization with recommended
+    settings for SDOM optimization problems. Includes solver options and solve
+    keywords for controlling optimization behavior.
+    
+    Args:
+        solver_name (str, optional): Solver to use. Supported values:
+            - 'cbc': COIN-OR CBC open-source MILP solver (requires executable_path)
+            - 'highs': HiGHS open-source MILP solver (uses appsi interface)
+            - 'xpress': FICO Xpress commercial solver (uses direct interface)
+            Defaults to 'cbc'.
+        executable_path (str, optional): Path to solver executable file. Required
+            for CBC solver. Defaults to '.\\Solver\\bin\\cbc.exe'.
+    
+    Returns:
+        dict: Configuration dictionary with keys:
+            - 'solver_name' (str): Solver identifier for SolverFactory
+            - 'executable_path' (str): Path to executable (CBC only)
+            - 'options' (dict): Solver options (mip_rel_gap, etc.)
+            - 'solve_keywords' (dict): Arguments for solver.solve() call (tee,
+              load_solutions, logfile, timelimit, etc.)
+    
+    Notes:
+        Default MIP relative gap is 0.002 (0.2%). Log output is written to
+        'solver_log.txt'. Solution loading and timing reports are enabled by default.
+        HiGHS uses 'appsi_highs' interface for better performance.
+    """
     solver_dict = {
         "solver_name": "appsi_" + solver_name,
         "options":{

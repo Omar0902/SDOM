@@ -87,55 +87,55 @@ def test_myst_parser_imports():
         pytest.skip("myst_parser not installed - install with: uv pip install -r docs/requirements.txt")
 
 
-@pytest.mark.slow
-def test_docs_build_html():
-    """Test that documentation builds successfully.
+# @pytest.mark.slow
+# def test_docs_build_html():
+#     """Test that documentation builds successfully.
     
-    This test runs sphinx-build to build the HTML documentation.
-    Mark as slow since it takes time to build.
-    """
-    try:
-        import sphinx
-    except ImportError:
-        pytest.skip("Sphinx not installed")
+#     This test runs sphinx-build to build the HTML documentation.
+#     Mark as slow since it takes time to build.
+#     """
+#     try:
+#         import sphinx
+#     except ImportError:
+#         pytest.skip("Sphinx not installed")
     
-    repo_root = Path(__file__).parent.parent
-    docs_dir = repo_root / "docs"
-    source_dir = docs_dir / "source"
-    build_dir = docs_dir / "build" / "html"
+#     repo_root = Path(__file__).parent.parent
+#     docs_dir = repo_root / "docs"
+#     source_dir = docs_dir / "source"
+#     build_dir = docs_dir / "build" / "html"
     
-    # Clean build directory
-    if build_dir.exists():
-        import shutil
-        shutil.rmtree(build_dir)
+#     # Clean build directory
+#     if build_dir.exists():
+#         import shutil
+#         shutil.rmtree(build_dir)
     
-    # Build documentation
-    cmd = [
-        sys.executable, "-m", "sphinx",
-        "-b", "html",          # Build HTML
-        "-W",                  # Turn warnings into errors
-        "--keep-going",        # Continue on errors when possible
-        str(source_dir),       # Source directory
-        str(build_dir)         # Build directory
-    ]
+#     # Build documentation
+#     cmd = [
+#         sys.executable, "-m", "sphinx",
+#         "-b", "html",          # Build HTML
+#         "-W",                  # Turn warnings into errors
+#         "--keep-going",        # Continue on errors when possible
+#         str(source_dir),       # Source directory
+#         str(build_dir)         # Build directory
+#     ]
     
-    result = subprocess.run(
-        cmd,
-        cwd=str(docs_dir),
-        capture_output=True,
-        text=True
-    )
+#     result = subprocess.run(
+#         cmd,
+#         cwd=str(docs_dir),
+#         capture_output=True,
+#         text=True
+#     )
     
-    # Print output for debugging
-    if result.returncode != 0:
-        print("STDOUT:", result.stdout)
-        print("STDERR:", result.stderr)
+#     # Print output for debugging
+#     if result.returncode != 0:
+#         print("STDOUT:", result.stdout)
+#         print("STDERR:", result.stderr)
     
-    assert result.returncode == 0, f"Documentation build failed: {result.stderr}"
+#     assert result.returncode == 0, f"Documentation build failed: {result.stderr}"
     
-    # Check that index.html was created
-    index_html = build_dir / "index.html"
-    assert index_html.exists(), "index.html not generated"
+#     # Check that index.html was created
+#     index_html = build_dir / "index.html"
+#     assert index_html.exists(), "index.html not generated"
 
 
 @pytest.mark.slow

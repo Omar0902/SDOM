@@ -1,4 +1,9 @@
 # Storage Deployment Optimization Model (SDOM)
+[![Tests](https://github.com/Omar0902/SDOM/workflows/Run%20Python%20Tests/badge.svg)](https://github.com/Omar0902/SDOM/actions/workflows/test.yaml)
+[![Documentation](https://github.com/Omar0902/SDOM/workflows/Build%20and%20Deploy%20Documentation/badge.svg)](https://omar0902.github.io/SDOM/)
+[![DOI](https://img.shields.io/badge/DOI-OSTI%20Code--111266-blue)](https://www.osti.gov/biblio/code-111266)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/sdom)](https://pypistats.org/packages/sdom)
+
 SDOM (Storage Deployment Optimization Model) is an open-source, high-resolution grid capacity-expansion framework developed by NREL. It’s purpose-built to optimize the deployment and operation of energy storage technologies, leveraging hourly temporal resolution and granular spatial representation of Variable Renewable Energy (VRE) sources such as solar and wind.
 
 SDOM is particularly well-suited for figure out the required capacity to meet a carbon-free generation mix target by:

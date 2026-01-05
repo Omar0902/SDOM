@@ -2,13 +2,39 @@
 
 This guide explains the internal structure of the SDOM Pyomo model for advanced users and developers.
 
-```{note}
-Include content from your `1_4_Exploring_pyomo_model.md` here.
-```
-
 ## Model Architecture
+SDOM uses [pyomo](https://pyomo.readthedocs.io/en/stable/index.html) to write the optimization model.
 
-SDOM uses **Pyomo Blocks** to organize model components. Each block contains variables, parameters, expressions, and constraints for a specific technology or system aspect.
+When you run
+
+    ```python
+    model = initialize_model(
+        data,
+        n_hours=n_steps,
+        with_resilience_constraints=with_resilience_constraints
+    )
+    ```
+
+the function `initialize_model()` returns the pyomo instance of the optimization model, which in this case is stores in the variable `model`. 
+
+SDOM leverages on pyomo blocks to separate in different blocks the variables, parameters, expressions, constraints, etc of diferent model components. In this way, in that pyomo instance, SDOM creates the following blocks:
+
+- Core optimization Blocks (Blocks that include variables, sets and parameters)
+  - thermal 
+  - pv 
+  - wind 
+  - hydro
+  - storage
+- Blocks containing only parameters (Do not include any decision variables)
+  - demand
+  - nuclear
+  - other_renewables
+- Optional blocks (These are created depending on the configuration provided by the user)
+  - imports
+  - exports
+  - resiliency
+
+Using `pprint()` function, you'll be able to explore model objects in a simple way. If you run:
 
 ```python
 from sdom import load_data, initialize_model
@@ -17,15 +43,39 @@ data = load_data('./Data/scenario/')
 model = initialize_model(data, n_hours=8760)
 
 # Access model blocks
-print(model.pv)          # Solar PV block
-print(model.wind)        # Wind block
-print(model.storage)     # Storage block
-print(model.thermal)     # Thermal block
-print(model.hydro)       # Hydropower block
-print(model.nuclear)     # Nuclear block (parameters only)
-print(model.demand)      # Demand block (parameters only)
+model.pv.pprint()          # Solar PV block
+model.wind.pprint()         # Wind block
+model.storage.pprint()      # Storage block
+model.thermal.pprint()      # Thermal block
+model.hydro..pprint()        # Hydropower block
+model.nuclear.pprint()      # Nuclear block (parameters only)
+model.demand.pprint()       # Demand block (parameters only)
 ```
+for example, if you run:
 
+    ```python
+    model.thermal.heat_rate.pprint()
+    ```
+
+You can obtain:
+
+    ```python
+    heat_rate : Size=13, Index=thermal.plants_set, Domain=Any, Default=None, Mutable=False
+    Key  : Value
+    106c :   1.0
+    147c :   1.0
+    162c :   1.0
+    163c :   1.0
+    167c :   1.0
+    170c :   1.0
+    221c :   1.0
+    223c :   1.0
+    224c :   1.0
+    235c :   1.0
+    241c :   1.0
+     83c :   1.0
+     98c :   1.0
+    ```
 ## Model Components
 
 ### Sets
@@ -239,19 +289,6 @@ def max_solar_wind_ratio_rule(model):
     return model.pv.total_installed_capacity <= 2 * model.wind.total_installed_capacity
 
 model.max_ratio_constraint = pyo.Constraint(rule=max_solar_wind_ratio_rule)
-```
-
-### Fixing Variables
-
-```python
-# Fix a variable to a specific value
-model.storage.Pcha['Li-Ion'].fix(5000)  # Fix Li-Ion charge capacity to 5000 MW
-
-# Solve with fixed variable
-results = run_solver(model, solver_config)
-
-# Unfix to allow optimization again
-model.storage.Pcha['Li-Ion'].unfix()
 ```
 
 ## Debugging Model Issues

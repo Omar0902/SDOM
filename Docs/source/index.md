@@ -2,28 +2,8 @@
 
 Welcome to the **Storage Deployment Optimization Model (SDOM)** documentation!
 
-SDOM is an open-source, high-resolution grid capacity-expansion framework developed by NREL. It's purpose-built to optimize the deployment and operation of energy storage technologies, leveraging hourly temporal resolution and granular spatial representation of Variable Renewable Energy (VRE) sources such as solar and wind.
+SDOM is an open-source, high-resolution grid capacity-expansion framework developed by the National Lab of the Rockies (NLR). It's purpose-built to optimize the deployment and operation of energy storage technologies, leveraging hourly temporal resolution and granular spatial representation of Variable Renewable Energy (VRE) sources such as solar and wind.
 
-## Quick Links
-
-::::{grid} 2
-:gutter: 3
-
-:::{grid-item-card} 📚 User Guide
-:link: user_guide/introduction
-:link-type: doc
-
-Get started with SDOM, learn about inputs, and run your first optimization
-:::
-
-:::{grid-item-card} 🔧 API Reference
-:link: api/index
-:link-type: doc
-
-Detailed documentation of all modules, classes, and functions
-:::
-
-::::
 
 ## Key Features
 
@@ -36,6 +16,16 @@ Detailed documentation of all modules, classes, and functions
 
 ## Installation
 
+### System Setup and Prerequisites 
+
+- a. You'll need to install [python](https://www.python.org/downloads/)
+  - After the installation make sure the [python enviroment variable is set](https://realpython.com/add-python-to-path/).
+- b. Also, You'll need an IDE (Integrated Development Environment), we recommend to install [MS VS code](https://code.visualstudio.com/)
+- c. We also recommend to install extensions such as:
+  - [edit CSV](https://marketplace.visualstudio.com/items?itemName=janisdd.vscode-edit-csv): To edit and interact with input csv files for SDOM directly in vs code.
+  - [vscode-pdf](https://marketplace.visualstudio.com/items?itemName=tomoki1207.pdf): to read and see pdf files directly in vscode.
+
+### Installing SDOM python package
 ```bash
 # Install uv if you haven't already
 pip install uv
@@ -59,6 +49,7 @@ uv pip install -e .
 ## Quick Start
 
 ```python
+#import sdom
 from sdom import load_data, initialize_model, run_solver, get_default_solver_config_dict
 
 # Load input data
@@ -74,12 +65,11 @@ solver_config = get_default_solver_config_dict(
 )
 
 # Solve optimization problem
-results_list, best_result, solver_result = run_solver(model, solver_config)
+best_result = run_solver(model, solver_dict)
 
-# Access results
-print(f"Total Cost: ${best_result['Total_Cost']:,.2f}")
-print(f"Wind Capacity: {best_result['Total_CapWind']:.2f} MW")
-print(f"Solar Capacity: {best_result['Total_CapPV']:.2f} MW")
+# Export results
+output_dir = "your_output_dir"
+export_results(model, case, output_dir=output_dir+"\\")
 ```
 
 ## Documentation Contents
@@ -114,12 +104,13 @@ GitHub Repository <https://github.com/Omar0902/SDOM>
 
 ## Publications and Use Cases
 
-SDOM has been used in various research studies to analyze storage deployment needs under different renewable energy scenarios. See the [publications page](https://github.com/Omar0902/SDOM#publications-and-use-cases-of-sdom) for details.
+SDOM has been used in various research studies to analyze storage deployment needs under different renewable energy scenarios. See the [publications page](sdom_publications.md) for details.
 
 ## Contributing
 
-We welcome contributions! Please see our [Contributing Guidelines](https://github.com/Omar0902/SDOM/blob/master/CONTRIBUTING.md) for details on how to:
+We welcome contributions! Please see our [Contributing Guidelines](sdom_Developers_guide.md) for details on how to:
 
+- Lear how you can set-up your enviroment to contribute to SDOM source code
 - Report bugs
 - Suggest enhancements
 - Submit pull requests

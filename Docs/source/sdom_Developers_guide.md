@@ -16,15 +16,17 @@
 
 ## Table of Contents
 - [GUIDELINES FOR DEVELOPING SDOM](#guidelines-for-developing-sdom)
-- [clone SDOM repo](#clone-sdom-repo)
+  - [General Guidelines](#general-guidelines)
+- [clone/fork SDOM repo](#clonefork-sdom-repo)
 - [Setting up your enviroment](#setting-up-your-enviroment)
     - [Install uv](#install-uv)
     - [Install your local SDOM python module and pytest](#install-your-local-sdom-python-module-and-pytest)
 - [Running tests locally](#running-tests-locally)
+- [Build the documentation locally](#build-the-documentation-locally)
 - [General Source code structure](#general-source-code-structure)
 
 
-# clone SDOM repo
+# clone/fork SDOM repo
 - Open VS code and use file -> open folder and select the folder where you want to copy the repo.
 - Clone in your local the python version of SDOM repo:
 ```powershell
@@ -70,15 +72,29 @@ Installed 9 packages in 1.60s
  + tzdata==2025.2
 ```
 
-- Also, install [pytests.py](https://docs.pytest.org/en/stable/) to be able to run the tests locally:
+- Also, install:
+  - [pytests.py](https://docs.pytest.org/en/stable/) to be able to run the tests locally:
 ```powershell
 uv pip install pytest
 ```
 
-# Running tests locally
-The SDOM python version source code have a folder called "tests". This folder contains all the scripts that contain the unit tests. 
+  - run the following codes to install all the requirements to build SDOM documentation:
+```powershell
+uv pip install -r Docs\requirements.txt
+```
 
-- **Before to push and/or do a pull request please run all the tests scripts and make sure all the tests are passing sucessfully.**
+# Running tests locally
+The SDOM python version source code have a folder called "tests". This folder contains all the scripts with the unit tests. 
+
+ **⚠️ Attention:**  
+>  - Before to push and/or do a pull request please run locally all the tests scripts and make sure all the tests are passing sucessfully.
+>  - Please add unit test for all new features and source code implementations.
+
+
+- To run all the test files:
+```powershell
+uv run pytest
+```
 
 - To run a test python script you can use:
 ```powershell
@@ -101,6 +117,26 @@ collected 2 items
 tests\test_no_resiliency_optimization_cases.py ..                                                                                                                                                                 [100%]
 
 ================================================================== 2 passed in 2.71s ===================================================================
+```
+
+# Build the documentation locally
+
+Please update the documentationd in the folder ``Docs`` for each new feature implementation you are making in a pull request. The SDOM documentation is based on [sphinx](https://www.sphinx-doc.org/en/master/usage/quickstart.html).
+
+
+ **⚠️ Attention:**  
+>  - Before to push and/or do a pull request please build locally the documentation and make sure it does not have any issues.
+>  - Please add Docstrings to all code implementations you include in your contributions.
+>  - Add proper documentation for the new features before submit a pull request.
+
+- In order to build locally the documentation and check if your changes are correct you can run:
+
+```powershell
+uv run .\Docs\make.bat html
+```
+- to visualize locally the documentation website run
+```
+start Docs\build\html\index.html
 ```
 
 # General Source code structure

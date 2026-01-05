@@ -5,13 +5,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sdom"
-version = "0.0.7"
+version = "0.0.8"
 readme = "README.md"
 
 dependencies = [
   "numpy>2.2",
   "pandas>2.2",
-  "pyomo>6.8",
+  "pyomo>6.9",
 ]
 
 authors = [

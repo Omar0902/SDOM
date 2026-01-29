@@ -80,7 +80,7 @@ uv pip install pytest
 
   - run the following codes to install all the requirements to build SDOM documentation:
 ```powershell
-uv pip install -r Docs\requirements.txt
+uv pip install -r docs\requirements.txt
 ```
 
 # Running tests locally
@@ -121,7 +121,7 @@ tests\test_no_resiliency_optimization_cases.py ..                               
 
 # Build the documentation locally
 
-Please update the documentationd in the folder ``Docs`` for each new feature implementation you are making in a pull request. The SDOM documentation is based on [sphinx](https://www.sphinx-doc.org/en/master/usage/quickstart.html).
+Please update the documentationd in the folder ``docs`` for each new feature implementation you are making in a pull request. The SDOM documentation is based on [sphinx](https://www.sphinx-doc.org/en/master/usage/quickstart.html).
 
 
  **⚠️ Attention:**  
@@ -132,11 +132,11 @@ Please update the documentationd in the folder ``Docs`` for each new feature imp
 - In order to build locally the documentation and check if your changes are correct you can run:
 
 ```powershell
-uv run .\Docs\make.bat html
+uv run .\docs\make.bat html
 ```
 - to visualize locally the documentation website run
 ```
-start Docs\build\html\index.html
+start docs\build\html\index.html
 ```
 
 # General Source code structure

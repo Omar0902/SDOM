@@ -40,7 +40,7 @@ Outputs include:
 
 An illustrative figure below shows the flow from inputs to optimization results, enabling exploration of storage needs under varying renewable integration levels.
 
-![Illustration about how SDOM works](https://github.com/Omar0902/SDOM/blob/master/Docs/source/user_guide/sdom_illustration.png)
+![Illustration about how SDOM works](https://github.com/Omar0902/SDOM/blob/master/docs/source/user_guide/sdom_illustration.png)
 
 # Key Features
 ⚙️
@@ -150,18 +150,18 @@ We recommend to use `uv`, a Python manager for virtual environments and packages
   ```
 
 ## SDOM Input Files
-For detailed information about SDOM input files, please refer to the [SDOM Input Documentation](https://github.com/Omar0902/SDOM/blob/master/Docs/source/user_guide/inputs.md).
+For detailed information about SDOM input files, please refer to the [SDOM Input Documentation](https://github.com/Omar0902/SDOM/blob/master/docs/source/user_guide/inputs.md).
 
 ## SDOM simple script example
-For an script about how to run SDOM, please refer to the [SDOM simple script example](https://github.com/Omar0902/SDOM/blob/master/Docs/source/user_guide/running_and_outputs.md).
+For an script about how to run SDOM, please refer to the [SDOM simple script example](https://github.com/Omar0902/SDOM/blob/master/docs/source/user_guide/running_and_outputs.md).
 
 # PUBLICATIONS AND USE CASES OF SDOM
 📄
-For a comprehensive list of publications and use cases, please refer to the [SDOM Publications Documentation](https://github.com/Omar0902/SDOM/blob/master/Docs/source/sdom_publications.md).
+For a comprehensive list of publications and use cases, please refer to the [SDOM Publications Documentation](https://github.com/Omar0902/SDOM/blob/master//source/sdom_publications.md).
 
 # SDOM DEMONSTRATION/EXAMPLE
 Please see an [SDOM demo script on this github repo.](https://github.com/SebastianManriqueM/pySDOM_demo)
 
 # CONTRIBUTING GUIDELINES
 💻
-[Developers Guide](https://github.com/Omar0902/SDOM/blob/master/Docs/source/sdom_Developers_guide.md) 
+[Developers Guide](https://github.com/Omar0902/SDOM/blob/master/docs/source/sdom_Developers_guide.md) 

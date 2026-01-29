@@ -1,19 +1,7 @@
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-
 [project]
 name = "sdom"
 version = "0.0.8"
 readme = "README.md"
-
-dependencies = [
-  "numpy>2.2",
-  "pandas>2.2",
-  "pyomo>6.9",
-]
-
 authors = [
     { name = "Omar Jose Guerra Fernandez", email = "OmarJose.GuerraFernandez@nrel.gov" },
     { name = "Mariya Koleva", email = "Mariya.Koleva@nrel.gov" },
@@ -25,14 +13,18 @@ maintainers = [
     { name = "Sebastian de Jesus Manrique Machado", email = "SebastiandeJesus.Machado@nrel.gov" },
     { name = "Pedro Andres Sanchez Perez", email = "pedroandres.sanchezperez@nrel.gov" },
 ]
-
 description = "A Python package for NREL open-source SDOM (Storage Deployment Optimization Model)"
-requires-python = ">=3.10"
-license = { text = "MIT" }
+license = {file = "LICENSE.txt"}
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+]
+requires-python = ">=3.11,<3.15"
+dependencies = [
+  "numpy>=2.2.0,<3.0.0",
+  "pandas>=2.2.0,<3.0.0",
+  "pyomo==6.9",
 ]
 
 
@@ -41,5 +33,96 @@ Homepage = "https://github.com/Omar0902/SDOM"
 Repository = "https://github.com/Omar0902/SDOM"
 Issues = "https://github.com/Omar0902/SDOM/issues"
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/sdom"]
+[build-system]
+requires = ["uv_build>=0.8.22,<0.10.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2,<10.0.0",
+    "pytest-coverage>=0.0,<1.0.0",
+    "ruff>=0.13.2,<0.15.0",
+    "ty>=0.0.12,<1.0.0",
+]
+docs = [
+    "autodoc-pydantic>=2.0.0,<3.0.0",
+    "docstr-coverage>=2.3.2,<3.0.0",
+    "furo>=2025.9.25,<2026.0.0",
+    "ghp-import>=2.1.0,<3.0.0",
+    "myst-parser>=3.0.0,<5.0.0",
+    "pydata-sphinx-theme>=0.16.1",
+    "sphinx>=7.2.0,<8.0.0",
+    "sphinx-autodoc-typehints>=2.3.0",
+    "sphinx-copybutton>=0.5.2,<1.0.0",
+    "sphinx-design>=0.7.0",
+    "sphinx-reports>=0.1.0,<1.0.0",
+    "sphinx-tabs>=3.4.5,<4.0.0",
+    "sphinxcontrib-mermaid>=2.0.0,<3.0.0",
+]
+
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = [
+    "--cov=sdom",
+    "--cov-report=term-missing",
+    "-v"
+]
+
+[tool.ruff]
+line-length = 110
+extend-exclude = [
+    ".venv",
+    "venv",
+    "build",
+    "dist",
+    "*.egg-info",
+]
+
+[tool.ruff.lint]
+select = [
+    "D",      # pyddoc
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "N",      # pep8-naming
+    "UP",     # pyupgrade
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "SIM",    # flake8-simplify
+    "PIE",    # flake8-pie
+    "PERF",   # perflint (performance)
+    "RUF",    # ruff-specific rules
+]
+ignore = [
+    "E501",   # Line too long (handled by formatter)
+    "B027",   # Empty method in abstract class without @abstractmethod (intentional for hooks)
+]
+
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint.per-file-ignores]
+# Ignore `D` rules everywhere except for the `src/` directory.
+"!src/**.py" = ["D", "S101"]
+
+[tool.ruff.lint.mccabe]
+# Cyclomatic complexity threshold
+max-complexity = 10
+
+# [tool.coverage.report]
+# exclude_lines = [
+#   "pragma: no cover",
+#   "def __repr__",
+#   "raise AssertionError",
+#   "raise NotImplementedError",
+#   "if __name__ == .__main__.:",
+#   "if TYPE_CHECKING:",
+#   "@abstractmethod",
+#   "@abstract",
+# ]
+# precision = 2
+# fail_under = 97

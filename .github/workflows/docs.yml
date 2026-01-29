@@ -45,18 +45,18 @@ jobs:
       run: |
         source .venv/bin/activate
         uv pip install -e .
-        uv pip install -r docs/requirements.txt
+        uv pip install -r Docs/requirements.txt
     
     - name: Build documentation
       run: |
         source .venv/bin/activate
-        cd docs
+        cd Docs
         make html
     
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
-        path: 'docs/build/html'
+        path: 'Docs/build/html'
   
   # Deploy to GitHub Pages
   deploy:

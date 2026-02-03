@@ -33,14 +33,14 @@ def test_optimization_model_res_case_no_resiliency_168h_daily_budget_highs():
 
     solver_dict = get_default_solver_config_dict(solver_name="highs", executable_path="")
     try:
-        best_result = run_solver( model, solver_dict )
-        assert best_result is not None
+        results = run_solver( model, solver_dict )
+        assert results is not None
     except Exception as e:
         pytest.fail(f"{run_solver.__name__} failed with error: {e}")
     
-    problem_info_dict = get_optimization_problem_info( best_result )
+    problem_info_dict = get_optimization_problem_info( results )
 
-    problem_sol_dict = get_optimization_problem_solution_info( best_result )
+    problem_sol_dict = get_optimization_problem_solution_info( results )
     assert problem_sol_dict["Termination condition"] == "optimal"
     print(problem_sol_dict["Total_Cost"])
     assert abs( problem_sol_dict["Total_Cost"] + 77686751.88 ) <= 10 

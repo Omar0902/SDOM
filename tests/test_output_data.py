@@ -17,10 +17,10 @@ def test_output_files_creation_case_no_resiliency():
 
     #solver_dict = get_default_solver_config_dict(solver_name="cbc", executable_path=".\\Solver\\bin\\cbc.exe")
     solver_dict = get_default_solver_config_dict(solver_name="highs", executable_path="")
-    best_result = run_solver( model, solver_dict )
+    results = run_solver( model, solver_dict )
 
     case_name = 'test_data'
-    export_results(model, case_name)
+    export_results(results, case_name)
     
     files_names = ["OutputGeneration_" + case_name, "OutputThermalGeneration_" + case_name, "OutputStorage_" + case_name, "OutputSummary_" + case_name]
     for file_name in files_names:

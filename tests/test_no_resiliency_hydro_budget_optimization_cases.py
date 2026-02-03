@@ -33,14 +33,14 @@ def test_optimization_model_res_case_no_resiliency_730h_monthly_budget_highs():
 
     solver_dict = get_default_solver_config_dict(solver_name="highs", executable_path="")
     try:
-        best_result = run_solver( model, solver_dict )
-        assert best_result is not None
+        results = run_solver( model, solver_dict )
+        assert results is not None
     except Exception as e:
         pytest.fail(f"{run_solver.__name__} failed with error: {e}")
     
-    problem_info_dict = get_optimization_problem_info( best_result )
+    problem_info_dict = get_optimization_problem_info( results )
 
-    problem_sol_dict = get_optimization_problem_solution_info( best_result )
+    problem_sol_dict = get_optimization_problem_solution_info( results )
     assert problem_sol_dict["Termination condition"] == "optimal"
 
     assert abs( problem_sol_dict["Total_Cost"] - 441627.4738187364 ) <= 10 
@@ -63,19 +63,19 @@ def test_optimization_model_res_case_no_resiliency_730h_monthly_budget_cbc():
 
     solver_dict = get_default_solver_config_dict(solver_name="cbc", executable_path=".\\Solver\\bin\\cbc.exe")
     try:
-        best_result = run_solver( model, solver_dict )
-        assert best_result is not None
+        results = run_solver( model, solver_dict )
+        assert results is not None
     except Exception as e:
         pytest.fail(f"{run_solver.__name__} failed with error: {e}")
 
-    problem_info_dict = get_optimization_problem_info( best_result )
+    problem_info_dict = get_optimization_problem_info( results )
     assert problem_info_dict["Number of constraints"] == 19388
     assert problem_info_dict["Number of variables"] == 22306
     assert problem_info_dict["Number of binary variables"] == 2920
     assert problem_info_dict["Number of objectives"] == 1
     assert problem_info_dict["Number of nonzeros"] == 8768
 
-    problem_sol_dict = get_optimization_problem_solution_info( best_result )
+    problem_sol_dict = get_optimization_problem_solution_info( results )
     assert problem_sol_dict["Termination condition"] == "optimal"
 
     assert abs( problem_sol_dict["Total_Cost"] - 441627.4738187364 ) <= 10 
@@ -115,14 +115,14 @@ def test_optimization_model_res_case_no_resiliency_168h_daily_budget_highs():
 
     solver_dict = get_default_solver_config_dict(solver_name="highs", executable_path="")
     try:
-        best_result = run_solver( model, solver_dict )
-        assert best_result is not None
+        results = run_solver( model, solver_dict )
+        assert results is not None
     except Exception as e:
         pytest.fail(f"{run_solver.__name__} failed with error: {e}")
     
-    problem_info_dict = get_optimization_problem_info( best_result )
+    problem_info_dict = get_optimization_problem_info( results )
 
-    problem_sol_dict = get_optimization_problem_solution_info( best_result )
+    problem_sol_dict = get_optimization_problem_solution_info( results )
     assert problem_sol_dict["Termination condition"] == "optimal"
     print(problem_sol_dict["Total_Cost"])
     assert abs( problem_sol_dict["Total_Cost"] - 578101.3 ) <= 10 

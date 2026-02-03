@@ -1,5 +1,8 @@
 from pyomo.environ import Constraint
 
+from sdom import OptimizationResults
+
+
 def get_n_eq_ineq_constraints(model):
     # Count constraints by type
     constraint_counts = {"equality": 0, "inequality": 0}
@@ -14,30 +17,48 @@ def get_n_eq_ineq_constraints(model):
 
     return constraint_counts
 
-def get_optimization_problem_info( best_result ):
-    
-    if best_result:
-        return {
-            "Number of constraints": best_result[2]['Problem'][0]["Number of constraints"],
-            "Number of variables": best_result[2]['Problem'][0]["Number of variables"],
-            "Number of binary variables": best_result[2]['Problem'][0]["Number of binary variables"],
-            "Number of objectives": best_result[2]['Problem'][0]["Number of objectives"],
-            "Number of nonzeros": best_result[2]['Problem'][0]["Number of nonzeros"]
-        }
+
+def get_optimization_problem_info(results: OptimizationResults) -> dict:
+    """Extract problem information from optimization results.
+
+    Parameters
+    ----------
+    results : OptimizationResults
+        The optimization results object from run_solver().
+
+    Returns
+    -------
+    dict
+        Dictionary with problem information (constraints, variables, etc.).
+    """
+    if results is not None:
+        return results.get_problem_info()
     return None
 
-def get_optimization_problem_solution_info( best_result ):
-    
-    if best_result:
+
+def get_optimization_problem_solution_info(results: OptimizationResults) -> dict:
+    """Extract solution information from optimization results.
+
+    Parameters
+    ----------
+    results : OptimizationResults
+        The optimization results object from run_solver().
+
+    Returns
+    -------
+    dict
+        Dictionary with solution information (termination condition, costs, capacities).
+    """
+    if results is not None:
         return {
-            "Termination condition": best_result[2]['Solver'][0]["Termination condition"],
-            "Total_Cost": best_result[1]["Total_Cost"],
-            "Total_CapWind": best_result[1]["Total_CapWind"],
-            "Total_CapPV": best_result[1]["Total_CapPV"],
-            "Total_CapScha": best_result[1]["Total_CapScha"],
-            "Total_CapScha_Li-Ion": best_result[1]["Total_CapScha"]["Li-Ion"],
-            "Total_CapScha_CAES": best_result[1]["Total_CapScha"]["CAES"],
-            "Total_CapScha_PHS": best_result[1]["Total_CapScha"]["PHS"],
-            "Total_CapScha_H2": best_result[1]["Total_CapScha"]["H2"]
+            "Termination condition": results.termination_condition,
+            "Total_Cost": results.total_cost,
+            "Total_CapWind": results.total_cap_wind,
+            "Total_CapPV": results.total_cap_pv,
+            "Total_CapScha": results.total_cap_storage_charge,
+            "Total_CapScha_Li-Ion": results.total_cap_storage_charge.get("Li-Ion", 0.0),
+            "Total_CapScha_CAES": results.total_cap_storage_charge.get("CAES", 0.0),
+            "Total_CapScha_PHS": results.total_cap_storage_charge.get("PHS", 0.0),
+            "Total_CapScha_H2": results.total_cap_storage_charge.get("H2", 0.0),
         }
     return None

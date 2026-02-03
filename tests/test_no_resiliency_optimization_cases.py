@@ -34,14 +34,14 @@ def test_optimization_model_res_case_no_resiliency_highs():
     #solver_dict = get_default_solver_config_dict(solver_name="cbc", executable_path=".\\Solver\\bin\\cbc.exe")
     solver_dict = get_default_solver_config_dict(solver_name="highs", executable_path="")
     try:
-        best_result = run_solver( model, solver_dict )
-        assert best_result is not None
+        results = run_solver( model, solver_dict )
+        assert results is not None
     except Exception as e:
         pytest.fail(f"{run_solver.__name__} failed with error: {e}")
     
-    problem_info_dict = get_optimization_problem_info( best_result )
+    problem_info_dict = get_optimization_problem_info( results )
 
-    problem_sol_dict = get_optimization_problem_solution_info( best_result )
+    problem_sol_dict = get_optimization_problem_solution_info( results )
     assert problem_sol_dict["Termination condition"] == "optimal"
     assert abs( problem_sol_dict["Total_Cost"] - 3285154847.471892 ) <= 10 
     assert abs( problem_sol_dict["Total_CapWind"] - 26681.257521521577 ) <= 1
@@ -63,19 +63,19 @@ def test_optimization_model_res_case_no_resiliency_cbc():
 
     solver_dict = get_default_solver_config_dict(solver_name="cbc", executable_path=".\\Solver\\bin\\cbc.exe")
     try:
-        best_result = run_solver( model, solver_dict )
-        assert best_result is not None
+        results = run_solver( model, solver_dict )
+        assert results is not None
     except Exception as e:
         pytest.fail(f"{run_solver.__name__} failed with error: {e}")
 
-    problem_info_dict = get_optimization_problem_info( best_result )
+    problem_info_dict = get_optimization_problem_info( results )
     assert problem_info_dict["Number of constraints"] == 646
     assert problem_info_dict["Number of variables"] == 628
     assert problem_info_dict["Number of binary variables"] == 96
     assert problem_info_dict["Number of objectives"] == 1
     assert problem_info_dict["Number of nonzeros"] == 282
 
-    problem_sol_dict = get_optimization_problem_solution_info( best_result )
+    problem_sol_dict = get_optimization_problem_solution_info( results )
     assert problem_sol_dict["Termination condition"] == "optimal"
     assert abs( problem_sol_dict["Total_Cost"] - 3285154847.471892 ) <= 10
     assert abs( problem_sol_dict["Total_CapWind"] - 26681.257521521577 ) <= 1

@@ -18,6 +18,8 @@ from .models.formulations_hydro import add_hydro_variables, add_hydro_run_of_riv
 from .constants import MW_TO_KW
 
 from .io_manager import get_formulation
+from .utils_performance_meassure import ModelInitProfiler
+
 # ---------------------------------------------------------------------------------
 # Model initialization
 # Safe value function for uninitialized variables/parameters
@@ -29,6 +31,11 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
     objective function, and constraints for power system optimization. It supports 
     optional resilience constraints and allows customization of the model name and 
     simulation horizon.
+    
+    Profiling is always enabled: time and memory usage are measured for each 
+    initialization step and a summary table is printed at the end. The profiler
+    is attached to the model as `model.profiler` for programmatic access.
+    
     Args:
         data (dict): Input data required for model initialization, including system 
             parameters, time series, and technology characteristics.
@@ -40,131 +47,152 @@ def initialize_model(data, n_hours = 8760, with_resilience_constraints=False, mo
             (default is "SDOM_Model").
     Returns:
         ConcreteModel: A fully initialized Pyomo ConcreteModel object ready for 
-            optimization.
+            optimization. The model includes a 'profiler' attribute containing 
+            the ModelInitProfiler instance with detailed timing and memory data.
     """
 
+    # Initialize profiler (always enabled for time and memory measurement)
+    profiler = ModelInitProfiler(track_memory=True, enabled=True)
+    profiler.start()
+
     logging.info("Instantiating SDOM Pyomo optimization model...")
-    model = ConcreteModel(name=model_name)
-
-    logging.debug("Instantiating SDOM Pyomo optimization blocks...")
-    model.hydro = Block()
-
-    model.imports = Block()
-    model.exports = Block()
-
-    model.demand = Block()
-    model.nuclear = Block()
-    model.other_renewables = Block()
-    if with_resilience_constraints:
-        model.resiliency = Block() #TODO implement this block
-    model.storage = Block()
-    model.thermal = Block()
-    model.pv = Block()
-    model.wind = Block()
-
-    logging.info("Initializing model sets...")
-    initialize_sets( model, data, n_hours = n_hours )
     
+    def create_model_and_blocks():
+        """Helper to create model and blocks as a single profiled step."""
+        m = ConcreteModel(name=model_name)
+        m.hydro = Block()
+        m.imports = Block()
+        m.exports = Block()
+        m.demand = Block()
+        m.nuclear = Block()
+        m.other_renewables = Block()
+        if with_resilience_constraints:
+            m.resiliency = Block()
+        m.storage = Block()
+        m.thermal = Block()
+        m.pv = Block()
+        m.wind = Block()
+        return m
+
+    model = profiler.measure_step("Create model & blocks", create_model_and_blocks)
+
+    # Initialize sets
+    logging.info("Initializing model sets...")
+    profiler.measure_step("Initialize sets", initialize_sets, model, data, n_hours=n_hours)
+    
+    # Initialize parameters
     logging.info("Initializing model parameters...")
-    initialize_params( model, data )    
+    profiler.measure_step("Initialize parameters", initialize_params, model, data)
 
     # ----------------------------------- Variables -----------------------------------
     logging.info("Adding variables to the model...")
-    # Define VRE (wind/solar variables
+    
+    # VRE variables
     logging.debug("-- Adding VRE variables...")
-    add_vre_variables( model )
+    profiler.measure_step("Add VRE variables", add_vre_variables, model)
 
+    # VRE expressions
     logging.debug("-- Adding VRE expressions...")
-    add_vre_expressions( model )
+    profiler.measure_step("Add VRE expressions", add_vre_expressions, model)
 
-
+    # Thermal variables
     logging.debug("-- Adding thermal generation variables...")
-    add_thermal_variables( model )
+    profiler.measure_step("Add thermal variables", add_thermal_variables, model)
 
+    # Thermal expressions
     logging.debug("-- Adding thermal generation expressions...")
-    add_thermal_expressions( model )
+    profiler.measure_step("Add thermal expressions", add_thermal_expressions, model)
 
     # Resilience variables
     if with_resilience_constraints:
         logging.debug("-- Adding resiliency variables...")
-        add_resiliency_variables( model )
+        profiler.measure_step("Add resiliency variables", add_resiliency_variables, model)
 
-    # Storage-related variables
+    # Storage variables
     logging.debug("--Adding storage variables...")
-    add_storage_variables( model )
+    profiler.measure_step("Add storage variables", add_storage_variables, model)
+
+    # Storage expressions
     logging.debug("--Adding storage expressions...")
-    add_storage_expressions( model )
+    profiler.measure_step("Add storage expressions", add_storage_expressions, model)
 
+    # Hydro variables
     logging.debug("-- Adding hydropower generation variables...")
-    add_hydro_variables(model)
+    profiler.measure_step("Add hydro variables", add_hydro_variables, model)
 
-    # Imports
+    # Imports variables
     if get_formulation(data, component="Imports") != "NotModel":
         logging.debug("-- Adding Imports variables...")
-        add_imports_variables( model )
+        profiler.measure_step("Add imports variables", add_imports_variables, model)
     
-    # Exports
+    # Exports variables
     if get_formulation(data, component="Exports") != "NotModel":
         logging.debug("-- Adding Exports variables...")
-        add_exports_variables( model )
+        profiler.measure_step("Add exports variables", add_exports_variables, model)
 
-    add_imports_exports_cost_expressions(model, data)
+    # Imports/Exports cost expressions
+    profiler.measure_step("Add imports/exports cost expressions", 
+                         add_imports_exports_cost_expressions, model, data)
 
-    add_system_expressions(model)
+    # System expressions
+    profiler.measure_step("Add system expressions", add_system_expressions, model)
+
     # -------------------------------- Objective function -------------------------------
     logging.info("Adding objective function to the model...")
-    model.Obj = Objective( rule = objective_rule, sense = minimize )
+    
+    def add_objective():
+        model.Obj = Objective(rule=objective_rule, sense=minimize)
+    
+    profiler.measure_step("Add objective function", add_objective)
 
     # ----------------------------------- Constraints -----------------------------------
     logging.info("Adding constraints to the model...")
-    #system Constraints
+    
+    # System constraints
     logging.debug("-- Adding system constraints...")
-    add_system_constraints( model, data )    
+    profiler.measure_step("Add system constraints", add_system_constraints, model, data)
 
-    #resiliency Constraints
+    # Resiliency constraints
     if with_resilience_constraints:
         logging.debug("-- Adding resiliency constraints...")
-        add_resiliency_constraints( model )
+        profiler.measure_step("Add resiliency constraints", add_resiliency_constraints, model)
   
-    #VRE balance constraints
+    # VRE balance constraints
     logging.debug("-- Adding VRE balance constraints...")
-    add_vre_balance_constraints( model )
+    profiler.measure_step("Add VRE balance constraints", add_vre_balance_constraints, model)
 
-    #Storage constraints
+    # Storage constraints
     logging.debug("-- Adding storage constraints...")
-    add_storage_constraints( model )
+    profiler.measure_step("Add storage constraints", add_storage_constraints, model)
 
+    # Thermal constraints
     logging.debug("-- Adding thermal generation constraints...")
-    add_thermal_constraints( model )
+    profiler.measure_step("Add thermal constraints", add_thermal_constraints, model)
 
+    # Hydro constraints
     logging.debug("-- Adding hydropower generation constraints...")
-    if get_formulation(data, component="hydro")  == "RunOfRiverFormulation":
-        add_hydro_run_of_river_constraints(model, data)
+    if get_formulation(data, component="hydro") == "RunOfRiverFormulation":
+        profiler.measure_step("Add hydro run-of-river constraints", 
+                             add_hydro_run_of_river_constraints, model, data)
     else:
-        add_hydro_budget_constraints(model, data)
-    
+        profiler.measure_step("Add hydro budget constraints", 
+                             add_hydro_budget_constraints, model, data)
 
-    # Imports
+    # Imports constraints
     if get_formulation(data, component="Imports") != "NotModel":
         logging.debug("-- Adding Imports constraints...")
-        add_imports_constraints( model, data )
+        profiler.measure_step("Add imports constraints", add_imports_constraints, model, data)
     
-    # Imports
+    # Exports constraints
     if get_formulation(data, component="Exports") != "NotModel":
         logging.debug("-- Adding Exports constraints...")
-        add_exports_constraints( model, data )
+        profiler.measure_step("Add exports constraints", add_exports_constraints, model, data)
 
-        #add_hydro_variables(model)
-    
-    # Build a model size report
-    # Log memory usage before solving
-    # all_objects = muppy.get_objects()
-    # logging.info("Memory usage before solving:")
-    # logging.info(summary.summarize(all_objects))
-    # Log memory usage before solving
-    # all_objects = muppy.get_objects()
-    # logging.info("Memory usage before solving:")
-    # logging.info(summary.summarize(all_objects))
+    # Finalize profiling
+    profiler.stop()
+    profiler.print_summary_table(logging.getLogger())
+    # Attach profiler to model for programmatic access
+    model.profiler = profiler
 
     return model
 

@@ -35,8 +35,8 @@ Inputs include time series data for:
 
 Outputs include:
 - The optimal technology portfolio capacity (PV solar, wind, storage types, thermal capacity) to reliably meet demand.
-- Dispatch profiles for each technology, highlighting how resources are operated hour-by-hour
-- Insights on operational metrics like VRE curtailment, storage cycling, and thermal usage
+- Dispatch profiles for each technology, highlighting how resources are operated hour-by-hour.
+- Insights on operational metrics like VRE curtailment, storage cycling, and thermal usage.
 
 An illustrative figure below shows the flow from inputs to optimization results, enabling exploration of storage needs under varying renewable integration levels.
 

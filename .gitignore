@@ -215,5 +215,6 @@ marimo/_lsp/
 __marimo__/
 
 to_do*
+package_publishing_with_uv*
 
 *test_no_resiliency_optimization_cases_xpress_local.py

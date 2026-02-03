@@ -43,19 +43,33 @@ print(hydro_form)
 ## Example: Exporting Results
 
 ```python
-from sdom import export_results
+from sdom import run_solver, export_results
 
-# After solving the model
-export_results(
-    model=model,
-    case="scenario_95pct_clean",
-    output_dir="./results_pyomo/"
-)
+# Run optimization
+results = run_solver(model, solver_config)
+
+# Export results using the OptimizationResults object
+if results.is_optimal:
+    export_results(
+        results=results,
+        case="scenario_95pct_clean",
+        output_dir="./results_pyomo/"
+    )
 
 # This creates three CSV files:
 # - OutputGeneration_scenario_95pct_clean.csv
 # - OutputStorage_scenario_95pct_clean.csv
 # - OutputSummary_scenario_95pct_clean.csv
+
+# You can also access the DataFrames directly from results:
+generation_df = results.generation_df
+storage_df = results.storage_df
+summary_df = results.summary_df
+```
+
+```{note}
+The `export_results` function now accepts an `OptimizationResults` object as the first argument.
+See {doc}`results` for details on the `OptimizationResults` class.
 ```
 
 ## Data Dictionary Structure

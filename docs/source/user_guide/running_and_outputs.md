@@ -37,15 +37,31 @@ solver_config = get_default_solver_config_dict(
     executable_path="./Solver/bin/cbc.exe"
 )
 
-# 5. Run optimization
-results_list, best_result, solver_result = run_solver(model, solver_config)
+# 5. Run optimization - returns an OptimizationResults object
+results = run_solver(model, solver_config)
 
-# 6. Export results
-export_results(model, case="scenario_1", output_dir="./results_pyomo/")
+# 6. Check results and export
+if results.is_optimal:
+    export_results(results, case="scenario_1", output_dir="./results_pyomo/")
+    
+    # 7. Access results directly from the OptimizationResults object
+    print(f"Optimization Status: {results.termination_condition}")
+    print(f"Total System Cost: ${results.total_cost:,.2f}")
+    print(f"Total Wind Capacity: {results.total_cap_wind:.2f} MW")
+    print(f"Total Solar Capacity: {results.total_cap_pv:.2f} MW")
+    
+    # Access detailed DataFrames
+    generation_df = results.generation_df
+    storage_df = results.storage_df
+    summary_df = results.summary_df
+else:
+    print(f"Optimization failed: {results.termination_condition}")
+```
 
-# 7. Access results
-print(f"Optimization Status: {solver_result.solver.termination_condition}")
-print(f"Total System Cost: ${best_result['Total_Cost']:,.2f}")
+```{tip}
+The `OptimizationResults` object provides convenient properties like `is_optimal`, 
+`total_cost`, `total_cap_wind`, `total_cap_pv`, and dictionaries for storage capacities.
+See the [Results API Reference](../api/results.md) for full documentation.
 ```
 
 ### Shorter Time Horizons

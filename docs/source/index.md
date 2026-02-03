@@ -49,8 +49,13 @@ uv pip install -e .
 ## Quick Start
 
 ```python
-#import sdom
-from sdom import load_data, initialize_model, run_solver, get_default_solver_config_dict
+from sdom import (
+    load_data, 
+    initialize_model, 
+    run_solver, 
+    get_default_solver_config_dict,
+    export_results
+)
 
 # Load input data
 data = load_data("./Data/your_scenario/")
@@ -64,12 +69,17 @@ solver_config = get_default_solver_config_dict(
     executable_path="./Solver/bin/cbc.exe"
 )
 
-# Solve optimization problem
-best_result = run_solver(model, solver_dict)
+# Solve optimization problem - returns OptimizationResults object
+results = run_solver(model, solver_config)
 
-# Export results
-output_dir = "your_output_dir"
-export_results(model, case, output_dir=output_dir+"\\")
+# Access results
+if results.is_optimal:
+    print(f"Total Cost: ${results.total_cost:,.2f}")
+    print(f"Wind Capacity: {results.total_cap_wind:.2f} MW")
+    print(f"Solar Capacity: {results.total_cap_pv:.2f} MW")
+    
+    # Export results to CSV files
+    export_results(results, case="scenario_1", output_dir="./results/")
 ```
 
 ## Documentation Contents
@@ -90,6 +100,7 @@ user_guide/exploring_model
 
 api/index
 api/core
+api/results
 api/models
 api/io_manager
 api/utilities

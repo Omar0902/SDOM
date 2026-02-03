@@ -407,6 +407,7 @@ def _export_from_model_legacy(model, case, output_dir="./results_pyomo/"):
         "Storage Charge/Discharge (MW)": [],
         "Exports (MW)": [],
         "Load (MW)": [],
+        "Net Load (MW)": [],
     }
 
     storage_results = {
@@ -431,6 +432,7 @@ def _export_from_model_legacy(model, case, output_dir="./results_pyomo/"):
         imports = safe_pyomo_value(model.imports.variable[h]) if hasattr(model.imports, "variable") else 0
         exports = safe_pyomo_value(model.exports.variable[h]) if hasattr(model.exports, "variable") else 0
         load = safe_pyomo_value(model.demand.ts_parameter[h]) if hasattr(model.demand, "ts_parameter") else 0
+        net_load = safe_pyomo_value(model.net_load[h]) if hasattr(model, "net_load") else 0
         # Only append results if all values are valid (not None)
         if None not in [solar_gen, solar_curt, wind_gen, wind_curt, gas_cc_gen, hydro, imports, exports, load]:
             gen_results["Hour"].append(h)
@@ -448,6 +450,7 @@ def _export_from_model_legacy(model, case, output_dir="./results_pyomo/"):
             gen_results["Storage Charge/Discharge (MW)"].append(power_to_storage)
             gen_results["Exports (MW)"].append(exports)
             gen_results["Load (MW)"].append(load)
+            gen_results["Net Load (MW)"].append(net_load)
         gen_results["Scenario"].append(case)
 
     # Extract storage results
@@ -682,6 +685,22 @@ def _export_from_model_legacy(model, case, output_dir="./results_pyomo/"):
         cyc[tech] = safe_pyomo_value(gen[tech] / (model.storage.Ecap[tech] + 1e-15))
 
     summary_results = concatenate_dataframes(summary_results, cyc, run=1, unit="-", metric="Equivalent number of cycles")
+
+    ## VRE Curtailment
+    pv_curtailment = safe_pyomo_value(model.pv.total_curtailment) if hasattr(model.pv, "total_curtailment") else 0.0
+    wind_curtailment = safe_pyomo_value(model.wind.total_curtailment) if hasattr(model.wind, "total_curtailment") else 0.0
+    pv_generation = safe_pyomo_value(model.pv.total_generation) if hasattr(model.pv, "total_generation") else 0.0
+    wind_generation = safe_pyomo_value(model.wind.total_generation) if hasattr(model.wind, "total_generation") else 0.0
+    
+    total_vre_curtailment_mwh = pv_curtailment + wind_curtailment
+    total_vre_availability = pv_generation + wind_generation + pv_curtailment + wind_curtailment
+    total_vre_curtailment_pct = (total_vre_curtailment_mwh / total_vre_availability * 100) if total_vre_availability > 0 else 0.0
+    
+    vre_curt_mwh = {"Solar PV": pv_curtailment, "Wind": wind_curtailment, "All": total_vre_curtailment_mwh}
+    summary_results = concatenate_dataframes(summary_results, vre_curt_mwh, run=1, unit="MWh", metric="Total VRE curtailment")
+    
+    vre_curt_pct = {"All": total_vre_curtailment_pct}
+    summary_results = concatenate_dataframes(summary_results, vre_curt_pct, run=1, unit="%", metric="VRE curtailment percentage")
 
     logging.info("Exporting csv files containing SDOM results...")
     # Save generation results to CSV

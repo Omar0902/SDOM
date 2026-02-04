@@ -92,6 +92,7 @@ user_guide/introduction
 user_guide/inputs
 user_guide/running_and_outputs
 user_guide/exploring_model
+user_guide/sdom_math_formulation
 ```
 
 ```{toctree}
@@ -110,6 +111,8 @@ api/utilities
 :maxdepth: 1
 :caption: Development
 
+sdom_Developers_guide
+sdom_publications
 GitHub Repository <https://github.com/Omar0902/SDOM>
 ```
 

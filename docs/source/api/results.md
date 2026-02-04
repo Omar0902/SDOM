@@ -1,4 +1,3 @@
-````markdown
 # Results Module
 
 The results module provides structured data classes for storing and accessing optimization results.
@@ -154,5 +153,3 @@ print(f"Binary Variables: {problem_info['Number of binary variables']}")
 | `storage_df` | pd.DataFrame | Hourly storage operation |
 | `thermal_generation_df` | pd.DataFrame | Disaggregated thermal generation |
 | `summary_df` | pd.DataFrame | Summary metrics |
-
-````

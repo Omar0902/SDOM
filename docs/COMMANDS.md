@@ -41,7 +41,7 @@ uv pip install -r docs\requirements.txt
 cd docs
 
 # Build HTML documentation using make.bat
-uv run .\Docs\make.bat html
+uv run .\make.bat html
 
 # Or use sphinx-build directly
 uv run sphinx-build -b html source build\html

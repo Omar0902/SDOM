@@ -8,6 +8,7 @@ Complete API documentation for the SDOM package.
 :maxdepth: 2
 
 core
+results
 models
 io_manager
 utilities
@@ -16,6 +17,7 @@ utilities
 ## Quick Links
 
 - {doc}`core` - Main optimization functions
+- {doc}`results` - Optimization results data structure
 - {doc}`models` - Model formulation modules  
 - {doc}`io_manager` - Data loading and export
 - {doc}`utilities` - Helper functions
@@ -36,6 +38,7 @@ The most commonly used functions are:
    export_results
    get_default_solver_config_dict
    configure_logging
+   OptimizationResults
 ```
 
 ## Package Structure
@@ -46,6 +49,7 @@ sdom/
 ├── config_sdom.py           # Logging configuration
 ├── constants.py             # Constants and mappings
 ├── optimization_main.py     # Model initialization and solving
+├── results.py               # Results data structures
 ├── io_manager.py            # Data I/O operations
 ├── initializations.py       # Sets and parameters initialization
 ├── common/

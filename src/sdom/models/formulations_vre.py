@@ -92,6 +92,7 @@ def _add_vre_expresions ( block, fcr_vre, set_hours ):
     block.total_hourly_plant_availability = Expression(set_hours, block.plants_set, rule=lambda block, h, k: block.capacity_factor[h, k] * block.max_capacity[k] * block.capacity_fraction[k])
 
     block.total_generation = Expression( rule = sum(block.generation[h] for h in set_hours) )
+    block.total_curtailment = Expression( rule = sum(block.curtailment[h] for h in set_hours) )
 
 
 def add_vre_expressions(model):

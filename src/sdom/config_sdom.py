@@ -51,7 +51,7 @@ def configure_logging(level=logging.INFO, log_file=None):
         Multiple calls will reconfigure the logging system.
     """
     handlers = [logging.StreamHandler()]
-    formatter = ColorFormatter('%(asctime)s\n\t%(levelname)s - %(message)s')
+    formatter = ColorFormatter('%(levelname)s - %(message)s')
 
     if log_file:
         handlers.append(logging.FileHandler(log_file))

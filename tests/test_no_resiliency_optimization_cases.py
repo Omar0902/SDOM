@@ -4,7 +4,7 @@ import pytest
 from sdom import load_data
 from sdom import run_solver, initialize_model, get_default_solver_config_dict
 
-from utils_tests import get_n_eq_ineq_constraints, get_optimization_problem_info, get_optimization_problem_solution_info
+from utils_tests import check_supply_balance_constraint, get_n_eq_ineq_constraints, get_optimization_problem_info, get_optimization_problem_solution_info
 from constants_test import REL_PATH_DATA_RUN_OF_RIVER_TEST
 
 def test_optimization_model_ini_case_no_resiliency_24h():
@@ -34,14 +34,14 @@ def test_optimization_model_res_case_no_resiliency_highs():
     #solver_dict = get_default_solver_config_dict(solver_name="cbc", executable_path=".\\Solver\\bin\\cbc.exe")
     solver_dict = get_default_solver_config_dict(solver_name="highs", executable_path="")
     try:
-        best_result = run_solver( model, solver_dict )
-        assert best_result is not None
+        results = run_solver( model, solver_dict )
+        assert results is not None
     except Exception as e:
         pytest.fail(f"{run_solver.__name__} failed with error: {e}")
     
-    problem_info_dict = get_optimization_problem_info( best_result )
+    problem_info_dict = get_optimization_problem_info( results )
 
-    problem_sol_dict = get_optimization_problem_solution_info( best_result )
+    problem_sol_dict = get_optimization_problem_solution_info( results )
     assert problem_sol_dict["Termination condition"] == "optimal"
     assert abs( problem_sol_dict["Total_Cost"] - 3285154847.471892 ) <= 10 
     assert abs( problem_sol_dict["Total_CapWind"] - 26681.257521521577 ) <= 1
@@ -50,6 +50,13 @@ def test_optimization_model_res_case_no_resiliency_highs():
     assert abs( problem_sol_dict["Total_CapScha_CAES"] -1340.7415 ) <= 1
     assert abs( problem_sol_dict["Total_CapScha_PHS"] - 0.0 ) <= 1
     assert abs( problem_sol_dict["Total_CapScha_H2"] - 0.0 ) <= 1
+
+    # Check supply balance constraint
+    supply_balance_check = check_supply_balance_constraint(results)
+    assert supply_balance_check["is_satisfied"], f"Supply balance violated at hours: {supply_balance_check['violations']}"
+    assert supply_balance_check["has_imports"] == False, "Imports should not be present in this test case"
+    assert supply_balance_check["has_exports"] == False, "Exports should not be present in this test case"
+
 
 
 def test_optimization_model_res_case_no_resiliency_cbc():
@@ -63,19 +70,19 @@ def test_optimization_model_res_case_no_resiliency_cbc():
 
     solver_dict = get_default_solver_config_dict(solver_name="cbc", executable_path=".\\Solver\\bin\\cbc.exe")
     try:
-        best_result = run_solver( model, solver_dict )
-        assert best_result is not None
+        results = run_solver( model, solver_dict )
+        assert results is not None
     except Exception as e:
         pytest.fail(f"{run_solver.__name__} failed with error: {e}")
 
-    problem_info_dict = get_optimization_problem_info( best_result )
+    problem_info_dict = get_optimization_problem_info( results )
     assert problem_info_dict["Number of constraints"] == 646
     assert problem_info_dict["Number of variables"] == 628
     assert problem_info_dict["Number of binary variables"] == 96
     assert problem_info_dict["Number of objectives"] == 1
     assert problem_info_dict["Number of nonzeros"] == 282
 
-    problem_sol_dict = get_optimization_problem_solution_info( best_result )
+    problem_sol_dict = get_optimization_problem_solution_info( results )
     assert problem_sol_dict["Termination condition"] == "optimal"
     assert abs( problem_sol_dict["Total_Cost"] - 3285154847.471892 ) <= 10
     assert abs( problem_sol_dict["Total_CapWind"] - 26681.257521521577 ) <= 1
@@ -84,3 +91,10 @@ def test_optimization_model_res_case_no_resiliency_cbc():
     assert abs( problem_sol_dict["Total_CapScha_CAES"] -1340.7415 ) <= 1
     assert abs( problem_sol_dict["Total_CapScha_PHS"] - 0.0 ) <= 1
     assert abs( problem_sol_dict["Total_CapScha_H2"] - 0.0 ) <= 1
+
+    # Check supply balance constraint
+    supply_balance_check = check_supply_balance_constraint(results)
+    assert supply_balance_check["is_satisfied"], f"Supply balance violated at hours: {supply_balance_check['violations']}"
+    assert supply_balance_check["has_imports"] == False, "Imports should not be present in this test case"
+    assert supply_balance_check["has_exports"] == False, "Exports should not be present in this test case"
+

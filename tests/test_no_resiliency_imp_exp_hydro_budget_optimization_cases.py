@@ -4,7 +4,7 @@ import pytest
 from sdom import load_data
 from sdom import run_solver, initialize_model, get_default_solver_config_dict
 
-from utils_tests import get_n_eq_ineq_constraints, get_optimization_problem_info, get_optimization_problem_solution_info
+from utils_tests import check_budget_constraint,check_supply_balance_constraint, get_n_eq_ineq_constraints, get_optimization_problem_info, get_optimization_problem_solution_info
 from constants_test import REL_PATH_DATA_DAILY_HYDRO_BUDGET_IMP_EXP_TEST
 
 def test_optimization_model_ini_case_no_resiliency_168h_daily_budget():
@@ -33,14 +33,23 @@ def test_optimization_model_res_case_no_resiliency_168h_daily_budget_highs():
 
     solver_dict = get_default_solver_config_dict(solver_name="highs", executable_path="")
     try:
-        best_result = run_solver( model, solver_dict )
-        assert best_result is not None
+        results = run_solver( model, solver_dict )
+        assert results is not None
     except Exception as e:
         pytest.fail(f"{run_solver.__name__} failed with error: {e}")
     
-    problem_info_dict = get_optimization_problem_info( best_result )
+    supply_balance_check = check_supply_balance_constraint(results)
+    assert supply_balance_check["is_satisfied"], f"Supply balance violated at hours: {supply_balance_check['violations']}"
+    assert supply_balance_check["has_exports"] == True, "Exports should be present in this test case"
 
-    problem_sol_dict = get_optimization_problem_solution_info( best_result )
+    # Check hydro budget constraint (monthly budget = 730 hours)
+    budget_check = check_budget_constraint(model, block_name="hydro")
+    assert budget_check["is_satisfied"], f"Hydro budget violated at periods: {budget_check['violations']}"
+    assert budget_check["n_budget_periods"] == 7, f"Expected 7 daily budget period, got {budget_check['n_budget_periods']}"
+    
+    problem_info_dict = get_optimization_problem_info( results )
+
+    problem_sol_dict = get_optimization_problem_solution_info( results )
     assert problem_sol_dict["Termination condition"] == "optimal"
     print(problem_sol_dict["Total_Cost"])
     assert abs( problem_sol_dict["Total_Cost"] + 77686751.88 ) <= 10 

@@ -69,25 +69,47 @@ def add_system_expressions(model):
 ####################################################################################|
 # Energy supply demand
 
-def supply_balance_rule(model, h):
-    return (
-        model.demand.ts_parameter[h] + sum(model.storage.PC[h, j] for j in model.storage.j) - sum(model.storage.PD[h, j] for j in model.storage.j)
-        - model.nuclear.alpha * model.nuclear.ts_parameter[h] - model.hydro.generation[h] - model.other_renewables.alpha * model.other_renewables.ts_parameter[h]
-        - model.pv.generation[h] - model.wind.generation[h]
-        - sum(model.thermal.generation[h, bu] for bu in model.thermal.plants_set)
-        == 0
-    )
+def create_supply_balance_rule(has_imports, has_exports):
+    """
+    Creates a supply balance rule function based on whether imports and exports are enabled.
 
-def imp_exp_supply_balance_rule(model, h):
-    return (
-        model.demand.ts_parameter[h] + sum(model.storage.PC[h, j] for j in model.storage.j) - sum(model.storage.PD[h, j] for j in model.storage.j)
-        - model.nuclear.alpha * model.nuclear.ts_parameter[h] - model.hydro.generation[h] - model.other_renewables.alpha * model.other_renewables.ts_parameter[h]
-        - model.pv.generation[h] - model.wind.generation[h]
-        - sum(model.thermal.generation[h, bu] for bu in model.thermal.plants_set)
-        - model.imports.variable[h]
-        + model.exports.variable[h]
-        == 0
-    )
+    Parameters
+    ----------
+    has_imports : bool
+        Whether imports are included in the model.
+    has_exports : bool
+        Whether exports are included in the model.
+
+    Returns
+    -------
+    function
+        A Pyomo constraint rule function for supply balance.
+    """
+    def supply_balance_rule(model, h):
+        # Base supply balance expression
+        balance = (
+            model.demand.ts_parameter[h]
+            + sum(model.storage.PC[h, j] for j in model.storage.j)
+            - sum(model.storage.PD[h, j] for j in model.storage.j)
+            - model.nuclear.alpha * model.nuclear.ts_parameter[h]
+            - model.hydro.generation[h]
+            - model.other_renewables.alpha * model.other_renewables.ts_parameter[h]
+            - model.pv.generation[h]
+            - model.wind.generation[h]
+            - sum(model.thermal.generation[h, bu] for bu in model.thermal.plants_set)
+        )
+
+        # Conditionally add imports (imports reduce the need for other generation)
+        if has_imports:
+            balance = balance - model.imports.variable[h]
+
+        # Conditionally add exports (exports increase the need for generation)
+        if has_exports:
+            balance = balance + model.exports.variable[h]
+
+        return balance == 0
+
+    return supply_balance_rule
 
 # Generation mix target
 # Limit on generation from NG
@@ -98,19 +120,25 @@ def genmix_share_rule(model):
 def add_system_constraints(model, data):
     """
     Adds system constraints to the optimization model.
-    
-    Parameters:
-    model: The optimization model to which system constraints will be added.
-    
-    Returns:
+
+    Parameters
+    ----------
+    model : pyomo.core.base.PyomoModel.ConcreteModel
+        The optimization model to which system constraints will be added.
+    data : dict
+        Dictionary containing formulation configuration data.
+
+    Returns
+    -------
     None
     """
-    if (get_formulation(data, component="Exports") != "NotModel") & (get_formulation(data, component="Imports") != "NotModel"):
-        # Supply balance constraint
-        model.SupplyBalance = Constraint(model.h, rule=imp_exp_supply_balance_rule)
-    else:
-        model.SupplyBalance = Constraint(model.h, rule=supply_balance_rule)
-        
-    
+    # Check which components are enabled
+    has_imports = get_formulation(data, component="Imports") != "NotModel"
+    has_exports = get_formulation(data, component="Exports") != "NotModel"
+
+    # Create and add supply balance constraint with appropriate terms
+    supply_balance_rule = create_supply_balance_rule(has_imports, has_exports)
+    model.SupplyBalance = Constraint(model.h, rule=supply_balance_rule)
+
     # Generation mix share constraint
     model.GenMix_Share = Constraint(rule=genmix_share_rule)

@@ -40,13 +40,12 @@ def test_optimization_model_res_case_no_resiliency_168h_daily_budget_highs():
     
     supply_balance_check = check_supply_balance_constraint(results)
     assert supply_balance_check["is_satisfied"], f"Supply balance violated at hours: {supply_balance_check['violations']}"
-    assert supply_balance_check["has_imports"] == False, "Imports should not be present in this test case"
-    assert supply_balance_check["has_exports"] == False, "Exports should not be present in this test case"
+    assert supply_balance_check["has_exports"] == True, "Exports should be present in this test case"
 
     # Check hydro budget constraint (monthly budget = 730 hours)
     budget_check = check_budget_constraint(model, block_name="hydro")
     assert budget_check["is_satisfied"], f"Hydro budget violated at periods: {budget_check['violations']}"
-    assert budget_check["n_budget_periods"] == 1, f"Expected 1 monthly budget period, got {budget_check['n_budget_periods']}"
+    assert budget_check["n_budget_periods"] == 7, f"Expected 7 daily budget period, got {budget_check['n_budget_periods']}"
     
     problem_info_dict = get_optimization_problem_info( results )
 

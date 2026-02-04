@@ -293,9 +293,9 @@ def collect_results_from_model(model, solver_result, case_name: str = "run") -> 
         "Thermal": safe_pyomo_value(model.thermal.total_generation),
         "Solar PV": safe_pyomo_value(model.pv.total_generation),
         "Wind": safe_pyomo_value(model.wind.total_generation),
-        "Other renewables": safe_pyomo_value(sum(model.other_renewables.ts_parameter[h] for h in model.h)),
-        "Hydro": safe_pyomo_value(sum(model.hydro.generation[h] for h in model.h)),
-        "Nuclear": safe_pyomo_value(sum(model.nuclear.ts_parameter[h] for h in model.h)),
+        "Other renewables": safe_pyomo_value(sum(model.other_renewables.ts_parameter[h] for h in model.h)) * safe_pyomo_value(model.other_renewables.alpha),
+        "Hydro": safe_pyomo_value(sum(model.hydro.generation[h] for h in model.h)) * safe_pyomo_value(model.hydro.alpha),
+        "Nuclear": safe_pyomo_value(sum(model.nuclear.ts_parameter[h] for h in model.h)) * safe_pyomo_value(model.nuclear.alpha),
     }
 
     # Storage discharge totals

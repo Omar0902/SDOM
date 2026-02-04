@@ -138,7 +138,7 @@ def test_myst_parser_imports():
 #     assert index_html.exists(), "index.html not generated"
 
 
-@pytest.mark.slow
+#@pytest.mark.slow
 def test_docs_build_with_make():
     """Test that documentation builds with make/make.bat.
     

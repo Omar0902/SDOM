@@ -4,7 +4,7 @@ import pytest
 from sdom import load_data
 from sdom import run_solver, initialize_model, get_default_solver_config_dict
 
-from utils_tests import get_n_eq_ineq_constraints, get_optimization_problem_info, get_optimization_problem_solution_info
+from utils_tests import get_n_eq_ineq_constraints, get_optimization_problem_info, get_optimization_problem_solution_info, check_supply_balance_constraint, check_budget_constraint
 from constants_test import REL_PATH_DATA_HYDRO_BUDGET_TEST, REL_PATH_DATA_DAILY_HYDRO_BUDGET_TEST
 
 def test_optimization_model_ini_case_no_resiliency_730h_monthly_budget():
@@ -50,6 +50,17 @@ def test_optimization_model_res_case_no_resiliency_730h_monthly_budget_highs():
     assert abs( problem_sol_dict["Total_CapScha_CAES"] - 0.0 ) <= 1
     assert abs( problem_sol_dict["Total_CapScha_PHS"] - 0.0 ) <= 1
     assert abs( problem_sol_dict["Total_CapScha_H2"] - 0.0 ) <= 1
+
+    # Check supply balance constraint
+    supply_balance_check = check_supply_balance_constraint(results)
+    assert supply_balance_check["is_satisfied"], f"Supply balance violated at hours: {supply_balance_check['violations']}"
+    assert supply_balance_check["has_imports"] == False, "Imports should not be present in this test case"
+    assert supply_balance_check["has_exports"] == False, "Exports should not be present in this test case"
+
+    # Check hydro budget constraint (monthly budget = 730 hours)
+    budget_check = check_budget_constraint(model, block_name="hydro")
+    assert budget_check["is_satisfied"], f"Hydro budget violated at periods: {budget_check['violations']}"
+    assert budget_check["n_budget_periods"] == 1, f"Expected 1 monthly budget period, got {budget_check['n_budget_periods']}"
 
 
 def test_optimization_model_res_case_no_resiliency_730h_monthly_budget_cbc():
@@ -132,3 +143,15 @@ def test_optimization_model_res_case_no_resiliency_168h_daily_budget_highs():
     assert abs( problem_sol_dict["Total_CapScha_CAES"] - 0.0 ) <= 1
     assert abs( problem_sol_dict["Total_CapScha_PHS"] - 0.0 ) <= 1
     assert abs( problem_sol_dict["Total_CapScha_H2"] - 0.0 ) <= 1
+
+    # Check supply balance constraint
+    supply_balance_check = check_supply_balance_constraint(results)
+    assert supply_balance_check["is_satisfied"], f"Supply balance violated at hours: {supply_balance_check['violations']}"
+    assert supply_balance_check["has_imports"] == False, "Imports should not be present in this test case"
+    assert supply_balance_check["has_exports"] == False, "Exports should not be present in this test case"
+
+    # Check hydro budget constraint (daily budget = 24 hours, 168/24 = 7 periods)
+    budget_check = check_budget_constraint(model, block_name="hydro")
+    assert budget_check["is_satisfied"], f"Hydro budget violated at periods: {budget_check['violations']}"
+    assert budget_check["n_budget_periods"] == 7, f"Expected 7 daily budget periods, got {budget_check['n_budget_periods']}"
+    assert budget_check["budget_scalar"] == 24, f"Expected daily budget scalar of 24 hours, got {budget_check['budget_scalar']}"

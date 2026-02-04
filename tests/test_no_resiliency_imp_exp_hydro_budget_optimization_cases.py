@@ -4,7 +4,7 @@ import pytest
 from sdom import load_data
 from sdom import run_solver, initialize_model, get_default_solver_config_dict
 
-from utils_tests import get_n_eq_ineq_constraints, get_optimization_problem_info, get_optimization_problem_solution_info
+from utils_tests import check_budget_constraint,check_supply_balance_constraint, get_n_eq_ineq_constraints, get_optimization_problem_info, get_optimization_problem_solution_info
 from constants_test import REL_PATH_DATA_DAILY_HYDRO_BUDGET_IMP_EXP_TEST
 
 def test_optimization_model_ini_case_no_resiliency_168h_daily_budget():
@@ -37,6 +37,16 @@ def test_optimization_model_res_case_no_resiliency_168h_daily_budget_highs():
         assert results is not None
     except Exception as e:
         pytest.fail(f"{run_solver.__name__} failed with error: {e}")
+    
+    supply_balance_check = check_supply_balance_constraint(results)
+    assert supply_balance_check["is_satisfied"], f"Supply balance violated at hours: {supply_balance_check['violations']}"
+    assert supply_balance_check["has_imports"] == False, "Imports should not be present in this test case"
+    assert supply_balance_check["has_exports"] == False, "Exports should not be present in this test case"
+
+    # Check hydro budget constraint (monthly budget = 730 hours)
+    budget_check = check_budget_constraint(model, block_name="hydro")
+    assert budget_check["is_satisfied"], f"Hydro budget violated at periods: {budget_check['violations']}"
+    assert budget_check["n_budget_periods"] == 1, f"Expected 1 monthly budget period, got {budget_check['n_budget_periods']}"
     
     problem_info_dict = get_optimization_problem_info( results )
 

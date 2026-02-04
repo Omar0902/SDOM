@@ -4,7 +4,7 @@ import pytest
 from sdom import load_data
 from sdom import run_solver, initialize_model, get_default_solver_config_dict
 
-from utils_tests import get_n_eq_ineq_constraints, get_optimization_problem_info, get_optimization_problem_solution_info
+from utils_tests import check_supply_balance_constraint, get_n_eq_ineq_constraints, get_optimization_problem_info, get_optimization_problem_solution_info
 from constants_test import REL_PATH_DATA_RUN_OF_RIVER_TEST
 
 def test_optimization_model_ini_case_no_resiliency_24h():
@@ -51,6 +51,13 @@ def test_optimization_model_res_case_no_resiliency_highs():
     assert abs( problem_sol_dict["Total_CapScha_PHS"] - 0.0 ) <= 1
     assert abs( problem_sol_dict["Total_CapScha_H2"] - 0.0 ) <= 1
 
+    # Check supply balance constraint
+    supply_balance_check = check_supply_balance_constraint(results)
+    assert supply_balance_check["is_satisfied"], f"Supply balance violated at hours: {supply_balance_check['violations']}"
+    assert supply_balance_check["has_imports"] == False, "Imports should not be present in this test case"
+    assert supply_balance_check["has_exports"] == False, "Exports should not be present in this test case"
+
+
 
 def test_optimization_model_res_case_no_resiliency_cbc():
 
@@ -84,3 +91,10 @@ def test_optimization_model_res_case_no_resiliency_cbc():
     assert abs( problem_sol_dict["Total_CapScha_CAES"] -1340.7415 ) <= 1
     assert abs( problem_sol_dict["Total_CapScha_PHS"] - 0.0 ) <= 1
     assert abs( problem_sol_dict["Total_CapScha_H2"] - 0.0 ) <= 1
+
+    # Check supply balance constraint
+    supply_balance_check = check_supply_balance_constraint(results)
+    assert supply_balance_check["is_satisfied"], f"Supply balance violated at hours: {supply_balance_check['violations']}"
+    assert supply_balance_check["has_imports"] == False, "Imports should not be present in this test case"
+    assert supply_balance_check["has_exports"] == False, "Exports should not be present in this test case"
+

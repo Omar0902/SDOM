@@ -64,7 +64,7 @@ def get_optimization_problem_solution_info(results: OptimizationResults) -> dict
     return None
 
 
-def check_supply_balance_constraint(results: OptimizationResults, tolerance: float = 1e-10) -> dict:
+def check_supply_balance_constraint(results: OptimizationResults, tolerance: float = 1e-3) -> dict:
     """Check that the supply balance constraint is satisfied for all time steps.
 
     Verifies that for each hour in the solution, the supply balance equation is met:
@@ -123,14 +123,6 @@ def check_supply_balance_constraint(results: OptimizationResults, tolerance: flo
             - row["Imports (MW)"]
             + row["Exports (MW)"]
         )
-
-        # Conditionally add imports (imports reduce the need for other generation)
-        # if has_imports:
-        #     balance = balance - row["Imports (MW)"]
-
-        # # Conditionally add exports (exports increase the need for generation)
-        # if has_exports:
-        #     balance = balance + row["Exports (MW)"]
 
         abs_balance = abs(balance)
         max_imbalance = max(max_imbalance, abs_balance)

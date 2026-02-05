@@ -335,18 +335,22 @@ Z^{trade} = \sum_{h \in \mathcal{H}} \bigl(
 > Curtailment does not appear in the energy balance. It is handled per-technology by the
 > VRE balance constraints below.
 
-#### Clean-energy generation target
+#### Carbon-free generation target
 
-Total balancing-unit generation must not exceed $(1 - \tau)$ of adjusted demand (demand plus
-net storage loading):
+Total balancing-unit generation plus imports must not exceed $(1 - \tau)$ of adjusted demand (demand plus
+net storage loading). This ensures that both thermal generation and imported electricity count against the clean-energy target:
 
 ```math
-\sum_{k \in \mathcal{K}} \sum_{h \in \mathcal{H}} G^{bal}_{kh}
+\sum_{k \in \mathcal{K}} \sum_{h \in \mathcal{H}} G^{bal}_{kh} + \sum_{h \in \mathcal{H}} M_h
 \;\leq\;
 (1 - \tau) \sum_{h \in \mathcal{H}} \Bigl(
   d_h + \sum_{j \in \mathcal{J}} D^{ch}_{jh} - \sum_{j \in \mathcal{J}} D^{dis}_{jh}
 \Bigr)
 ```
+
+> **Note:** Imports are treated as non-clean energy in this constraint. If imports are not
+> modeled (i.e., the Imports formulation is set to "NotModel"), only thermal generation
+> is constrained.
 
 **Symbols used in system constraints:**
 

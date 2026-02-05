@@ -112,10 +112,48 @@ def create_supply_balance_rule(has_imports, has_exports):
     return supply_balance_rule
 
 # Generation mix target
-# Limit on generation from NG
+# Limit on generation from thermal generation and imports
 def genmix_share_rule(model):
-    return model.thermal.total_generation <= (1 - model.GenMix_Target)*sum(model.demand.ts_parameter[h] + sum(model.storage.PC[h, j] for j in model.storage.j)
-                        - sum(model.storage.PD[h, j] for j in model.storage.j) for h in model.h)
+    """
+    Defines the carbon-free generation target constraint.
+
+    This constraint ensures that total thermal (balancing unit) generation plus imports
+    does not exceed (1 - GenMix_Target) of the adjusted demand. The adjusted demand
+    accounts for net storage loading (charging minus discharging).
+
+    The constraint is:
+        thermal_generation + imports <= (1 - tau) * (demand + storage_charging - storage_discharging)
+
+    Where tau (GenMix_Target) represents the minimum clean-energy generation share.
+    Imports are treated as non-clean energy in this constraint.
+
+    Parameters
+    ----------
+    model : pyomo.core.base.PyomoModel.ConcreteModel
+        The optimization model containing thermal generation, imports, demand,
+        storage variables, and GenMix_Target parameter.
+
+    Returns
+    -------
+    pyomo.core.expr.relational_expr.InequalityExpression
+        The constraint expression for the generation mix target.
+
+    Notes
+    -----
+    - If imports are not modeled (Imports formulation is "NotModel"), 
+      only thermal generation is constrained.
+    - The constraint uses hasattr() to check if imports are available,
+      making it robust to different model configurations.
+    """
+    return ( model.thermal.total_generation + 
+        sum(
+        model.imports.variable[h] if hasattr(model.imports, 'variable') else 0 for h in model.h
+        ) 
+        ) <= (1 - model.GenMix_Target) * sum(
+        model.demand.ts_parameter[h] + 
+        sum(model.storage.PC[h, j] for j in model.storage.j)- 
+        sum(model.storage.PD[h, j] for j in model.storage.j) for h in model.h
+        )
 
 def add_system_constraints(model, data):
     """

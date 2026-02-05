@@ -15,6 +15,7 @@
    
       ~OptimizationResults.__init__
       ~OptimizationResults.get_generation_dataframe
+      ~OptimizationResults.get_installed_plants_dataframe
       ~OptimizationResults.get_problem_info
       ~OptimizationResults.get_storage_dataframe
       ~OptimizationResults.get_summary_dataframe
@@ -45,6 +46,7 @@
       ~OptimizationResults.generation_df
       ~OptimizationResults.storage_df
       ~OptimizationResults.thermal_generation_df
+      ~OptimizationResults.installed_plants_df
       ~OptimizationResults.summary_df
       ~OptimizationResults.problem_info
       ~OptimizationResults.capacity

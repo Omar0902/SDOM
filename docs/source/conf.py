@@ -16,8 +16,8 @@ sys.path.insert(0, os.path.abspath('../../src'))
 project = 'SDOM'
 copyright = '2026, NREL SDOM Team'
 author = 'Omar Jose Guerra Fernandez, Mariya Koleva, Sebastian de Jesus Manrique Machado'
-release = '0.0.7'
-version = '0.0.7'
+release = '0.0.11'
+version = '0.0.11'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

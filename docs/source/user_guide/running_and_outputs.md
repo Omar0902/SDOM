@@ -120,7 +120,8 @@ In the path specified by "output_dir", sdom will writhe the following output csv
 | OutputGeneration_CASENAME.csv      | Hourly generation results aggregated by technology, curtailment, imports/exports and Load.      |
 | OutputStorage_CASENAME.csv         | Hourly storage operation results (charging/discharging and SOC). |
 | OutputSummary_CASENAME.csv         | Summary of key simulation results and statistics.        |
-| OutputThermalGeneration_CASENAME.csv | Hourly results for thermal generation plants.             |
+| OutputThermalGeneration_CASENAME.csv | Hourly results for thermal generation plants.           |
+| OutputInstalledPowerPlants_CASENAME.csv | Installed capacity for each individual power plant (Solar PV, Wind, Thermal). |
 
 ## Troubleshooting
 ### Solver Performance

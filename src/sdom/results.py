@@ -35,6 +35,8 @@ class OptimizationResults:
         Hourly storage operation results (charge, discharge, SOC).
     thermal_generation_df : pd.DataFrame
         Disaggregated hourly thermal generation by plant.
+    installed_plants_df : pd.DataFrame
+        Installed capacity for each individual power plant (solar, wind, thermal).
     summary_df : pd.DataFrame
         Summary metrics including capacities, costs, and totals.
     problem_info : dict
@@ -61,6 +63,7 @@ class OptimizationResults:
     generation_df: pd.DataFrame = field(default_factory=pd.DataFrame)
     storage_df: pd.DataFrame = field(default_factory=pd.DataFrame)
     thermal_generation_df: pd.DataFrame = field(default_factory=pd.DataFrame)
+    installed_plants_df: pd.DataFrame = field(default_factory=pd.DataFrame)
     summary_df: pd.DataFrame = field(default_factory=pd.DataFrame)
 
     # Problem info from solver
@@ -180,6 +183,17 @@ class OptimizationResults:
             DataFrame with columns: Metric, Technology, Run, Optimal Value, Unit.
         """
         return self.summary_df.copy()
+
+    def get_installed_plants_dataframe(self) -> pd.DataFrame:
+        """Get the installed power plants capacity DataFrame.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame with columns: Plant ID, Technology, Installed Capacity (MW),
+            Max Capacity (MW), Capacity Fraction.
+        """
+        return self.installed_plants_df.copy()
 
     # ----------------------------------------------------------------------------------
     # Problem info accessors
@@ -483,6 +497,55 @@ def collect_results_from_model(model, solver_result, case_name: str = "run") -> 
                 thermal_data[str(plant)].append(safe_pyomo_value(model.thermal.generation[h, plant]))
 
         results.thermal_generation_df = pd.DataFrame(thermal_data)
+
+    # ----------------------------------------------------------------------------------
+    # Build installed power plants DataFrame
+    # ----------------------------------------------------------------------------------
+    logging.debug("Building installed power plants DataFrame...")
+
+    installed_plants_data = {
+        "Plant ID": [],
+        "Technology": [],
+        "Installed Capacity (MW)": [],
+        "Max Capacity (MW)": [],
+        "Capacity Fraction": [],
+    }
+
+    # Solar PV plants
+    for plant in model.pv.plants_set:
+        installed_cap = safe_pyomo_value(model.pv.plant_installed_capacity[plant])
+        max_cap = safe_pyomo_value(model.pv.max_capacity[plant])
+        cap_fraction = safe_pyomo_value(model.pv.capacity_fraction[plant])
+        installed_plants_data["Plant ID"].append(str(plant))
+        installed_plants_data["Technology"].append("Solar PV")
+        installed_plants_data["Installed Capacity (MW)"].append(installed_cap)
+        installed_plants_data["Max Capacity (MW)"].append(max_cap)
+        installed_plants_data["Capacity Fraction"].append(cap_fraction)
+
+    # Wind plants
+    for plant in model.wind.plants_set:
+        installed_cap = safe_pyomo_value(model.wind.plant_installed_capacity[plant])
+        max_cap = safe_pyomo_value(model.wind.max_capacity[plant])
+        cap_fraction = safe_pyomo_value(model.wind.capacity_fraction[plant])
+        installed_plants_data["Plant ID"].append(str(plant))
+        installed_plants_data["Technology"].append("Wind")
+        installed_plants_data["Installed Capacity (MW)"].append(installed_cap)
+        installed_plants_data["Max Capacity (MW)"].append(max_cap)
+        installed_plants_data["Capacity Fraction"].append(cap_fraction)
+
+    # Thermal plants
+    for plant in model.thermal.plants_set:
+        installed_cap = safe_pyomo_value(model.thermal.plant_installed_capacity[plant])
+        max_cap = safe_pyomo_value(model.thermal.data["MaxCapacity", plant])
+        # For thermal, capacity fraction is installed/max (there's no explicit fraction variable)
+        cap_fraction = installed_cap / max_cap if max_cap > 0 else 0.0
+        installed_plants_data["Plant ID"].append(str(plant))
+        installed_plants_data["Technology"].append("Thermal")
+        installed_plants_data["Installed Capacity (MW)"].append(installed_cap)
+        installed_plants_data["Max Capacity (MW)"].append(max_cap)
+        installed_plants_data["Capacity Fraction"].append(cap_fraction)
+
+    results.installed_plants_df = pd.DataFrame(installed_plants_data)
 
     # ----------------------------------------------------------------------------------
     # Build summary DataFrame

@@ -372,6 +372,12 @@ def _export_from_results_object(results, case: str, output_dir: str):
     if not thermal_df.empty:
         thermal_df.to_csv(os.path.join(output_dir, f"OutputThermalGeneration_{case}.csv"), index=False)
 
+    # Save installed power plants results to CSV
+    logging.debug("-- Saving installed power plants results to CSV...")
+    installed_plants_df = results.get_installed_plants_dataframe()
+    if not installed_plants_df.empty:
+        installed_plants_df.to_csv(os.path.join(output_dir, f"OutputInstalledPowerPlants_{case}.csv"), index=False)
+
 
 def _export_from_model_legacy(model, case, output_dir="./results_pyomo/"):
     """Legacy export function that works directly with a model object.

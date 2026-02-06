@@ -1,0 +1,848 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>sdom.initializations &#8212; SDOM v0.0.11</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=0c446633"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/sdom/initializations';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.0.11" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="light">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">SDOM Documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/introduction.html">
+    Introduction to SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/inputs.html">
+    SDOM Input Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/running_and_outputs.html">
+    Running SDOM and Understanding Outputs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/exploring_model.html">
+    Exploring the Pyomo Model
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/sdom_math_formulation.html">
+    SDOM Formulation
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../api/core.html">
+    Core Optimization Functions
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../api/results.html">
+    Results Module
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../api/models.html">
+    Model Formulations
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../api/io_manager.html">
+    Data I/O Manager
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../api/utilities.html">
+    Utility Functions
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../sdom_Developers_guide.html">
+    GUIDELINES FOR DEVELOPING SDOM
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../sdom_publications.html">
+    PUBLICATIONS AND USE CASES OF SDOM
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://github.com/Omar0902/SDOM">
+    GitHub Repository
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Omar0902/SDOM" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/introduction.html">
+    Introduction to SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/inputs.html">
+    SDOM Input Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/running_and_outputs.html">
+    Running SDOM and Understanding Outputs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/exploring_model.html">
+    Exploring the Pyomo Model
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/sdom_math_formulation.html">
+    SDOM Formulation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/core.html">
+    Core Optimization Functions
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/results.html">
+    Results Module
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/models.html">
+    Model Formulations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/io_manager.html">
+    Data I/O Manager
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/utilities.html">
+    Utility Functions
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../sdom_Developers_guide.html">
+    GUIDELINES FOR DEVELOPING SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../sdom_publications.html">
+    PUBLICATIONS AND USE CASES OF SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/Omar0902/SDOM">
+    GitHub Repository
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Omar0902/SDOM" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">sdom.initializations</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for sdom.initializations</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyomo.environ</span><span class="w"> </span><span class="kn">import</span> <span class="n">Param</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">RangeSet</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.models.formulations_vre</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_vre_parameters</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.models.formulations_thermal</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_thermal_parameters</span><span class="p">,</span> <span class="n">initialize_thermal_sets</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.models.formulations_nuclear</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_nuclear_parameters</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.models.formulations_hydro</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_large_hydro_parameters</span><span class="p">,</span> <span class="n">add_large_hydro_bound_parameters</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.models.formulations_other_renewables</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_other_renewables_parameters</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.models.formulations_load</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_load_parameters</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.models.formulations_storage</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_storage_parameters</span><span class="p">,</span> <span class="n">initialize_storage_sets</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.models.formulations_resiliency</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_resiliency_parameters</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.models.formulations_imports_exports</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_imports_parameters</span><span class="p">,</span> <span class="n">add_exports_parameters</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">VALID_HYDRO_FORMULATIONS_TO_BUDGET_MAP</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.io_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_formulation</span>
+
+<div class="viewcode-block" id="initialize_vre_sets">
+<a class="viewcode-back" href="../../api/models.html#sdom.initializations.initialize_vre_sets">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">initialize_vre_sets</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="n">vre_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize VRE (Variable Renewable Energy) plant sets and filter data for a technology.</span>
+<span class="sd">    </span>
+<span class="sd">    Identifies common plants between capacity factor and CAPEX datasets, filters out</span>
+<span class="sd">    incomplete records, and creates a Pyomo Set for the VRE plants. Also stores</span>
+<span class="sd">    filtered capacity data back into the data dictionary for later use.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        data (dict): Dictionary containing all input DataFrames including capacity</span>
+<span class="sd">            factors and CAPEX data for VRE technologies.</span>
+<span class="sd">        block: The Pyomo Block (e.g., model.pv or model.wind) where the plants_set</span>
+<span class="sd">            will be created.</span>
+<span class="sd">        vre_type (str): Type of VRE technology - either &#39;solar&#39; or &#39;wind&#39;. Used to</span>
+<span class="sd">            construct dictionary keys for accessing the appropriate DataFrames.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    </span>
+<span class="sd">    Notes:</span>
+<span class="sd">        - Creates block.plants_set as a Pyomo Set containing plant identifiers</span>
+<span class="sd">        - Filters plants that have complete data (CAPEX_M, trans_cap_cost, FOM_M, capacity)</span>
+<span class="sd">        - Updates data dict with &#39;filtered_cap_{vre_type}_dict&#39; and &#39;complete_{vre_type}_data&#39;</span>
+<span class="sd">        - Plant IDs are converted to strings for consistent indexing</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+     <span class="c1"># Solar plant ID alignment</span>
+    <span class="n">vre_plants_cf</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;cf_</span><span class="si">{</span><span class="n">vre_type</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">vre_plants_cap</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;cap_</span><span class="si">{</span><span class="n">vre_type</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">][</span><span class="s1">&#39;sc_gid&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">common_vre_plants</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">vre_plants_cf</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">vre_plants_cap</span><span class="p">))</span>
+
+    <span class="c1"># Filter solar data and initialize model set</span>
+    <span class="n">complete_vre_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;cap_</span><span class="si">{</span><span class="n">vre_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">][</span><span class="n">data</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;cap_</span><span class="si">{</span><span class="n">vre_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">][</span><span class="s1">&#39;sc_gid&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">common_vre_plants</span><span class="p">)]</span>
+    <span class="n">complete_vre_data</span> <span class="o">=</span> <span class="n">complete_vre_data</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;CAPEX_M&#39;</span><span class="p">,</span> <span class="s1">&#39;trans_cap_cost&#39;</span><span class="p">,</span> <span class="s1">&#39;FOM_M&#39;</span><span class="p">,</span> <span class="s1">&#39;capacity&#39;</span><span class="p">])</span>
+    <span class="n">common_vre_plants_filtered</span> <span class="o">=</span> <span class="n">complete_vre_data</span><span class="p">[</span><span class="s1">&#39;sc_gid&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    
+    <span class="n">block</span><span class="o">.</span><span class="n">plants_set</span> <span class="o">=</span> <span class="n">Set</span><span class="p">(</span> <span class="n">initialize</span> <span class="o">=</span> <span class="n">common_vre_plants_filtered</span> <span class="p">)</span>
+
+    <span class="c1"># Load the solar capacities</span>
+    <span class="n">cap_vre_dict</span> <span class="o">=</span> <span class="n">complete_vre_data</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;sc_gid&#39;</span><span class="p">)[</span><span class="s1">&#39;capacity&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+    <span class="c1"># Filter the dictionary to ensure only valid keys are included</span>
+    <span class="n">default_capacity_value</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">filtered_cap_vre_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">cap_vre_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">default_capacity_value</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">block</span><span class="o">.</span><span class="n">plants_set</span><span class="p">}</span>
+
+    <span class="n">data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;filtered_cap_</span><span class="si">{</span><span class="n">vre_type</span><span class="si">}</span><span class="s1">_dict&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">filtered_cap_vre_dict</span>
+    <span class="n">data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;complete_</span><span class="si">{</span><span class="n">vre_type</span><span class="si">}</span><span class="s1">_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">complete_vre_data</span></div>
+
+
+
+<div class="viewcode-block" id="check_n_hours">
+<a class="viewcode-back" href="../../api/models.html#sdom.initializations.check_n_hours">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_n_hours</span><span class="p">(</span><span class="n">n_hours</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">interval</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate and adjust the number of simulation hours to match budget interval.</span>
+<span class="sd">    </span>
+<span class="sd">    Ensures that the number of hours is a multiple of the budget aggregation interval</span>
+<span class="sd">    (e.g., 24 for daily budgets, 730 for monthly budgets). If not, rounds up to the</span>
+<span class="sd">    nearest multiple and logs a warning.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        n_hours (int): Requested number of simulation hours.</span>
+<span class="sd">        interval (int): Budget aggregation interval in hours (e.g., 24, 730).</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        int: Validated number of hours that is a multiple of the interval. Returns</span>
+<span class="sd">             n_hours unchanged if already valid, otherwise returns rounded-up value.</span>
+<span class="sd">    </span>
+<span class="sd">    Notes:</span>
+<span class="sd">        Logs a warning when adjustment is needed, informing the user of the approximation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">n_hours</span> <span class="o">%</span> <span class="n">interval</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">n_hours</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_hours</span> <span class="o">//</span> <span class="n">interval</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;the selected number of hours (</span><span class="si">{</span><span class="n">n_hours</span><span class="si">}</span><span class="s2">) is not multiple of the aggregation interval (</span><span class="si">{</span><span class="n">interval</span><span class="si">}</span><span class="s2">) for the selected formulation. The number of hours will be approximated to </span><span class="si">{</span><span class="n">n</span><span class="o">*</span><span class="n">interval</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">n</span> <span class="o">*</span> <span class="n">interval</span></div>
+
+
+<div class="viewcode-block" id="create_budget_set">
+<a class="viewcode-back" href="../../api/models.html#sdom.initializations.create_budget_set">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_budget_set</span><span class="p">(</span> <span class="n">model</span><span class="p">,</span> 
+                      <span class="n">block</span><span class="p">,</span> 
+                      <span class="n">n_hours_checked</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span> 
+                      <span class="n">budget_hours_aggregation</span><span class="p">:</span><span class="nb">int</span> <span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a Pyomo Set representing budget periods for aggregated constraints.</span>
+<span class="sd">    </span>
+<span class="sd">    Generates a set of budget period indices based on the aggregation interval.</span>
+<span class="sd">    For example, with 8760 hours and 730-hour intervals (monthly), creates a set</span>
+<span class="sd">    {1, 2, 3, ..., 12} representing 12 monthly budget periods.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        model: The Pyomo ConcreteModel instance containing the hourly set (model.h).</span>
+<span class="sd">        block: The Pyomo Block (e.g., model.hydro) where budget_set will be created.</span>
+<span class="sd">        n_hours_checked (int): Total number of simulation hours (validated/adjusted).</span>
+<span class="sd">        budget_hours_aggregation (int): Number of hours per budget period</span>
+<span class="sd">            (e.g., 24 for daily, 730 for monthly).</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    </span>
+<span class="sd">    Notes:</span>
+<span class="sd">        Creates block.budget_set as a Pyomo Set indexed 1, 2, 3, ..., n_periods.</span>
+<span class="sd">        The set is declared within=model.h to maintain consistency with hourly indices.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">breakpoints</span>  <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">budget_hours_aggregation</span><span class="p">,</span> <span class="n">n_hours_checked</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">budget_hours_aggregation</span><span class="p">))</span>
+    <span class="n">indices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">breakpoints</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+    
+    <span class="n">block</span><span class="o">.</span><span class="n">budget_set</span> <span class="o">=</span> <span class="n">Set</span><span class="p">(</span> <span class="n">within</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="n">initialize</span> <span class="o">=</span> <span class="n">indices</span>  <span class="p">)</span>
+    <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="initialize_sets">
+<a class="viewcode-back" href="../../api/models.html#sdom.initializations.initialize_sets">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">initialize_sets</span><span class="p">(</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">n_hours</span> <span class="o">=</span> <span class="mi">8760</span> <span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize all Pyomo Sets for the SDOM optimization model.</span>
+<span class="sd">    </span>
+<span class="sd">    Creates sets for all model components including VRE plants, storage technologies,</span>
+<span class="sd">    thermal units, and hourly time steps. Handles different hydro formulations by</span>
+<span class="sd">    adjusting the hourly set and creating budget sets when needed.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        model: The Pyomo ConcreteModel instance to initialize.</span>
+<span class="sd">        data (dict): Dictionary containing all input data including DataFrames for</span>
+<span class="sd">            capacity factors, CAPEX data, storage data, and formulation specifications.</span>
+<span class="sd">        n_hours (int, optional): Number of simulation hours. Defaults to 8760 (full year).</span>
+<span class="sd">            May be adjusted if using budget formulations requiring specific intervals.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    </span>
+<span class="sd">    Notes:</span>
+<span class="sd">        - Initializes model.pv.plants_set and model.wind.plants_set for VRE plants</span>
+<span class="sd">        - Creates model.storage.j (all storage techs) and model.storage.b (coupled techs)</span>
+<span class="sd">        - Initializes model.thermal.plants_set for thermal balancing units</span>
+<span class="sd">        - Creates model.h as the hourly RangeSet (1-based indexing)</span>
+<span class="sd">        - For budget hydro formulations, adjusts n_hours and creates model.hydro.budget_set</span>
+<span class="sd">        - Logs information about storage technologies being modeled</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">initialize_vre_sets</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">pv</span><span class="p">,</span> <span class="n">vre_type</span><span class="o">=</span><span class="s1">&#39;solar&#39;</span><span class="p">)</span>
+    <span class="n">initialize_vre_sets</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">wind</span><span class="p">,</span> <span class="n">vre_type</span><span class="o">=</span><span class="s1">&#39;wind&#39;</span><span class="p">)</span>
+
+
+    <span class="c1"># Define sets</span>
+
+    <span class="n">initialize_storage_sets</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Storage technologies being considered: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">j</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Storage technologies with coupled charge/discharge power: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">b</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">initialize_thermal_sets</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">thermal</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+   
+    <span class="n">hydro_formulation</span> <span class="o">=</span> <span class="n">get_formulation</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">component</span> <span class="o">=</span> <span class="s1">&#39;hydro&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;Budget&quot;</span> <span class="ow">in</span> <span class="n">hydro_formulation</span><span class="p">:</span>
+        <span class="n">n_hours_checked</span><span class="o">=</span> <span class="n">check_n_hours</span><span class="p">(</span><span class="n">n_hours</span><span class="p">,</span> <span class="n">VALID_HYDRO_FORMULATIONS_TO_BUDGET_MAP</span><span class="p">[</span><span class="n">hydro_formulation</span><span class="p">])</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">h</span> <span class="o">=</span> <span class="n">RangeSet</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_hours_checked</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">n_steps_modeled</span> <span class="o">=</span> <span class="n">Param</span><span class="p">(</span> <span class="n">initialize</span> <span class="o">=</span> <span class="n">n_hours_checked</span> <span class="p">)</span>
+        <span class="n">create_budget_set</span><span class="p">(</span> <span class="n">model</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">hydro</span><span class="p">,</span> <span class="n">n_hours_checked</span><span class="p">,</span> <span class="n">VALID_HYDRO_FORMULATIONS_TO_BUDGET_MAP</span><span class="p">[</span><span class="n">hydro_formulation</span><span class="p">]</span> <span class="p">)</span>
+        
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">h</span> <span class="o">=</span> <span class="n">RangeSet</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_hours</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">n_steps_modeled</span> <span class="o">=</span> <span class="n">Param</span><span class="p">(</span> <span class="n">initialize</span> <span class="o">=</span> <span class="n">n_hours</span> <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="initialize_params">
+<a class="viewcode-back" href="../../api/models.html#sdom.initializations.initialize_params">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">initialize_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize all Pyomo Parameters for the SDOM optimization model.</span>
+<span class="sd">    </span>
+<span class="sd">    Adds parameters to the model for all components including VRE technologies,</span>
+<span class="sd">    storage, thermal units, fixed generation sources (hydro, nuclear, other renewables),</span>
+<span class="sd">    demand, imports/exports, and system-level scalars. Parameter initialization is</span>
+<span class="sd">    conditional based on the selected formulations.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        model: The Pyomo ConcreteModel instance to initialize. Must have Sets already</span>
+<span class="sd">            initialized via initialize_sets().</span>
+<span class="sd">        data (dict): Dictionary containing all input data including:</span>
+<span class="sd">            - scalars DataFrame: discount rate (r), GenMix_Target, alpha values</span>
+<span class="sd">            - Time-series DataFrames: load, nuclear, hydro, other renewables</span>
+<span class="sd">            - Technology data: VRE CAPEX/FOM, storage characteristics, thermal parameters</span>
+<span class="sd">            - Import/export data (if applicable)</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    </span>
+<span class="sd">    Notes:</span>
+<span class="sd">        - Creates Pyomo parameters model.r (discount rate) and model.GenMix_Target (carbon-free target)</span>
+<span class="sd">        - Initializes time-series parameters for each hour in model.h</span>
+<span class="sd">        - For budget hydro formulations, adds upper/lower bound parameters</span>
+<span class="sd">        - Conditionally adds import/export parameters based on formulation selection</span>
+<span class="sd">        - model.GenMix_Target is mutable to allow sensitivity analysis across runs</span>
+<span class="sd">        - All monetary values use MW/kW conversion via MW_TO_KW constant</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">r</span> <span class="o">=</span> <span class="n">Param</span><span class="p">(</span> <span class="n">initialize</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;scalars&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s2">&quot;r&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">Value</span><span class="p">)</span> <span class="p">)</span>  <span class="c1"># Discount rate</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;--Initializing large hydro parameters...&quot;</span><span class="p">)</span>
+    <span class="n">add_large_hydro_parameters</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;formulations&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;formulations&quot;</span><span class="p">][</span><span class="s2">&quot;Component&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;hydro&#39;</span> <span class="p">][</span><span class="s2">&quot;Formulation&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="o">==</span> <span class="s2">&quot;RunOfRiverFormulation&quot;</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;--Initializing large hydro budget parameters...&quot;</span><span class="p">)</span>
+        <span class="n">add_large_hydro_bound_parameters</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+    
+   
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;--Initializing load parameters...&quot;</span><span class="p">)</span>
+    <span class="n">add_load_parameters</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;--Initializing nuclear parameters...&quot;</span><span class="p">)</span>
+    <span class="n">add_nuclear_parameters</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;--Initializing other renewables parameters...&quot;</span><span class="p">)</span>
+    <span class="n">add_other_renewables_parameters</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;--Initializing storage parameters...&quot;</span><span class="p">)</span>
+    <span class="n">add_storage_parameters</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;--Initializing thermal parameters...&quot;</span><span class="p">)</span>
+    <span class="n">add_thermal_parameters</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;--Initializing VRE parameters...&quot;</span><span class="p">)</span>
+    <span class="n">add_vre_parameters</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">get_formulation</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="s2">&quot;Imports&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;NotModel&quot;</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;--Initializing Imports parameters...&quot;</span><span class="p">)</span>
+        <span class="n">add_imports_parameters</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">get_formulation</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="s2">&quot;Exports&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;NotModel&quot;</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;--Initializing Exports parameters...&quot;</span><span class="p">)</span>
+        <span class="n">add_exports_parameters</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        
+
+    <span class="c1"># GenMix_Target, mutable to change across multiple runs</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">GenMix_Target</span> <span class="o">=</span> <span class="n">Param</span><span class="p">(</span> <span class="n">initialize</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;scalars&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s2">&quot;GenMix_Target&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">Value</span><span class="p">),</span> <span class="n">mutable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;--Initializing resiliency parameters...&quot;</span><span class="p">)</span>
+    <span class="n">add_resiliency_parameters</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+
+    <span class="c1">#model.CRF.display()</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, NREL SDOM Team.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

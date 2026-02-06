@@ -1,0 +1,867 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>GUIDELINES FOR DEVELOPING SDOM &#8212; SDOM v0.0.11</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=0c446633"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'sdom_Developers_guide';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="PUBLICATIONS AND USE CASES OF SDOM" href="sdom_publications.html" />
+    <link rel="prev" title="sdom.OptimizationResults" href="api/_autosummary/sdom.OptimizationResults.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.0.11" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="light">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">SDOM Documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/introduction.html">
+    Introduction to SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/inputs.html">
+    SDOM Input Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/running_and_outputs.html">
+    Running SDOM and Understanding Outputs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/exploring_model.html">
+    Exploring the Pyomo Model
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/sdom_math_formulation.html">
+    SDOM Formulation
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="api/core.html">
+    Core Optimization Functions
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="api/results.html">
+    Results Module
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="api/models.html">
+    Model Formulations
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="api/io_manager.html">
+    Data I/O Manager
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="api/utilities.html">
+    Utility Functions
+  </a>
+</li>
+
+
+<li class=" current active">
+  <a class="nav-link dropdown-item nav-internal" href="#">
+    GUIDELINES FOR DEVELOPING SDOM
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="sdom_publications.html">
+    PUBLICATIONS AND USE CASES OF SDOM
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://github.com/Omar0902/SDOM">
+    GitHub Repository
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Omar0902/SDOM" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/introduction.html">
+    Introduction to SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/inputs.html">
+    SDOM Input Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/running_and_outputs.html">
+    Running SDOM and Understanding Outputs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/exploring_model.html">
+    Exploring the Pyomo Model
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/sdom_math_formulation.html">
+    SDOM Formulation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/core.html">
+    Core Optimization Functions
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/results.html">
+    Results Module
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/models.html">
+    Model Formulations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/io_manager.html">
+    Data I/O Manager
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/utilities.html">
+    Utility Functions
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    GUIDELINES FOR DEVELOPING SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="sdom_publications.html">
+    PUBLICATIONS AND USE CASES OF SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/Omar0902/SDOM">
+    GitHub Repository
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Omar0902/SDOM" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">GUIDELINES FOR DEVELOPING SDOM</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="guidelines-for-developing-sdom">
+<h1>GUIDELINES FOR DEVELOPING SDOM<a class="headerlink" href="#guidelines-for-developing-sdom" title="Link to this heading">#</a></h1>
+<section id="general-guidelines">
+<h2>General Guidelines<a class="headerlink" href="#general-guidelines" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Follow <a class="reference external" href="https://www.python.org/dev/peps/pep-0008/">PEP 8</a> for code style and formatting.</p></li>
+<li><p>Write clear, concise, and well-documented code.</p></li>
+<li><p>Add docstrings to all public classes, methods, and functions.</p></li>
+<li><p>Include unit tests for new features and bug fixes.</p></li>
+<li><p>Use descriptive commit messages.</p></li>
+<li><p>Open issues or discussions for significant changes before submitting a pull request.</p></li>
+<li><p>Ensure all tests pass before submitting code.</p></li>
+<li><p>Keep dependencies minimal and document any new requirements.</p></li>
+<li><p>Review and update documentation as needed.</p></li>
+<li><p>Be respectful and collaborative in all communications.</p></li>
+</ul>
+</section>
+<section id="table-of-contents">
+<h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="#guidelines-for-developing-sdom"><span class="xref myst">GUIDELINES FOR DEVELOPING SDOM</span></a></p>
+<ul>
+<li><p><a class="reference internal" href="#general-guidelines"><span class="xref myst">General Guidelines</span></a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#clonefork-sdom-repo"><span class="xref myst">clone/fork SDOM repo</span></a></p></li>
+<li><p><a class="reference internal" href="#setting-up-your-enviroment"><span class="xref myst">Setting up your enviroment</span></a></p>
+<ul>
+<li><p><a class="reference internal" href="#install-uv"><span class="xref myst">Install uv</span></a></p></li>
+<li><p><a class="reference internal" href="#install-your-local-sdom-python-module-and-pytest"><span class="xref myst">Install your local SDOM python module and pytest</span></a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#running-tests-locally"><span class="xref myst">Running tests locally</span></a></p></li>
+<li><p><a class="reference internal" href="#build-the-documentation-locally"><span class="xref myst">Build the documentation locally</span></a></p></li>
+<li><p><a class="reference internal" href="#general-source-code-structure"><span class="xref myst">General Source code structure</span></a></p></li>
+</ul>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="clone-fork-sdom-repo">
+<h1>clone/fork SDOM repo<a class="headerlink" href="#clone-fork-sdom-repo" title="Link to this heading">#</a></h1>
+<ul class="simple">
+<li><p>Open VS code and use file -&gt; open folder and select the folder where you want to copy the repo.</p></li>
+<li><p>Clone in your local the python version of SDOM repo:</p></li>
+</ul>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">://</span><span class="n">github</span><span class="p">.</span><span class="n">com</span><span class="p">/</span><span class="n">Omar0902</span><span class="p">/</span><span class="n">SDOM</span><span class="p">.</span><span class="n">git</span>
+</pre></div>
+</div>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="setting-up-your-enviroment">
+<h1>Setting up your enviroment<a class="headerlink" href="#setting-up-your-enviroment" title="Link to this heading">#</a></h1>
+<section id="install-uv">
+<h2>Install uv<a class="headerlink" href="#install-uv" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Install uv <a class="reference external" href="https://pypi.org/project/uv/">(A python manager for virtual enviroments, installing packages etc)</a>.</p></li>
+</ul>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">uv</span>
+</pre></div>
+</div>
+<p>For further instructions click in the link above.</p>
+<ul class="simple">
+<li><p>Create a virtual enviroment “.venv”</p></li>
+</ul>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">uv</span> <span class="n">venv</span> <span class="p">.</span><span class="n">venv</span>
+</pre></div>
+</div>
+<p>This command creates a new Python virtual environment in the <code class="docutils literal notranslate"><span class="pre">.venv</span></code> directory.</p>
+</section>
+<section id="install-your-local-sdom-python-module-and-pytest">
+<h2>Install your local SDOM python module and pytest<a class="headerlink" href="#install-your-local-sdom-python-module-and-pytest" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>To be able to run the tests locally and develop SDOM source code, install your local SDOM module by runing in your powershell terminal (Modify the folder address approprietly):</p></li>
+</ul>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">uv</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">-e</span> <span class="s2">&quot;C:\YOUR_PATH\SDOM&quot;</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>It will install also the SDOM dependencies. You should see something like this:</p></li>
+</ul>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span> <span class="n">uv</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">-e</span> <span class="s2">&quot;C:\YOUR_PATH\SDOM&quot;</span>
+<span class="n">Resolved</span> <span class="n">9</span> <span class="n">packages</span> <span class="k">in</span> <span class="n">1</span><span class="p">.</span><span class="n">90s</span>
+      <span class="n">Built</span> <span class="n">sdom</span> <span class="p">@</span> <span class="n">file</span><span class="p">:///</span><span class="n">C</span><span class="p">:/</span><span class="n">YOUR_PATH</span><span class="p">/</span><span class="n">SDOM</span>
+<span class="n">Prepared</span> <span class="n">1</span> <span class="n">package</span> <span class="k">in</span> <span class="n">1</span><span class="p">.</span><span class="n">68s</span>
+<span class="n">Installed</span> <span class="n">9</span> <span class="n">packages</span> <span class="k">in</span> <span class="n">1</span><span class="p">.</span><span class="n">60s</span>
+ <span class="p">+</span> <span class="n">numpy</span><span class="p">==</span><span class="n">2</span><span class="p">.</span><span class="n">3</span><span class="p">.</span><span class="n">2</span>
+ <span class="p">+</span> <span class="n">pandas</span><span class="p">==</span><span class="n">2</span><span class="p">.</span><span class="n">3</span><span class="p">.</span><span class="n">1</span>
+ <span class="p">+</span> <span class="n">ply</span><span class="p">==</span><span class="n">3</span><span class="p">.</span><span class="n">11</span>
+ <span class="p">+</span> <span class="n">pyomo</span><span class="p">==</span><span class="n">6</span><span class="p">.</span><span class="n">9</span><span class="p">.</span><span class="n">2</span>
+ <span class="p">+</span> <span class="n">python-dateutil</span><span class="p">==</span><span class="n">2</span><span class="p">.</span><span class="n">9</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">post0</span>
+ <span class="p">+</span> <span class="n">pytz</span><span class="p">==</span><span class="n">2025</span><span class="p">.</span><span class="n">2</span>
+ <span class="p">+</span> <span class="n">sdom</span><span class="p">==</span><span class="n">0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">1</span> <span class="p">(</span><span class="n">from</span> <span class="n">file</span><span class="p">:///</span><span class="n">C</span><span class="p">:/</span><span class="n">YOUR_PATH</span><span class="p">/</span><span class="n">SDOM</span><span class="p">)</span>
+ <span class="p">+</span> <span class="n">six</span><span class="p">==</span><span class="n">1</span><span class="p">.</span><span class="n">17</span><span class="p">.</span><span class="n">0</span>
+ <span class="p">+</span> <span class="n">tzdata</span><span class="p">==</span><span class="n">2025</span><span class="p">.</span><span class="n">2</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Also, install:</p>
+<ul>
+<li><p><a class="reference external" href="https://docs.pytest.org/en/stable/">pytests.py</a> to be able to run the tests locally:</p></li>
+</ul>
+</li>
+</ul>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">uv</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">pytest</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>run the following codes to install all the requirements to build SDOM documentation:</p></li>
+</ul>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">uv</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">-r</span> <span class="n">docs</span><span class="p">\</span><span class="n">requirements</span><span class="p">.</span><span class="n">txt</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="running-tests-locally">
+<h1>Running tests locally<a class="headerlink" href="#running-tests-locally" title="Link to this heading">#</a></h1>
+<p>The SDOM python version source code have a folder called “tests”. This folder contains all the scripts with the unit tests.</p>
+<p><strong>⚠️ Attention:</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Before to push and/or do a pull request please run locally all the tests scripts and make sure all the tests are passing sucessfully.</p></li>
+<li><p>Please add unit test for all new features and source code implementations.</p></li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><p>To run all the test files:</p></li>
+</ul>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">uv</span> <span class="n">run</span> <span class="n">pytest</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>To run a test python script you can use:</p></li>
+</ul>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">uv</span> <span class="n">run</span> <span class="n">pytest</span> <span class="n">tests</span><span class="p">/</span><span class="n">TEST_SCRIPT_NAME</span><span class="p">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>For instance to run the tests of the script called “test_no_resiliency_optimization_cases.py” you should run</p></li>
+</ul>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">uv</span> <span class="n">run</span> <span class="n">pytest</span> <span class="n">tests</span><span class="p">/</span><span class="n">test_no_resiliency_optimization_cases</span><span class="p">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>This is an example of what you should see:</p></li>
+</ul>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">uv</span> <span class="n">run</span> <span class="n">pytest</span> <span class="n">tests</span><span class="p">/</span><span class="n">test_no_resiliency_optimization_cases</span><span class="p">.</span><span class="n">py</span>
+<span class="p">==================================================================</span> <span class="n">test</span> <span class="n">session</span> <span class="n">starts</span> <span class="p">==================================================================</span>
+<span class="n">platform</span> <span class="n">win32</span> <span class="p">--</span> <span class="n">Python</span> <span class="n">3</span><span class="p">.</span><span class="n">12</span><span class="p">.</span><span class="n">4</span><span class="p">,</span> <span class="n">pytest</span><span class="p">-</span><span class="n">8</span><span class="p">.</span><span class="n">4</span><span class="p">.</span><span class="n">1</span><span class="p">,</span> <span class="n">pluggy</span><span class="p">-</span><span class="n">1</span><span class="p">.</span><span class="n">6</span><span class="p">.</span><span class="n">0</span>
+<span class="n">rootdir</span><span class="p">:</span> <span class="n">C</span><span class="p">:\</span><span class="n">Users</span><span class="p">\</span><span class="n">smachado</span><span class="p">\</span><span class="n">repositories</span><span class="p">\</span><span class="n">pySDOM</span><span class="p">\</span><span class="n">SDOM</span>
+<span class="n">configfile</span><span class="p">:</span> <span class="n">pyproject</span><span class="p">.</span><span class="n">toml</span>
+<span class="n">plugins</span><span class="p">:</span> <span class="n">anyio</span><span class="p">-</span><span class="n">4</span><span class="p">.</span><span class="n">8</span><span class="p">.</span><span class="n">0</span><span class="p">,</span> <span class="n">hydra-core</span><span class="p">-</span><span class="n">1</span><span class="p">.</span><span class="n">3</span><span class="p">.</span><span class="n">2</span>
+<span class="n">collected</span> <span class="n">2</span> <span class="n">items</span>                                                                                                                                                                                                       
+
+<span class="n">tests</span><span class="p">\</span><span class="n">test_no_resiliency_optimization_cases</span><span class="p">.</span><span class="n">py</span> <span class="p">..</span>                                                                                                                                                                 <span class="p">[</span><span class="n">100</span><span class="p">%]</span>
+
+<span class="p">==================================================================</span> <span class="n">2</span> <span class="n">passed</span> <span class="k">in</span> <span class="n">2</span><span class="p">.</span><span class="n">71s</span> <span class="p">===================================================================</span>
+</pre></div>
+</div>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="build-the-documentation-locally">
+<h1>Build the documentation locally<a class="headerlink" href="#build-the-documentation-locally" title="Link to this heading">#</a></h1>
+<p>Please update the documentationd in the folder <code class="docutils literal notranslate"><span class="pre">docs</span></code> for each new feature implementation you are making in a pull request. The SDOM documentation is based on <a class="reference external" href="https://www.sphinx-doc.org/en/master/usage/quickstart.html">sphinx</a>.</p>
+<p><strong>⚠️ Attention:</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Before to push and/or do a pull request please build locally the documentation and make sure it does not have any issues.</p></li>
+<li><p>Please add Docstrings to all code implementations you include in your contributions.</p></li>
+<li><p>Add proper documentation for the new features before submit a pull request.</p></li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><p>In order to build locally the documentation and check if your changes are correct you can run:</p></li>
+</ul>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">uv</span> <span class="n">run</span> <span class="p">.\</span><span class="n">docs</span><span class="p">\</span><span class="n">make</span><span class="p">.</span><span class="n">bat</span> <span class="n">html</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>to visualize locally the documentation website run</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">start</span> <span class="n">docs</span>\<span class="n">build</span>\<span class="n">html</span>\<span class="n">index</span><span class="o">.</span><span class="n">html</span>
+</pre></div>
+</div>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="general-source-code-structure">
+<h1>General Source code structure<a class="headerlink" href="#general-source-code-structure" title="Link to this heading">#</a></h1>
+<p>To be updated….
+Below is a diagram illustrating the general folder and script structure of the SDOM repository:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>SDOM/
+├── sdom/                # Main SDOM source code package
+│   ├── __init__.py
+│   ├── core.py
+│   ├── utils.py
+│   └── ...              # Other modules
+├── tests/               # Unit tests for SDOM
+│   ├── __init__.py
+│   ├── test_core.py
+│   └── ...              # Other test scripts
+├── docs/                # Documentation files
+│   └── Developers_guide.md
+├── requirements.txt     # Python dependencies
+├── pyproject.toml       # Project metadata and build configuration
+└── README.md            # Project overview
+</pre></div>
+</div>
+<blockquote>
+<div><p><strong>Note:</strong> The actual structure may include additional files or folders depending on the project’s evolution.</p>
+</div></blockquote>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="api/_autosummary/sdom.OptimizationResults.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">sdom.OptimizationResults</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="sdom_publications.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">PUBLICATIONS AND USE CASES OF SDOM</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">GUIDELINES FOR DEVELOPING SDOM</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#general-guidelines">General Guidelines</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#table-of-contents">Table of Contents</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#clone-fork-sdom-repo">clone/fork SDOM repo</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-up-your-enviroment">Setting up your enviroment</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install-uv">Install uv</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install-your-local-sdom-python-module-and-pytest">Install your local SDOM python module and pytest</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#running-tests-locally">Running tests locally</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#build-the-documentation-locally">Build the documentation locally</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#general-source-code-structure">General Source code structure</a></li>
+</ul>
+
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/sdom_Developers_guide.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, NREL SDOM Team.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

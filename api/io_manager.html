@@ -1,0 +1,908 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Data I/O Manager &#8212; SDOM v0.0.11</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=0c446633"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/io_manager';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Utility Functions" href="utilities.html" />
+    <link rel="prev" title="Model Formulations" href="models.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.0.11" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="light">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">SDOM Documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/introduction.html">
+    Introduction to SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/inputs.html">
+    SDOM Input Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/running_and_outputs.html">
+    Running SDOM and Understanding Outputs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/exploring_model.html">
+    Exploring the Pyomo Model
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/sdom_math_formulation.html">
+    SDOM Formulation
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="core.html">
+    Core Optimization Functions
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="results.html">
+    Results Module
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="models.html">
+    Model Formulations
+  </a>
+</li>
+
+
+<li class=" current active">
+  <a class="nav-link dropdown-item nav-internal" href="#">
+    Data I/O Manager
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="utilities.html">
+    Utility Functions
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../sdom_Developers_guide.html">
+    GUIDELINES FOR DEVELOPING SDOM
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../sdom_publications.html">
+    PUBLICATIONS AND USE CASES OF SDOM
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://github.com/Omar0902/SDOM">
+    GitHub Repository
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Omar0902/SDOM" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/introduction.html">
+    Introduction to SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/inputs.html">
+    SDOM Input Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/running_and_outputs.html">
+    Running SDOM and Understanding Outputs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/exploring_model.html">
+    Exploring the Pyomo Model
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/sdom_math_formulation.html">
+    SDOM Formulation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="core.html">
+    Core Optimization Functions
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="results.html">
+    Results Module
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="models.html">
+    Model Formulations
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Data I/O Manager
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="utilities.html">
+    Utility Functions
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../sdom_Developers_guide.html">
+    GUIDELINES FOR DEVELOPING SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../sdom_publications.html">
+    PUBLICATIONS AND USE CASES OF SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/Omar0902/SDOM">
+    GitHub Repository
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Omar0902/SDOM" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">API Reference</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Data I/O Manager</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="data-i-o-manager">
+<h1>Data I/O Manager<a class="headerlink" href="#data-i-o-manager" title="Link to this heading">#</a></h1>
+<p>Functions for loading input data and exporting results.</p>
+<section id="data-loading">
+<h2>Data Loading<a class="headerlink" href="#data-loading" title="Link to this heading">#</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.io_manager.load_data">
+<span class="sig-prename descclassname"><span class="pre">sdom.io_manager.</span></span><span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_data_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.\\Data\\'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/io_manager.html#load_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.io_manager.load_data" title="Link to this definition">#</a></dt>
+<dd><p>Load all required SDOM input datasets from CSV files in the specified directory.</p>
+<p>Reads and validates all input CSV files needed for SDOM optimization including
+VRE data, fixed generation profiles, storage characteristics, thermal units,
+scalars, and formulation specifications. Performs data consistency checks and
+filters datasets based on completeness.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input_data_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Path to directory containing input CSV files.
+Defaults to ‘.Data'. Should contain all required files defined in
+constants.INPUT_CSV_NAMES.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Dictionary containing loaded and processed data with keys:</dt><dd><ul class="simple">
+<li><p>’formulations’ (pd.DataFrame): Component formulation specifications</p></li>
+<li><p>’solar_plants’, ‘wind_plants’ (list): Plant IDs for VRE technologies</p></li>
+<li><p>’cf_solar’, ‘cf_wind’ (pd.DataFrame): Hourly capacity factors</p></li>
+<li><p>’cap_solar’, ‘cap_wind’ (pd.DataFrame): Plant CAPEX and capacity data</p></li>
+<li><p>’load_data’ (pd.DataFrame): Hourly electricity demand</p></li>
+<li><p>’nuclear_data’ (pd.DataFrame): Hourly nuclear generation</p></li>
+<li><p>’large_hydro_data’ (pd.DataFrame): Hourly hydropower generation/availability</p></li>
+<li><p>’large_hydro_max’, ‘large_hydro_min’ (pd.DataFrame): Hydro bounds
+(if budget formulation)</p></li>
+<li><p>’other_renewables_data’ (pd.DataFrame): Hourly other renewable generation</p></li>
+<li><p>’storage_data’ (pd.DataFrame): Storage technology characteristics</p></li>
+<li><p>’STORAGE_SET_J_TECHS’, ‘STORAGE_SET_B_TECHS’ (list): Storage tech identifiers</p></li>
+<li><p>’thermal_data’ (pd.DataFrame): Thermal balancing unit parameters</p></li>
+<li><p>’scalars’ (pd.DataFrame): System-level scalar parameters</p></li>
+<li><p>’import_cap’, ‘export_cap’, ‘import_prices’, ‘export_prices’ (pd.DataFrame):
+Trade data (if import/export formulation active)</p></li>
+<li><p>’complete_solar_data’, ‘complete_wind_data’ (pd.DataFrame): Filtered VRE data</p></li>
+<li><p>’filtered_cap_solar_dict’, ‘filtered_cap_wind_dict’ (dict): Capacity mappings</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#FileNotFoundError" title="(in Python v3.14)"><strong>FileNotFoundError</strong></a> – If any required input file is missing from input_data_dir.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If formulation specifications are invalid.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>All numeric data rounded to 5 decimal places for consistency</p></li>
+<li><p>VRE plant lists filtered to include only plants with complete data</p></li>
+<li><p>Conditionally loads hydro bounds and import/export data based on formulations</p></li>
+<li><p>Uses flexible filename matching via normalize_string() for CSV files</p></li>
+<li><p>Logs detailed progress at debug level for troubleshooting data loading issues</p></li>
+</ul>
+</dd></dl>
+
+</section>
+<section id="formulation-management">
+<h2>Formulation Management<a class="headerlink" href="#formulation-management" title="Link to this heading">#</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.io_manager.get_formulation">
+<span class="sig-prename descclassname"><span class="pre">sdom.io_manager.</span></span><span class="sig-name descname"><span class="pre">get_formulation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">component</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'hydro'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/io_manager.html#get_formulation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.io_manager.get_formulation" title="Link to this definition">#</a></dt>
+<dd><p>Retrieve the selected formulation for a specific model component.</p>
+<p>Extracts the formulation name from the loaded formulations DataFrame for a
+given component (e.g., hydro, imports, exports). Used throughout model
+initialization to conditionally add constraints based on formulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Dictionary containing the ‘formulations’ DataFrame loaded from
+formulations.csv.</p></li>
+<li><p><strong>component</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Component name to look up (case-insensitive).
+Examples: ‘hydro’, ‘Imports’, ‘Exports’. Defaults to ‘hydro’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>The formulation name for the specified component (e.g.,</dt><dd><p>’MonthlyBudgetFormulation’, ‘CapacityPriceNetLoadFormulation’, ‘NotModel’).</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Performs case-insensitive matching on component name.
+Returns the first matching formulation (expects unique component names).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.io_manager.check_formulation">
+<span class="sig-prename descclassname"><span class="pre">sdom.io_manager.</span></span><span class="sig-name descname"><span class="pre">check_formulation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">formulation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_formulations</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/io_manager.html#check_formulation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.io_manager.check_formulation" title="Link to this definition">#</a></dt>
+<dd><p>Validate that a formulation string is in the list of valid formulations.</p>
+<p>Checks if the user-specified formulation (from formulations.csv) is valid for
+the component being configured. Raises an error with helpful message if invalid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>formulation</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The formulation name specified by user (e.g.,
+‘MonthlyBudgetFormulation’, ‘RunOfRiverFormulation’).</p></li>
+<li><p><strong>valid_formulations</strong> – Iterable (typically dict.keys()) containing all valid
+formulation names for the component.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If formulation is not in valid_formulations, with a message
+    listing all valid options.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function is called during data loading to validate formulation.csv entries.</p>
+</dd></dl>
+
+</section>
+<section id="results-export">
+<h2>Results Export<a class="headerlink" href="#results-export" title="Link to this heading">#</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.io_manager.export_results">
+<span class="sig-prename descclassname"><span class="pre">sdom.io_manager.</span></span><span class="sig-name descname"><span class="pre">export_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">case</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'./results_pyomo/'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/io_manager.html#export_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.io_manager.export_results" title="Link to this definition">#</a></dt>
+<dd><p>Export optimization results to CSV files.</p>
+<p>Writes the results from an OptimizationResults object to CSV files in the
+specified directory. Creates output directory if it doesn’t exist.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>results</strong> (<a class="reference internal" href="_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults" title="sdom.OptimizationResults"><em>OptimizationResults</em></a>) – The optimization results object from run_solver().</p></li>
+<li><p><strong>case</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Case identifier used in output filenames to distinguish between
+different scenarios or runs.</p></li>
+<li><p><strong>output_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Directory path for output files. Defaults to ‘./results_pyomo/’.
+Directory will be created if it doesn’t exist.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>None</em></p></li>
+<li><p><em>Output Files</em></p></li>
+<li><p><em>————</em></p></li>
+<li><p><em>OutputGeneration_{case}.csv</em> – Hourly dispatch results containing: Scenario, Hour, Solar PV/Wind
+generation and curtailment, Thermal, hydro, nuclear, other renewables
+generation, Storage net charge/discharge, imports, exports, Load.</p></li>
+<li><p><em>OutputStorage_{case}.csv</em> – Hourly storage operation for each technology: Hour, Technology,
+Charging power (MW), Discharging power (MW), State of charge (MWh).</p></li>
+<li><p><em>OutputSummary_{case}.csv</em> – Summary metrics including: Total costs, Installed capacities by
+technology, Total generation by technology, Demand statistics,
+Cost breakdowns (VRE, storage, thermal CAPEX/FOM/VOM).</p></li>
+<li><p><em>OutputThermalGeneration_{case}.csv</em> – Disaggregated hourly thermal generation by plant (only if more than
+one thermal plant exists).</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function accepts either an OptimizationResults dataclass (new API)
+or the legacy tuple return from run_solver (deprecated).</p>
+</dd></dl>
+
+</section>
+<section id="example-loading-data">
+<h2>Example: Loading Data<a class="headerlink" href="#example-loading-data" title="Link to this heading">#</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sdom</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_data</span>
+
+<span class="c1"># Load data from directory</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="s1">&#39;./Data/my_scenario/&#39;</span><span class="p">)</span>
+
+<span class="c1"># Examine loaded data</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Solar plants: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;solar_plants&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wind plants: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;wind_plants&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Storage technologies: </span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;STORAGE_SET_J_TECHS&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Access formulation settings</span>
+<span class="n">hydro_form</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;formulations&#39;</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">hydro_form</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="example-exporting-results">
+<h2>Example: Exporting Results<a class="headerlink" href="#example-exporting-results" title="Link to this heading">#</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sdom</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_solver</span><span class="p">,</span> <span class="n">export_results</span>
+
+<span class="c1"># Run optimization</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">run_solver</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">solver_config</span><span class="p">)</span>
+
+<span class="c1"># Export results using the OptimizationResults object</span>
+<span class="k">if</span> <span class="n">results</span><span class="o">.</span><span class="n">is_optimal</span><span class="p">:</span>
+    <span class="n">export_results</span><span class="p">(</span>
+        <span class="n">results</span><span class="o">=</span><span class="n">results</span><span class="p">,</span>
+        <span class="n">case</span><span class="o">=</span><span class="s2">&quot;scenario_95pct_clean&quot;</span><span class="p">,</span>
+        <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;./results_pyomo/&quot;</span>
+    <span class="p">)</span>
+
+<span class="c1"># This creates three CSV files:</span>
+<span class="c1"># - OutputGeneration_scenario_95pct_clean.csv</span>
+<span class="c1"># - OutputStorage_scenario_95pct_clean.csv</span>
+<span class="c1"># - OutputSummary_scenario_95pct_clean.csv</span>
+
+<span class="c1"># You can also access the DataFrames directly from results:</span>
+<span class="n">generation_df</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">generation_df</span>
+<span class="n">storage_df</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">storage_df</span>
+<span class="n">summary_df</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">summary_df</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">export_results</span></code> function now accepts an <code class="docutils literal notranslate"><span class="pre">OptimizationResults</span></code> object as the first argument.
+See <a class="reference internal" href="results.html"><span class="doc">Results Module</span></a> for details on the <code class="docutils literal notranslate"><span class="pre">OptimizationResults</span></code> class.</p>
+</div>
+</section>
+<section id="data-dictionary-structure">
+<h2>Data Dictionary Structure<a class="headerlink" href="#data-dictionary-structure" title="Link to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">load_data()</span></code> function returns a dictionary with these keys:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">formulations</span></code>: Component formulation specifications</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solar_plants</span></code>, <code class="docutils literal notranslate"><span class="pre">wind_plants</span></code>: Lists of plant IDs</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cf_solar</span></code>, <code class="docutils literal notranslate"><span class="pre">cf_wind</span></code>: DataFrames with capacity factors</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cap_solar</span></code>, <code class="docutils literal notranslate"><span class="pre">cap_wind</span></code>: DataFrames with CAPEX and capacity data</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">load_data</span></code>: Hourly demand DataFrame</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">nuclear_data</span></code>: Hourly nuclear generation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">large_hydro_data</span></code>: Hourly hydro generation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">other_renewables_data</span></code>: Hourly other renewables</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">storage_data</span></code>: Storage technology parameters</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">STORAGE_SET_J_TECHS</span></code>: List of all storage technologies</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">STORAGE_SET_B_TECHS</span></code>: List of coupled storage technologies</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">thermal_data</span></code>: Thermal unit parameters</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scalars</span></code>: System-level parameters</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">import_cap</span></code>, <code class="docutils literal notranslate"><span class="pre">export_cap</span></code> (optional): Trade capacity limits</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">import_prices</span></code>, <code class="docutils literal notranslate"><span class="pre">export_prices</span></code> (optional): Trade prices</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="models.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Model Formulations</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="utilities.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Utility Functions</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-loading">Data Loading</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.io_manager.load_data"><code class="docutils literal notranslate"><span class="pre">load_data()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#formulation-management">Formulation Management</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.io_manager.get_formulation"><code class="docutils literal notranslate"><span class="pre">get_formulation()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.io_manager.check_formulation"><code class="docutils literal notranslate"><span class="pre">check_formulation()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#results-export">Results Export</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.io_manager.export_results"><code class="docutils literal notranslate"><span class="pre">export_results()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-loading-data">Example: Loading Data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-exporting-results">Example: Exporting Results</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-dictionary-structure">Data Dictionary Structure</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/io_manager.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, NREL SDOM Team.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

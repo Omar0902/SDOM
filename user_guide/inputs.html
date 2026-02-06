@@ -1,0 +1,1284 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>SDOM Input Data &#8212; SDOM v0.0.11</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=0c446633"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/inputs';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Running SDOM and Understanding Outputs" href="running_and_outputs.html" />
+    <link rel="prev" title="Introduction to SDOM" href="introduction.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.0.11" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="light">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">SDOM Documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="introduction.html">
+    Introduction to SDOM
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    SDOM Input Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="running_and_outputs.html">
+    Running SDOM and Understanding Outputs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="exploring_model.html">
+    Exploring the Pyomo Model
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="sdom_math_formulation.html">
+    SDOM Formulation
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../api/core.html">
+    Core Optimization Functions
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../api/results.html">
+    Results Module
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../api/models.html">
+    Model Formulations
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../api/io_manager.html">
+    Data I/O Manager
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../api/utilities.html">
+    Utility Functions
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../sdom_Developers_guide.html">
+    GUIDELINES FOR DEVELOPING SDOM
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../sdom_publications.html">
+    PUBLICATIONS AND USE CASES OF SDOM
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://github.com/Omar0902/SDOM">
+    GitHub Repository
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Omar0902/SDOM" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="introduction.html">
+    Introduction to SDOM
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    SDOM Input Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="running_and_outputs.html">
+    Running SDOM and Understanding Outputs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="exploring_model.html">
+    Exploring the Pyomo Model
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="sdom_math_formulation.html">
+    SDOM Formulation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/core.html">
+    Core Optimization Functions
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/results.html">
+    Results Module
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/models.html">
+    Model Formulations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/io_manager.html">
+    Data I/O Manager
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/utilities.html">
+    Utility Functions
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../sdom_Developers_guide.html">
+    GUIDELINES FOR DEVELOPING SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../sdom_publications.html">
+    PUBLICATIONS AND USE CASES OF SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/Omar0902/SDOM">
+    GitHub Repository
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Omar0902/SDOM" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">SDOM Input Data</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="sdom-input-data">
+<h1>SDOM Input Data<a class="headerlink" href="#sdom-input-data" title="Link to this heading">#</a></h1>
+<p>This page describes all input data requirements for running SDOM optimizations.</p>
+<section id="input-data-structure">
+<h2>Input Data Structure<a class="headerlink" href="#input-data-structure" title="Link to this heading">#</a></h2>
+<p>All input CSV files should be placed in a directory (e.g., <code class="docutils literal notranslate"><span class="pre">Data/scenario_name/</span></code>). The file names are defined in <code class="docutils literal notranslate"><span class="pre">constants.py</span></code> and are flexible (case-insensitive matching with spaces/hyphens/underscores ignored).</p>
+<p>In the next sections each file will be listed and the data it is supossed to be in each field will be described</p>
+<blockquote>
+<div><p><strong>⚠️ Attention:</strong></p>
+<ul class="simple">
+<li><p>Make sure all required CSV files are present in the specified folder before starting the simulation.</p></li>
+<li><p>Please keep the root names of each file. For instance, in the sample files you can change “2025” for whatever you prefer, but keeping the root name. For example, for “CapSolar_2025.csv” file you need to keep the root name as “CapSolar_”.</p></li>
+<li><p>Please do not change the column names of each csv files.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="required-files">
+<h2>Required Files<a class="headerlink" href="#required-files" title="Link to this heading">#</a></h2>
+<section id="formulations-configuration">
+<h3>1. Formulations Configuration<a class="headerlink" href="#formulations-configuration" title="Link to this heading">#</a></h3>
+<p><strong>File</strong>: <code class="docutils literal notranslate"><span class="pre">formulations.csv</span></code></p>
+<p>This file the user selects the modeling approach (formulation) for each major system component in the SDOM optimization model. Each row assigns a formulation to a component, determining how SDOM will represent its behavior and constraints during optimization.</p>
+<p><strong>CSV file columns:</strong></p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field/Column</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Expected type</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Component</p></td>
+<td><p>String with the component name you are going to set the formulation (Model).</p></td>
+<td><p>string</p></td>
+</tr>
+<tr class="row-odd"><td><p>Formulation</p></td>
+<td><p>Name of the formulation (model) you want to use. See more below.</p></td>
+<td><p>String</p></td>
+</tr>
+<tr class="row-even"><td><p>Description (Optional)</p></td>
+<td><p>Just a description/guidelines that developers let for users.</p></td>
+<td><p>String</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Important Notes:</strong></p>
+<ul class="simple">
+<li><p>Only one formulation should be assigned per component.</p></li>
+<li><p>The chosen formulation directly affects how SDOM optimizes and simulates each component.</p></li>
+<li><p>Refer to the tables below for valid formulations for each component.</p></li>
+</ul>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Component</p></th>
+<th class="head"><p>Formulation</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>hydro</p></td>
+<td><p>RunOfRiverFormulation</p></td>
+<td><p>Fixed hourly hydro profile</p></td>
+</tr>
+<tr class="row-odd"><td><p>hydro</p></td>
+<td><p>MonthlyBudgetFormulation</p></td>
+<td><p>Monthly energy budget constraint</p></td>
+</tr>
+<tr class="row-even"><td><p>hydro</p></td>
+<td><p>DailyBudgetFormulation</p></td>
+<td><p>Daily energy budget constraint</p></td>
+</tr>
+<tr class="row-odd"><td><p>Imports</p></td>
+<td><p>NotModel</p></td>
+<td><p>No imports modeled</p></td>
+</tr>
+<tr class="row-even"><td><p>Imports</p></td>
+<td><p>CapacityPriceNetLoadFormulation</p></td>
+<td><p>Price-based import optimization</p></td>
+</tr>
+<tr class="row-odd"><td><p>Exports</p></td>
+<td><p>NotModel</p></td>
+<td><p>No exports modeled</p></td>
+</tr>
+<tr class="row-even"><td><p>Exports</p></td>
+<td><p>CapacityPriceNetLoadFormulation</p></td>
+<td><p>Price-based export optimization</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Example</strong>:</p>
+<div class="highlight-csv notranslate"><div class="highlight"><pre><span></span>Component,Formulation
+hydro,MonthlyBudgetFormulation
+Imports,CapacityPriceNetLoadFormulation
+Exports,NotModel
+</pre></div>
+</div>
+</section>
+<section id="load-data">
+<h3>2. Load Data<a class="headerlink" href="#load-data" title="Link to this heading">#</a></h3>
+<section id="file-load-hourly-csv">
+<h4><strong>File</strong>: <code class="docutils literal notranslate"><span class="pre">Load_hourly.csv</span></code><a class="headerlink" href="#file-load-hourly-csv" title="Link to this heading">#</a></h4>
+<p>This file provides the system hourly electricity demand time-series.</p>
+<p><strong>CSV file columns:</strong></p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field/Column</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Expected type</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>*Hour</p></td>
+<td><p>Number of the hour of the year, from 1 to 8760 (You can teh number of hours you prefer).</p></td>
+<td><p>Int</p></td>
+</tr>
+<tr class="row-odd"><td><p>Load</p></td>
+<td><p>The estimated system electricity demand at each hour of the year in MWh.</p></td>
+<td><p>float</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Example</strong>:</p>
+<div class="highlight-csv notranslate"><div class="highlight"><pre><span></span>*Hour,Load
+1,45230.5
+2,43100.2
+3,41500.8
+...
+</pre></div>
+</div>
+</section>
+</section>
+<section id="vre-variable-renewable-energy-data">
+<h3>3. VRE (Variable Renewable Energy) Data<a class="headerlink" href="#vre-variable-renewable-energy-data" title="Link to this heading">#</a></h3>
+<section id="solar-pv">
+<h4>Solar PV<a class="headerlink" href="#solar-pv" title="Link to this heading">#</a></h4>
+<section id="capacity-factors-cfsolar-csv">
+<h5><strong>Capacity Factors</strong>: <code class="docutils literal notranslate"><span class="pre">CFSolar.csv</span></code><a class="headerlink" href="#capacity-factors-cfsolar-csv" title="Link to this heading">#</a></h5>
+<p>This file defines the hourly solar/wind capacity factors for each one of the potential sites defined in 2.1.1. This information can be obtained using, for instance <a class="reference external" href="https://sam.nrel.gov/download.html">NLR SAM simulations</a> or <a class="reference external" href="https://www.nrel.gov/gis/renewable-energy-potential">reV</a>.</p>
+<ul class="simple">
+<li><p>Columns: <code class="docutils literal notranslate"><span class="pre">*Hour</span></code>, <code class="docutils literal notranslate"><span class="pre">plant_1</span></code>, <code class="docutils literal notranslate"><span class="pre">plant_2</span></code>, …, <code class="docutils literal notranslate"><span class="pre">plant_n</span></code></p></li>
+<li><p>Values: Capacity factors (0-1) for each hour and plant</p></li>
+</ul>
+<p><strong>CSV file columns:</strong></p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field/Column</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Expected type</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Hour</p></td>
+<td><p>Number of the hour of the year, from 1 to 8760 (You can choose the number of hours you prefer)*.</p></td>
+<td><p>Int</p></td>
+</tr>
+<tr class="row-odd"><td><p>Col for each id</p></td>
+<td><p>The estimated capacity factor at each hour of the year for each site in MWh/installed MW.</p></td>
+<td><p>float</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>*⚠️ Attention:</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Ensure that your input files contain a number of hours equal to or greater than the <code class="docutils literal notranslate"><span class="pre">n_hours</span></code> parameter specified when calling the <code class="docutils literal notranslate"><span class="pre">initialize_model()</span></code> function:</p></li>
+</ul>
+</div></blockquote>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">initialize_model</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">,</span>
+    <span class="n">n_hours</span><span class="o">=</span><span class="n">n_steps</span><span class="p">,</span>
+    <span class="n">with_resilience_constraints</span><span class="o">=</span><span class="n">with_resilience_constraints</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="plant-data-capsolar-csv">
+<h5><strong>Plant Data</strong>: <code class="docutils literal notranslate"><span class="pre">CapSolar.csv</span></code><a class="headerlink" href="#plant-data-capsolar-csv" title="Link to this heading">#</a></h5>
+<p>This file lists all candidate sites for solar PV and wind energy deployment. For each site, it specifies the maximum allowed installed capacity, geographic coordinates, capital expenditure (CAPEX), fixed operation and maintenance (FOM) costs, and transmission interconnection costs. These parameters are used by SDOM to evaluate investment options and optimize resource allocation across the available sites</p>
+<ul class="simple">
+<li><p>Columns: <code class="docutils literal notranslate"><span class="pre">sc_gid</span></code> (plant ID), <code class="docutils literal notranslate"><span class="pre">capacity</span></code> (MW), <code class="docutils literal notranslate"><span class="pre">CAPEX_M</span></code> (<span class="math notranslate nohighlight">\(/kW), `FOM_M` (\)</span>/kW-yr), <code class="docutils literal notranslate"><span class="pre">trans_cap_cost</span></code> ($)</p></li>
+</ul>
+<p><strong>CSV file columns:</strong></p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field/Column</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Expected type</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>sc_gid</p></td>
+<td><p>Unique identifier for each PV/Wind site or resource that will be represented by a single profile.</p></td>
+<td><p>string</p></td>
+</tr>
+<tr class="row-odd"><td><p>capacity</p></td>
+<td><p>Upper bound for the allowed installed capacity at the site (MW).</p></td>
+<td><p>float</p></td>
+</tr>
+<tr class="row-even"><td><p>latitude</p></td>
+<td><p>Latitude coordinate of the site (optional for future fetching of VRE files).</p></td>
+<td><p>float</p></td>
+</tr>
+<tr class="row-odd"><td><p>longitude</p></td>
+<td><p>Longitude coordinate of the site (optional for future fetching of VRE profiles).</p></td>
+<td><p>float</p></td>
+</tr>
+<tr class="row-even"><td><p>trans_cap_cost</p></td>
+<td><p>Transmission Capital expediture costs associated with transmission in USD/kW</p></td>
+<td><p>float</p></td>
+</tr>
+<tr class="row-odd"><td><p>CAPEX_M</p></td>
+<td><p>Capital expenditure in USD/kW.</p></td>
+<td><p>float</p></td>
+</tr>
+<tr class="row-even"><td><p>FOM_M</p></td>
+<td><p>Fixed operation and maintenance cost in USD/kW.</p></td>
+<td><p>float</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+<section id="wind">
+<h4>Wind<a class="headerlink" href="#wind" title="Link to this heading">#</a></h4>
+<section id="capacity-factors-cfwind-csv">
+<h5><strong>Capacity Factors</strong>: <code class="docutils literal notranslate"><span class="pre">CFWind.csv</span></code><a class="headerlink" href="#capacity-factors-cfwind-csv" title="Link to this heading">#</a></h5>
+<p>(Same structure as solar)</p>
+</section>
+<section id="plant-data-capwind-csv">
+<h5><strong>Plant Data</strong>: <code class="docutils literal notranslate"><span class="pre">CapWind.csv</span></code><a class="headerlink" href="#plant-data-capwind-csv" title="Link to this heading">#</a></h5>
+<p>(Same structure as solar)</p>
+<p><strong>⚠️ Attention:</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Make sure that each “sc_gid” defined in “CapSolar.csv” and “CapWind.csv” has its correspondend capacity factor hourly profile in the “CFSolar.csv” or “CFWind.csv” files .</p></li>
+</ul>
+</div></blockquote>
+</section>
+</section>
+</section>
+<section id="fixed-generation-sources">
+<h3>4. Fixed Generation Sources<a class="headerlink" href="#fixed-generation-sources" title="Link to this heading">#</a></h3>
+<section id="nuclear">
+<h4>Nuclear<a class="headerlink" href="#nuclear" title="Link to this heading">#</a></h4>
+<p>This file provides the hourly generation time-series for nuclear power plants and other renewable plants respectively.</p>
+<section id="file-nucl-hourly-csv">
+<h5><strong>File</strong>: <code class="docutils literal notranslate"><span class="pre">Nucl_hourly.csv</span></code><a class="headerlink" href="#file-nucl-hourly-csv" title="Link to this heading">#</a></h5>
+<ul class="simple">
+<li><p>Fixed nuclear generation profile (MW)</p></li>
+</ul>
+<p><strong>CSV file columns:</strong></p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field/Column</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Expected type</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>*Hour</p></td>
+<td><p>Number of the hour of the year, from 1 to 8760 (You can teh number of hours you prefer).</p></td>
+<td><p>Int</p></td>
+</tr>
+<tr class="row-odd"><td><p>Nuclear/OtherRenewables</p></td>
+<td><p>The estimated generation at each hour of the year in MWh from Nuclear of Other Renewables (Such as Biomass, for instance).</p></td>
+<td><p>float</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+<section id="large-hydropower">
+<h4>Large Hydropower<a class="headerlink" href="#large-hydropower" title="Link to this heading">#</a></h4>
+<section id="file-lahy-hourly-csv">
+<h5><strong>File</strong>: <code class="docutils literal notranslate"><span class="pre">lahy_hourly.csv</span></code><a class="headerlink" href="#file-lahy-hourly-csv" title="Link to this heading">#</a></h5>
+<p>This file provides the hourly generation time-series for hydropower plants. The way SDOM utilizes this data depends on the selected hydro formulation (<a class="reference internal" href="#21-formulationscsv"><span class="xref myst">see section 2.1 formulations.csv</span></a>):</p>
+<ul class="simple">
+<li><p><strong>RunOfRiverFormulation:</strong><br />
+Hydropower generation is directly set to the values specified in the time-series. No optimization is performed; the model simply follows the provided hourly profile.</p></li>
+<li><p><strong>Budget Formulations (MonthlyBudgetFormulation or DailyBudgetFormulation):</strong><br />
+SDOM aggregates the time-series data into energy budgets over consecutive periods—24 hours for daily budgets and 730 hours for monthly budgets. These budgets define the total energy available for dispatch within each period, allowing SDOM to optimize the allocation of hydropower generation while respecting the specified limits.
+These budgets usually are outputs from long- and medium-term hydropower planning tools often based on Stochastic dual dynamic programming (SDDP). An example of open-source tool for this is <a class="reference external" href="https://www.simsee.org/">SimSEE</a></p></li>
+</ul>
+<p>In summary, this file either serves as a fixed generation profile or as the basis for energy budgets, depending on the chosen hydro formulation.</p>
+<p><strong>CSV file columns:</strong></p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field/Column</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Expected type</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>*Hour</p></td>
+<td><p>Number of the hour of the year, from 1 to 8760 (You can teh number of hours you prefer).</p></td>
+<td><p>Int</p></td>
+</tr>
+<tr class="row-odd"><td><p>LargeHydro</p></td>
+<td><p>The estimated hydropower generation at each hour of the year in MWh or average values to make the budget.</p></td>
+<td><p>float</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Budget Formulation Files</strong> (if using Monthly/Daily budgets):</p>
+<ul class="simple">
+<li><p>These files determine the lower and upper bounds for hydropower dispatch when Budget Formulations are used.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">lahy_max_hourly.csv</span></code>: Maximum hourly capacity (MW)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">lahy_min_hourly.csv</span></code>: Minimum hourly generation (MW)</p></li>
+</ul>
+</section>
+</section>
+<section id="other-renewables">
+<h4>Other Renewables<a class="headerlink" href="#other-renewables" title="Link to this heading">#</a></h4>
+<p><strong>File</strong>: <code class="docutils literal notranslate"><span class="pre">otre_hourly.csv</span></code></p>
+<ul class="simple">
+<li><p>Other renewable sources (geothermal, biomass, etc.)</p></li>
+</ul>
+</section>
+</section>
+<section id="storage-technology-data">
+<h3>5. Storage Technology Data<a class="headerlink" href="#storage-technology-data" title="Link to this heading">#</a></h3>
+<section id="file-storagedata-csv">
+<h4><strong>File</strong>: <code class="docutils literal notranslate"><span class="pre">StorageData.csv</span></code><a class="headerlink" href="#file-storagedata-csv" title="Link to this heading">#</a></h4>
+<p>This CSV input file provides key technical and economic parameters for diverse energy storage technologies (Some examples could be: Li-Ion (Lithium-Ion), CAES (Compressed Air Energy Storage), PHS (Pumped Hydro Storage), H2 (Hydrogen Storage), etc). Each column represents a technology, and each row specifies a parameter:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Expected type</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>P_Capex</p></td>
+<td><p>Power-related capital expenditure (USD/kW)</p></td>
+<td><p>float</p></td>
+</tr>
+<tr class="row-odd"><td><p>E_Capex</p></td>
+<td><p>Energy-related capital expenditure (USD/kWh)</p></td>
+<td><p>float</p></td>
+</tr>
+<tr class="row-even"><td><p>Eff</p></td>
+<td><p>Round-trip efficiency (fraction)</p></td>
+<td><p>float</p></td>
+</tr>
+<tr class="row-odd"><td><p>Min_Duration</p></td>
+<td><p>Minimum storage duration (hours)</p></td>
+<td><p>float/int</p></td>
+</tr>
+<tr class="row-even"><td><p>Max_Duration</p></td>
+<td><p>Maximum storage duration (hours)</p></td>
+<td><p>float/int</p></td>
+</tr>
+<tr class="row-odd"><td><p>Max_P</p></td>
+<td><p>Maximum power capacity (kW)</p></td>
+<td><p>float/int</p></td>
+</tr>
+<tr class="row-even"><td><p>MaxCycles</p></td>
+<td><p>Maximum number of charge/discharge cycles</p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-odd"><td><p>Coupled</p></td>
+<td><p>Indicates if input and output power are coupled (1 = coupled - enforces input Power = output Power)</p></td>
+<td><p>int (0 or 1)</p></td>
+</tr>
+<tr class="row-even"><td><p>FOM</p></td>
+<td><p>Fixed operation and maintenance cost (USD/kW/year)</p></td>
+<td><p>float</p></td>
+</tr>
+<tr class="row-odd"><td><p>VOM</p></td>
+<td><p>Variable operation and maintenance cost (USD/kWh)</p></td>
+<td><p>float</p></td>
+</tr>
+<tr class="row-even"><td><p>Lifetime</p></td>
+<td><p>Expected system lifetime (years)</p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-odd"><td><p>CostRatio</p></td>
+<td><p>Ratio of cost allocation between input and output power. If Input Power Capex = Output Power Capex, then CostRatio = 0.5</p></td>
+<td><p>float</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Key considerations:</strong></p>
+<ul class="simple">
+<li><p>If you dont have energy CAPEX for the technology, and you only have power CAPEX for a particular duration, enforce <code class="docutils literal notranslate"><span class="pre">Min_Duration==Max_Duration</span></code>.</p></li>
+<li><p>If the power capex is equally divided for the input power capacity and output power capacity, set CostRatio = 0.5.</p></li>
+<li><p>if the storage technology does not have an specification for MaxCycles, use a large value.</p></li>
+</ul>
+<p><strong>Cost Data Sources</strong>
+Some sources to get cost data for storage technologies are:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://atb.nrel.gov/electricity/2024/utility-scale_battery_storage">NLR Annual Technology Baseline (ATB)</a></p></li>
+<li><p><a class="reference external" href="https://www.pnnl.gov/projects/esgc-cost-performance/download-reports">PNNL “Energy Storage Cost and Performance Database v2024”</a></p></li>
+</ul>
+<p><strong>Example</strong>:</p>
+<div class="highlight-csv notranslate"><div class="highlight"><pre><span></span>Parameter,Li-Ion,CAES,PHS,H2
+P_Capex,300,100,1500,800
+E_Capex,150,2,10,5
+Eff,0.85,0.70,0.80,0.40
+...
+</pre></div>
+</div>
+</section>
+</section>
+<section id="thermal-generation-data">
+<h3>6. Thermal Generation Data<a class="headerlink" href="#thermal-generation-data" title="Link to this heading">#</a></h3>
+<section id="file-data-balancingunits-csv">
+<h4><strong>File</strong>: <code class="docutils literal notranslate"><span class="pre">Data_BalancingUnits.csv</span></code><a class="headerlink" href="#file-data-balancingunits-csv" title="Link to this heading">#</a></h4>
+<p>This file contains essential data for thermal generation plants or aggregated units that participate in system balancing. Each row represents a plant or group of plants, specifying their technical and economic parameters required for SDOM optimization.</p>
+<p><strong>Key considerations:</strong></p>
+<ul class="simple">
+<li><p>Each <code class="docutils literal notranslate"><span class="pre">Plant_id</span></code> must be unique and consistently referenced across other input files.</p></li>
+<li><p>Capacity values (<code class="docutils literal notranslate"><span class="pre">MinCapacity</span></code>, <code class="docutils literal notranslate"><span class="pre">MaxCapacity</span></code>) set the bounds for possible investments (installed capacity).</p></li>
+<li><p>To represent already existent generation fleet it is recomended add a new row where <code class="docutils literal notranslate"><span class="pre">MinCapacity</span></code> = <code class="docutils literal notranslate"><span class="pre">MaxCapacity</span></code> and CAPEX = 0</p></li>
+</ul>
+<p><strong>CSV file columns:</strong></p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field/Column</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Expected type</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Plant_id</p></td>
+<td><p>Unique identifier for each thermal generation plant or aggregation of plants.</p></td>
+<td><p>string</p></td>
+</tr>
+<tr class="row-odd"><td><p>MinCapacity</p></td>
+<td><p>Minimum allowed installed capacity at the plant (MW).</p></td>
+<td><p>float</p></td>
+</tr>
+<tr class="row-even"><td><p>MaxCapacity</p></td>
+<td><p>Maximum allowed installed capacity at the plant (MW).</p></td>
+<td><p>float</p></td>
+</tr>
+<tr class="row-odd"><td><p>Lifetime</p></td>
+<td><p>Expected operational lifetime of the plant (years).</p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-even"><td><p>Capex</p></td>
+<td><p>Capital expenditure in USD/kW.</p></td>
+<td><p>float</p></td>
+</tr>
+<tr class="row-odd"><td><p>HeatRate</p></td>
+<td><p>Heat rate of the plant (fuel energy input per unit electricity output, typically in MMBtu/MWh).</p></td>
+<td><p>float</p></td>
+</tr>
+<tr class="row-even"><td><p>FuelCost</p></td>
+<td><p>Fuel cost in USD/MMBtu.</p></td>
+<td><p>float</p></td>
+</tr>
+<tr class="row-odd"><td><p>VOM</p></td>
+<td><p>Variable operation and maintenance cost in USD/MWh.</p></td>
+<td><p>float</p></td>
+</tr>
+<tr class="row-even"><td><p>FOM</p></td>
+<td><p>Fixed operation and maintenance cost in USD/kW.</p></td>
+<td><p>float</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+<section id="system-scalars">
+<h3>7. System Scalars<a class="headerlink" href="#system-scalars" title="Link to this heading">#</a></h3>
+<section id="file-scalars-csv">
+<h4><strong>File</strong>: <code class="docutils literal notranslate"><span class="pre">scalars.csv</span></code><a class="headerlink" href="#file-scalars-csv" title="Link to this heading">#</a></h4>
+<p>This CSV file contains key parameters and their corresponding values for an energy system model. Each row specifies a parameter name and its value, which are used to configure various aspects of the model, such as technology lifetimes, financial rates, and generation mix targets.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Expected Type</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>LifeTimeVRE</p></td>
+<td><p>Operational lifetime in years of Variable Renewable Energy sources (To calculate CRF)</p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-odd"><td><p>GenMix_Target</p></td>
+<td><p>Target value for generation mix (e.g., share of renewables). Between 0 and 1.</p></td>
+<td><p>float</p></td>
+</tr>
+<tr class="row-even"><td><p>AlphaNuclear</p></td>
+<td><p>Activation/Deactivation (1/0) for nuclear energy</p></td>
+<td><p>int (0 or 1)</p></td>
+</tr>
+<tr class="row-odd"><td><p>AlphaLargHy</p></td>
+<td><p>Activation/Deactivation (1/0) for large hydro energy</p></td>
+<td><p>int (0 or 1)</p></td>
+</tr>
+<tr class="row-even"><td><p>AlphaOtheRe</p></td>
+<td><p>Activation/Deactivation (1/0) for other renewable energy sources</p></td>
+<td><p>int (0 or 1)</p></td>
+</tr>
+<tr class="row-odd"><td><p>r</p></td>
+<td><p>Discount rate or interest rate used in financial calculations (Example: r=0.06)</p></td>
+<td><p>float</p></td>
+</tr>
+<tr class="row-even"><td><p>EUE_max</p></td>
+<td><p>Maximum allowed Expected Unserved Energy (EUE) - used when resiliency constraints = true</p></td>
+<td><p>float</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Note:</strong> Adjust parameter values as needed to reflect the specific scenario or assumptions for your energy system analysis.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-csv notranslate"><div class="highlight"><pre><span></span>Parameter,Value
+r,0.07
+GenMix_Target,0.95
+alpha_Nuclear,1.0
+alpha_Hydro,1.0
+alpha_OtherRenewables,1.0
+</pre></div>
+</div>
+</section>
+</section>
+<section id="import-export-data-optional">
+<h3>8. Import/Export Data (Optional)<a class="headerlink" href="#import-export-data-optional" title="Link to this heading">#</a></h3>
+<p><strong>If using CapacityPriceNetLoadFormulation</strong>:
+These files are only required when Imports and Exports formulations are set different to “NotModel” in “formulations.csv” (<a class="reference internal" href="#1-formulations-Configuration"><span class="xref myst">see section about formulations.csv</span></a>).</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Import_Cap.csv</span></code>: Hourly import capacity limits (MW)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Import_Prices.csv</span></code>: Hourly import prices ($/MWh)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Export_Cap.csv</span></code>: Hourly export capacity limits (MW)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Export_Prices.csv</span></code>: Hourly export prices ($/MWh)</p></li>
+</ul>
+</section>
+</section>
+<section id="data-validation">
+<h2>Data Validation<a class="headerlink" href="#data-validation" title="Link to this heading">#</a></h2>
+<p>SDOM performs several validation checks during data loading:</p>
+<ol class="arabic simple">
+<li><p><strong>File Existence</strong>: All required files must be present</p></li>
+<li><p><strong>Plant Consistency</strong>: Solar/wind plant IDs must match between CF and CAPEX files</p></li>
+<li><p><strong>Completeness</strong>: Filters out plants with missing data (NaN values)</p></li>
+<li><p><strong>Formulation Validity</strong>: Checks that specified formulations are valid</p></li>
+<li><p><strong>Hour Count</strong>: For budget formulations, adjusts hours to be multiple of budget interval</p></li>
+</ol>
+</section>
+<section id="example-data-loading">
+<h2>Example Data Loading<a class="headerlink" href="#example-data-loading" title="Link to this heading">#</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sdom</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_data</span>
+
+<span class="c1"># Load data from directory</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="s1">&#39;./Data/my_scenario/&#39;</span><span class="p">)</span>
+
+<span class="c1"># Access loaded data</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of solar plants: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;solar_plants&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of wind plants: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;wind_plants&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Storage technologies: </span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;STORAGE_SET_J_TECHS&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Discount rate: </span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;scalars&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;r&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Value&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="tips-for-data-preparation">
+<h2>Tips for Data Preparation<a class="headerlink" href="#tips-for-data-preparation" title="Link to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p><strong>Consistent Plant IDs</strong>: Use string IDs for VRE plants (e.g., “101”, “202”)</p></li>
+<li><p><strong>Hour Indexing</strong>: Use 1-based indexing (1-8760) for consistency</p></li>
+<li><p><strong>Units</strong>: Stick to MW for power, MWh for energy, $ for costs</p></li>
+<li><p><strong>File Naming</strong>: Use flexible naming (case doesn’t matter, underscores/hyphens optional)</p></li>
+<li><p><strong>Missing Data</strong>: Remove rows/plants with incomplete data before running</p></li>
+</ol>
+</section>
+<section id="next-steps">
+<h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="running_and_outputs.html"><span class="std std-doc">Run SDOM optimization</span></a></p></li>
+<li><p><a class="reference internal" href="exploring_model.html"><span class="std std-doc">Explore model structure</span></a></p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="introduction.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Introduction to SDOM</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="running_and_outputs.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Running SDOM and Understanding Outputs</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#input-data-structure">Input Data Structure</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#required-files">Required Files</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#formulations-configuration">1. Formulations Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#load-data">2. Load Data</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#file-load-hourly-csv"><strong>File</strong>: <code class="docutils literal notranslate"><span class="pre">Load_hourly.csv</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#vre-variable-renewable-energy-data">3. VRE (Variable Renewable Energy) Data</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#solar-pv">Solar PV</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#capacity-factors-cfsolar-csv"><strong>Capacity Factors</strong>: <code class="docutils literal notranslate"><span class="pre">CFSolar.csv</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#plant-data-capsolar-csv"><strong>Plant Data</strong>: <code class="docutils literal notranslate"><span class="pre">CapSolar.csv</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#wind">Wind</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#capacity-factors-cfwind-csv"><strong>Capacity Factors</strong>: <code class="docutils literal notranslate"><span class="pre">CFWind.csv</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#plant-data-capwind-csv"><strong>Plant Data</strong>: <code class="docutils literal notranslate"><span class="pre">CapWind.csv</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fixed-generation-sources">4. Fixed Generation Sources</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#nuclear">Nuclear</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#file-nucl-hourly-csv"><strong>File</strong>: <code class="docutils literal notranslate"><span class="pre">Nucl_hourly.csv</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#large-hydropower">Large Hydropower</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#file-lahy-hourly-csv"><strong>File</strong>: <code class="docutils literal notranslate"><span class="pre">lahy_hourly.csv</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#other-renewables">Other Renewables</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#storage-technology-data">5. Storage Technology Data</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#file-storagedata-csv"><strong>File</strong>: <code class="docutils literal notranslate"><span class="pre">StorageData.csv</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#thermal-generation-data">6. Thermal Generation Data</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#file-data-balancingunits-csv"><strong>File</strong>: <code class="docutils literal notranslate"><span class="pre">Data_BalancingUnits.csv</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#system-scalars">7. System Scalars</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#file-scalars-csv"><strong>File</strong>: <code class="docutils literal notranslate"><span class="pre">scalars.csv</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#import-export-data-optional">8. Import/Export Data (Optional)</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-validation">Data Validation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-data-loading">Example Data Loading</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tips-for-data-preparation">Tips for Data Preparation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#next-steps">Next Steps</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/user_guide/inputs.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, NREL SDOM Team.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,795 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>sdom.models.formulations_system &#8212; SDOM v0.0.11</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../_static/documentation_options.js?v=0c446633"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/sdom/models/formulations_system';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.0.11" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="light">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">SDOM Documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/introduction.html">
+    Introduction to SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/inputs.html">
+    SDOM Input Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/running_and_outputs.html">
+    Running SDOM and Understanding Outputs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/exploring_model.html">
+    Exploring the Pyomo Model
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/sdom_math_formulation.html">
+    SDOM Formulation
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../api/core.html">
+    Core Optimization Functions
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../api/results.html">
+    Results Module
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../api/models.html">
+    Model Formulations
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../api/io_manager.html">
+    Data I/O Manager
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../api/utilities.html">
+    Utility Functions
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../sdom_Developers_guide.html">
+    GUIDELINES FOR DEVELOPING SDOM
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../sdom_publications.html">
+    PUBLICATIONS AND USE CASES OF SDOM
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://github.com/Omar0902/SDOM">
+    GitHub Repository
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Omar0902/SDOM" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/introduction.html">
+    Introduction to SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/inputs.html">
+    SDOM Input Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/running_and_outputs.html">
+    Running SDOM and Understanding Outputs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/exploring_model.html">
+    Exploring the Pyomo Model
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/sdom_math_formulation.html">
+    SDOM Formulation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/core.html">
+    Core Optimization Functions
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/results.html">
+    Results Module
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/models.html">
+    Model Formulations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/io_manager.html">
+    Data I/O Manager
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/utilities.html">
+    Utility Functions
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../sdom_Developers_guide.html">
+    GUIDELINES FOR DEVELOPING SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../sdom_publications.html">
+    PUBLICATIONS AND USE CASES OF SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/Omar0902/SDOM">
+    GitHub Repository
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Omar0902/SDOM" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">sdom.models.formulations_system</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for sdom.models.formulations_system</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pyomo.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Expression</span><span class="p">,</span> <span class="n">Constraint</span>
+
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.formulations_vre</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_vre_fixed_costs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.formulations_thermal</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_thermal_fixed_costs</span><span class="p">,</span> <span class="n">add_thermal_variable_costs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.formulations_storage</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_storage_fixed_costs</span><span class="p">,</span> <span class="n">add_storage_variable_costs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.formulations_imports_exports</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_imports_exports_cost</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..io_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_formulation</span>
+<span class="c1">####################################################################################|</span>
+<span class="c1"># ----------------------------------- Parameters -----------------------------------|</span>
+<span class="c1">####################################################################################|</span>
+
+
+
+<span class="c1">####################################################################################|</span>
+<span class="c1"># ------------------------------- Objective Function -------------------------------|</span>
+<span class="c1">####################################################################################|</span>
+
+<div class="viewcode-block" id="objective_rule">
+<a class="viewcode-back" href="../../../api/models.html#sdom.models.formulations_system.objective_rule">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">objective_rule</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the total objective value for the optimization model.</span>
+<span class="sd">    This function computes the sum of annual fixed costs and variable costs for the system.</span>
+<span class="sd">    Fixed costs include VRE (Variable Renewable Energy), storage, and gas combined cycle (Gas CC) fixed costs.</span>
+<span class="sd">    Variable costs include Gas CC fuel and variable operation &amp; maintenance (VOM) costs, as well as storage VOM costs.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        model: The optimization model instance containing relevant parameters and variables.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        The total objective value as the sum of fixed and variable costs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Annual Fixed Costs</span>
+    <span class="n">fixed_costs</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">add_vre_fixed_costs</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+        <span class="o">+</span>
+        <span class="n">add_storage_fixed_costs</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+        <span class="o">+</span>
+        <span class="n">add_thermal_fixed_costs</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Variable Costs (Gas CC Fuel &amp; VOM, Storage VOM)</span>
+    <span class="n">variable_costs</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">add_thermal_variable_costs</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+        <span class="o">+</span> 
+        <span class="n">add_storage_variable_costs</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="n">imports_exports_costs</span> <span class="o">=</span> <span class="n">add_imports_exports_cost</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">fixed_costs</span> <span class="o">+</span> <span class="n">variable_costs</span> <span class="o">+</span> <span class="n">imports_exports_costs</span></div>
+
+
+
+<span class="c1">####################################################################################|</span>
+<span class="c1"># ----------------------------------- Expressions ----------------------------------|</span>
+<span class="c1">####################################################################################|</span>
+<div class="viewcode-block" id="net_load_rule">
+<a class="viewcode-back" href="../../../api/models.html#sdom.models.formulations_system.net_load_rule">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">net_load_rule</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">h</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span> <span class="n">model</span><span class="o">.</span><span class="n">demand</span><span class="o">.</span><span class="n">ts_parameter</span><span class="p">[</span><span class="n">h</span><span class="p">]</span> 
+            <span class="o">-</span> <span class="n">model</span><span class="o">.</span><span class="n">pv</span><span class="o">.</span><span class="n">total_hourly_availability</span><span class="p">[</span><span class="n">h</span><span class="p">]</span> <span class="o">-</span> <span class="n">model</span><span class="o">.</span><span class="n">wind</span><span class="o">.</span><span class="n">total_hourly_availability</span><span class="p">[</span><span class="n">h</span><span class="p">]</span> 
+            <span class="o">-</span> <span class="n">model</span><span class="o">.</span><span class="n">nuclear</span><span class="o">.</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">model</span><span class="o">.</span><span class="n">nuclear</span><span class="o">.</span><span class="n">ts_parameter</span><span class="p">[</span><span class="n">h</span><span class="p">]</span> <span class="o">-</span> <span class="n">model</span><span class="o">.</span><span class="n">other_renewables</span><span class="o">.</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">model</span><span class="o">.</span><span class="n">other_renewables</span><span class="o">.</span><span class="n">ts_parameter</span><span class="p">[</span><span class="n">h</span><span class="p">]</span>
+            <span class="o">-</span> <span class="n">model</span><span class="o">.</span><span class="n">hydro</span><span class="o">.</span><span class="n">generation</span><span class="p">[</span><span class="n">h</span><span class="p">]</span> <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="add_system_expressions">
+<a class="viewcode-back" href="../../../api/models.html#sdom.models.formulations_system.add_system_expressions">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_system_expressions</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">net_load</span> <span class="o">=</span> <span class="n">Expression</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="n">rule</span><span class="o">=</span><span class="n">net_load_rule</span><span class="p">)</span>
+    <span class="k">return</span></div>
+
+
+
+
+<span class="c1">####################################################################################|</span>
+<span class="c1"># ----------------------------------- Constraints ----------------------------------|</span>
+<span class="c1">####################################################################################|</span>
+<span class="c1"># Energy supply demand</span>
+
+<div class="viewcode-block" id="create_supply_balance_rule">
+<a class="viewcode-back" href="../../../api/models.html#sdom.models.formulations_system.create_supply_balance_rule">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_supply_balance_rule</span><span class="p">(</span><span class="n">has_imports</span><span class="p">,</span> <span class="n">has_exports</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a supply balance rule function based on whether imports and exports are enabled.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    has_imports : bool</span>
+<span class="sd">        Whether imports are included in the model.</span>
+<span class="sd">    has_exports : bool</span>
+<span class="sd">        Whether exports are included in the model.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    function</span>
+<span class="sd">        A Pyomo constraint rule function for supply balance.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">supply_balance_rule</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">h</span><span class="p">):</span>
+        <span class="c1"># Base supply balance expression</span>
+        <span class="n">balance</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">demand</span><span class="o">.</span><span class="n">ts_parameter</span><span class="p">[</span><span class="n">h</span><span class="p">]</span>
+            <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">PC</span><span class="p">[</span><span class="n">h</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">j</span><span class="p">)</span>
+            <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">PD</span><span class="p">[</span><span class="n">h</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">j</span><span class="p">)</span>
+            <span class="o">-</span> <span class="n">model</span><span class="o">.</span><span class="n">nuclear</span><span class="o">.</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">model</span><span class="o">.</span><span class="n">nuclear</span><span class="o">.</span><span class="n">ts_parameter</span><span class="p">[</span><span class="n">h</span><span class="p">]</span>
+            <span class="o">-</span> <span class="n">model</span><span class="o">.</span><span class="n">hydro</span><span class="o">.</span><span class="n">generation</span><span class="p">[</span><span class="n">h</span><span class="p">]</span>
+            <span class="o">-</span> <span class="n">model</span><span class="o">.</span><span class="n">other_renewables</span><span class="o">.</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">model</span><span class="o">.</span><span class="n">other_renewables</span><span class="o">.</span><span class="n">ts_parameter</span><span class="p">[</span><span class="n">h</span><span class="p">]</span>
+            <span class="o">-</span> <span class="n">model</span><span class="o">.</span><span class="n">pv</span><span class="o">.</span><span class="n">generation</span><span class="p">[</span><span class="n">h</span><span class="p">]</span>
+            <span class="o">-</span> <span class="n">model</span><span class="o">.</span><span class="n">wind</span><span class="o">.</span><span class="n">generation</span><span class="p">[</span><span class="n">h</span><span class="p">]</span>
+            <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">thermal</span><span class="o">.</span><span class="n">generation</span><span class="p">[</span><span class="n">h</span><span class="p">,</span> <span class="n">bu</span><span class="p">]</span> <span class="k">for</span> <span class="n">bu</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">thermal</span><span class="o">.</span><span class="n">plants_set</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Conditionally add imports (imports reduce the need for other generation)</span>
+        <span class="k">if</span> <span class="n">has_imports</span><span class="p">:</span>
+            <span class="n">balance</span> <span class="o">=</span> <span class="n">balance</span> <span class="o">-</span> <span class="n">model</span><span class="o">.</span><span class="n">imports</span><span class="o">.</span><span class="n">variable</span><span class="p">[</span><span class="n">h</span><span class="p">]</span>
+
+        <span class="c1"># Conditionally add exports (exports increase the need for generation)</span>
+        <span class="k">if</span> <span class="n">has_exports</span><span class="p">:</span>
+            <span class="n">balance</span> <span class="o">=</span> <span class="n">balance</span> <span class="o">+</span> <span class="n">model</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">variable</span><span class="p">[</span><span class="n">h</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">balance</span> <span class="o">==</span> <span class="mi">0</span>
+
+    <span class="k">return</span> <span class="n">supply_balance_rule</span></div>
+
+
+<span class="c1"># Generation mix target</span>
+<span class="c1"># Limit on generation from thermal generation and imports</span>
+<div class="viewcode-block" id="genmix_share_rule">
+<a class="viewcode-back" href="../../../api/models.html#sdom.models.formulations_system.genmix_share_rule">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">genmix_share_rule</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Defines the carbon-free generation target constraint.</span>
+
+<span class="sd">    This constraint ensures that total thermal (balancing unit) generation plus imports</span>
+<span class="sd">    does not exceed (1 - GenMix_Target) of the adjusted demand. The adjusted demand</span>
+<span class="sd">    accounts for net storage loading (charging minus discharging).</span>
+
+<span class="sd">    The constraint is:</span>
+<span class="sd">        thermal_generation + imports &lt;= (1 - tau) * (demand + storage_charging - storage_discharging)</span>
+
+<span class="sd">    Where tau (GenMix_Target) represents the minimum clean-energy generation share.</span>
+<span class="sd">    Imports are treated as non-clean energy in this constraint.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : pyomo.core.base.PyomoModel.ConcreteModel</span>
+<span class="sd">        The optimization model containing thermal generation, imports, demand,</span>
+<span class="sd">        storage variables, and GenMix_Target parameter.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pyomo.core.expr.relational_expr.InequalityExpression</span>
+<span class="sd">        The constraint expression for the generation mix target.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - If imports are not modeled (Imports formulation is &quot;NotModel&quot;), </span>
+<span class="sd">      only thermal generation is constrained.</span>
+<span class="sd">    - The constraint uses hasattr() to check if imports are available,</span>
+<span class="sd">      making it robust to different model configurations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span> <span class="n">model</span><span class="o">.</span><span class="n">thermal</span><span class="o">.</span><span class="n">total_generation</span> <span class="o">+</span> 
+        <span class="nb">sum</span><span class="p">(</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">imports</span><span class="o">.</span><span class="n">variable</span><span class="p">[</span><span class="n">h</span><span class="p">]</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">imports</span><span class="p">,</span> <span class="s1">&#39;variable&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">h</span>
+        <span class="p">)</span> 
+        <span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">model</span><span class="o">.</span><span class="n">GenMix_Target</span><span class="p">)</span> <span class="o">*</span> <span class="nb">sum</span><span class="p">(</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">demand</span><span class="o">.</span><span class="n">ts_parameter</span><span class="p">[</span><span class="n">h</span><span class="p">]</span> <span class="o">+</span> 
+        <span class="nb">sum</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">PC</span><span class="p">[</span><span class="n">h</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">j</span><span class="p">)</span><span class="o">-</span> 
+        <span class="nb">sum</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">PD</span><span class="p">[</span><span class="n">h</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">h</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="add_system_constraints">
+<a class="viewcode-back" href="../../../api/models.html#sdom.models.formulations_system.add_system_constraints">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_system_constraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Adds system constraints to the optimization model.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : pyomo.core.base.PyomoModel.ConcreteModel</span>
+<span class="sd">        The optimization model to which system constraints will be added.</span>
+<span class="sd">    data : dict</span>
+<span class="sd">        Dictionary containing formulation configuration data.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Check which components are enabled</span>
+    <span class="n">has_imports</span> <span class="o">=</span> <span class="n">get_formulation</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="s2">&quot;Imports&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;NotModel&quot;</span>
+    <span class="n">has_exports</span> <span class="o">=</span> <span class="n">get_formulation</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="s2">&quot;Exports&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;NotModel&quot;</span>
+
+    <span class="c1"># Create and add supply balance constraint with appropriate terms</span>
+    <span class="n">supply_balance_rule</span> <span class="o">=</span> <span class="n">create_supply_balance_rule</span><span class="p">(</span><span class="n">has_imports</span><span class="p">,</span> <span class="n">has_exports</span><span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">SupplyBalance</span> <span class="o">=</span> <span class="n">Constraint</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="n">rule</span><span class="o">=</span><span class="n">supply_balance_rule</span><span class="p">)</span>
+
+    <span class="c1"># Generation mix share constraint</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">GenMix_Share</span> <span class="o">=</span> <span class="n">Constraint</span><span class="p">(</span><span class="n">rule</span><span class="o">=</span><span class="n">genmix_share_rule</span><span class="p">)</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, NREL SDOM Team.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

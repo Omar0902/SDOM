@@ -1,0 +1,1338 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>sdom.results &#8212; SDOM v0.0.11</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=0c446633"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/sdom/results';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.0.11" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="light">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">SDOM Documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/introduction.html">
+    Introduction to SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/inputs.html">
+    SDOM Input Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/running_and_outputs.html">
+    Running SDOM and Understanding Outputs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/exploring_model.html">
+    Exploring the Pyomo Model
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/sdom_math_formulation.html">
+    SDOM Formulation
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../api/core.html">
+    Core Optimization Functions
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../api/results.html">
+    Results Module
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../api/models.html">
+    Model Formulations
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../api/io_manager.html">
+    Data I/O Manager
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../api/utilities.html">
+    Utility Functions
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../sdom_Developers_guide.html">
+    GUIDELINES FOR DEVELOPING SDOM
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../sdom_publications.html">
+    PUBLICATIONS AND USE CASES OF SDOM
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://github.com/Omar0902/SDOM">
+    GitHub Repository
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Omar0902/SDOM" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/introduction.html">
+    Introduction to SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/inputs.html">
+    SDOM Input Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/running_and_outputs.html">
+    Running SDOM and Understanding Outputs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/exploring_model.html">
+    Exploring the Pyomo Model
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/sdom_math_formulation.html">
+    SDOM Formulation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/core.html">
+    Core Optimization Functions
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/results.html">
+    Results Module
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/models.html">
+    Model Formulations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/io_manager.html">
+    Data I/O Manager
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/utilities.html">
+    Utility Functions
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../sdom_Developers_guide.html">
+    GUIDELINES FOR DEVELOPING SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../sdom_publications.html">
+    PUBLICATIONS AND USE CASES OF SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/Omar0902/SDOM">
+    GitHub Repository
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Omar0902/SDOM" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">sdom.results</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for sdom.results</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Module for SDOM optimization results data structures and utilities.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyomo.environ</span><span class="w"> </span><span class="kn">import</span> <span class="n">sqrt</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.common.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">safe_pyomo_value</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">MW_TO_KW</span>
+
+
+<div class="viewcode-block" id="OptimizationResults">
+<a class="viewcode-back" href="../../api/results.html#sdom.OptimizationResults">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">OptimizationResults</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Data class containing all optimization results from SDOM.</span>
+
+<span class="sd">    This class stores the complete results from an SDOM optimization run,</span>
+<span class="sd">    organized into DataFrames for different result categories (generation,</span>
+<span class="sd">    storage, summary) and provides convenient accessors for specific metrics.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    termination_condition : str</span>
+<span class="sd">        The solver termination condition (e.g., &#39;optimal&#39;, &#39;infeasible&#39;).</span>
+<span class="sd">    solver_status : str</span>
+<span class="sd">        The solver status (e.g., &#39;ok&#39;, &#39;warning&#39;).</span>
+<span class="sd">    total_cost : float</span>
+<span class="sd">        The total objective value (cost) from the optimization.</span>
+<span class="sd">    gen_mix_target : float</span>
+<span class="sd">        The generation mix target value used in this run.</span>
+<span class="sd">    generation_df : pd.DataFrame</span>
+<span class="sd">        Hourly generation dispatch results for all technologies.</span>
+<span class="sd">    storage_df : pd.DataFrame</span>
+<span class="sd">        Hourly storage operation results (charge, discharge, SOC).</span>
+<span class="sd">    thermal_generation_df : pd.DataFrame</span>
+<span class="sd">        Disaggregated hourly thermal generation by plant.</span>
+<span class="sd">    installed_plants_df : pd.DataFrame</span>
+<span class="sd">        Installed capacity for each individual power plant (solar, wind, thermal).</span>
+<span class="sd">    summary_df : pd.DataFrame</span>
+<span class="sd">        Summary metrics including capacities, costs, and totals.</span>
+<span class="sd">    problem_info : dict</span>
+<span class="sd">        Solver problem information (constraints, variables, etc.).</span>
+<span class="sd">    capacity : dict</span>
+<span class="sd">        Installed capacity by technology.</span>
+<span class="sd">    storage_capacity : dict</span>
+<span class="sd">        Storage capacity details (charge, discharge, energy).</span>
+<span class="sd">    generation_totals : dict</span>
+<span class="sd">        Total generation by technology.</span>
+<span class="sd">    cost_breakdown : dict</span>
+<span class="sd">        Detailed cost breakdown (CAPEX, OPEX, FOM, VOM).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Solver information</span>
+    <span class="n">termination_condition</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">solver_status</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="c1"># Main objective</span>
+    <span class="n">total_cost</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">gen_mix_target</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="c1"># DataFrames for CSV export</span>
+    <span class="n">generation_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>
+    <span class="n">storage_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>
+    <span class="n">thermal_generation_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>
+    <span class="n">installed_plants_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>
+    <span class="n">summary_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>
+
+    <span class="c1"># Problem info from solver</span>
+    <span class="n">problem_info</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+
+    <span class="c1"># Capacity results</span>
+    <span class="n">capacity</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="n">storage_capacity</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+
+    <span class="c1"># Generation totals</span>
+    <span class="n">generation_totals</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+
+    <span class="c1"># Cost breakdown</span>
+    <span class="n">cost_breakdown</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+
+    <span class="c1"># ----------------------------------------------------------------------------------</span>
+    <span class="c1"># Convenience properties for backward compatibility and easy access</span>
+    <span class="c1"># ----------------------------------------------------------------------------------</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_optimal</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the solution is optimal.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">termination_condition</span> <span class="o">==</span> <span class="s2">&quot;optimal&quot;</span>
+
+    <span class="c1"># Capacity accessors</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">total_cap_thermal</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Total installed thermal capacity (MW).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">capacity</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Thermal&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">total_cap_pv</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Total installed solar PV capacity (MW).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">capacity</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Solar PV&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">total_cap_wind</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Total installed wind capacity (MW).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">capacity</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Wind&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">total_cap_storage_charge</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Storage charging power capacity by technology (MW).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_capacity</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;charge&quot;</span><span class="p">,</span> <span class="p">{})</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">total_cap_storage_discharge</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Storage discharging power capacity by technology (MW).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_capacity</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;discharge&quot;</span><span class="p">,</span> <span class="p">{})</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">total_cap_storage_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Storage energy capacity by technology (MWh).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_capacity</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;energy&quot;</span><span class="p">,</span> <span class="p">{})</span>
+
+    <span class="c1"># Generation accessors</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">total_gen_pv</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Total solar PV generation (MWh).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">generation_totals</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Solar PV&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">total_gen_wind</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Total wind generation (MWh).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">generation_totals</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Wind&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">total_gen_thermal</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Total thermal generation (MWh).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">generation_totals</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Thermal&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+    <span class="c1"># ----------------------------------------------------------------------------------</span>
+    <span class="c1"># DataFrame accessors</span>
+    <span class="c1"># ----------------------------------------------------------------------------------</span>
+
+<div class="viewcode-block" id="OptimizationResults.get_generation_dataframe">
+<a class="viewcode-back" href="../../api/results.html#sdom.OptimizationResults.get_generation_dataframe">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_generation_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the hourly generation dispatch DataFrame.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame</span>
+<span class="sd">            DataFrame with columns: Scenario, Hour, Solar PV Generation (MW),</span>
+<span class="sd">            Solar PV Curtailment (MW), Wind Generation (MW), Wind Curtailment (MW),</span>
+<span class="sd">            All Thermal Generation (MW), Hydro Generation (MW), Nuclear Generation (MW),</span>
+<span class="sd">            Other Renewables Generation (MW), Imports (MW), Storage Charge/Discharge (MW),</span>
+<span class="sd">            Exports (MW), Load (MW).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">generation_df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="OptimizationResults.get_storage_dataframe">
+<a class="viewcode-back" href="../../api/results.html#sdom.OptimizationResults.get_storage_dataframe">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_storage_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the hourly storage operation DataFrame.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame</span>
+<span class="sd">            DataFrame with columns: Hour, Technology, Charging power (MW),</span>
+<span class="sd">            Discharging power (MW), State of charge (MWh).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="OptimizationResults.get_thermal_generation_dataframe">
+<a class="viewcode-back" href="../../api/results.html#sdom.OptimizationResults.get_thermal_generation_dataframe">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_thermal_generation_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the disaggregated hourly thermal generation DataFrame.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame</span>
+<span class="sd">            DataFrame with columns: Hour, and one column per thermal plant.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">thermal_generation_df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="OptimizationResults.get_summary_dataframe">
+<a class="viewcode-back" href="../../api/results.html#sdom.OptimizationResults.get_summary_dataframe">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_summary_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the summary metrics DataFrame.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame</span>
+<span class="sd">            DataFrame with columns: Metric, Technology, Run, Optimal Value, Unit.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">summary_df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="OptimizationResults.get_installed_plants_dataframe">
+<a class="viewcode-back" href="../../api/results.html#sdom.OptimizationResults.get_installed_plants_dataframe">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_installed_plants_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the installed power plants capacity DataFrame.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame</span>
+<span class="sd">            DataFrame with columns: Plant ID, Technology, Installed Capacity (MW),</span>
+<span class="sd">            Max Capacity (MW), Capacity Fraction.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">installed_plants_df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+
+    <span class="c1"># ----------------------------------------------------------------------------------</span>
+    <span class="c1"># Problem info accessors</span>
+    <span class="c1"># ----------------------------------------------------------------------------------</span>
+
+<div class="viewcode-block" id="OptimizationResults.get_problem_info">
+<a class="viewcode-back" href="../../api/results.html#sdom.OptimizationResults.get_problem_info">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_problem_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get solver problem information.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            Dictionary with keys: Number of constraints, Number of variables,</span>
+<span class="sd">            Number of binary variables, Number of objectives, Number of nonzeros.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem_info</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="collect_results_from_model">
+<a class="viewcode-back" href="../../api/results.html#sdom.collect_results_from_model">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">collect_results_from_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">solver_result</span><span class="p">,</span> <span class="n">case_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;run&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OptimizationResults</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Collect all optimization results from a solved Pyomo model.</span>
+
+<span class="sd">    This function extracts all relevant results from a solved SDOM model and</span>
+<span class="sd">    organizes them into an OptimizationResults dataclass. It combines the</span>
+<span class="sd">    functionality previously split between collect_results() and export_results().</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : pyomo.core.base.PyomoModel.ConcreteModel</span>
+<span class="sd">        The solved Pyomo model instance.</span>
+<span class="sd">    solver_result : pyomo.opt.SolverResults</span>
+<span class="sd">        The solver results object from solver.solve().</span>
+<span class="sd">    case_name : str, optional</span>
+<span class="sd">        Case identifier for the scenario column. Defaults to &quot;run&quot;.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    OptimizationResults</span>
+<span class="sd">        A dataclass containing all optimization results.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Collecting SDOM results...&quot;</span><span class="p">)</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="n">OptimizationResults</span><span class="p">()</span>
+
+    <span class="c1"># Extract solver information</span>
+    <span class="n">results</span><span class="o">.</span><span class="n">termination_condition</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">solver_result</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">termination_condition</span><span class="p">)</span>
+    <span class="n">results</span><span class="o">.</span><span class="n">solver_status</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">solver_result</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">status</span><span class="p">)</span>
+
+    <span class="c1"># Extract problem info</span>
+    <span class="k">if</span> <span class="n">solver_result</span><span class="o">.</span><span class="n">problem</span><span class="p">:</span>
+        <span class="n">problem</span> <span class="o">=</span> <span class="n">solver_result</span><span class="o">.</span><span class="n">problem</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># Helper to extract value from Pyomo ScalarData objects</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">get_value</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">val</span><span class="o">.</span><span class="n">value</span>
+            <span class="k">return</span> <span class="n">val</span>
+        
+        <span class="n">results</span><span class="o">.</span><span class="n">problem_info</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;Number of constraints&quot;</span><span class="p">:</span> <span class="n">get_value</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Number of constraints&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
+            <span class="s2">&quot;Number of variables&quot;</span><span class="p">:</span> <span class="n">get_value</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Number of variables&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
+            <span class="s2">&quot;Number of binary variables&quot;</span><span class="p">:</span> <span class="n">get_value</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Number of binary variables&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
+            <span class="s2">&quot;Number of objectives&quot;</span><span class="p">:</span> <span class="n">get_value</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Number of objectives&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
+            <span class="s2">&quot;Number of nonzeros&quot;</span><span class="p">:</span> <span class="n">get_value</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Number of nonzeros&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
+        <span class="p">}</span>
+
+    <span class="c1"># Total cost</span>
+    <span class="n">results</span><span class="o">.</span><span class="n">total_cost</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">Obj</span><span class="o">.</span><span class="n">expr</span><span class="p">)</span>
+    <span class="n">results</span><span class="o">.</span><span class="n">gen_mix_target</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">GenMix_Target</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="c1"># ----------------------------------------------------------------------------------</span>
+    <span class="c1"># Collect capacity results</span>
+    <span class="c1"># ----------------------------------------------------------------------------------</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Collecting capacity results...&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Generation capacities</span>
+    <span class="n">results</span><span class="o">.</span><span class="n">capacity</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;Thermal&quot;</span><span class="p">:</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">thermal</span><span class="o">.</span><span class="n">total_installed_capacity</span><span class="p">),</span>
+        <span class="s2">&quot;Solar PV&quot;</span><span class="p">:</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">pv</span><span class="o">.</span><span class="n">total_installed_capacity</span><span class="p">),</span>
+        <span class="s2">&quot;Wind&quot;</span><span class="p">:</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">wind</span><span class="o">.</span><span class="n">total_installed_capacity</span><span class="p">),</span>
+    <span class="p">}</span>
+    <span class="n">results</span><span class="o">.</span><span class="n">capacity</span><span class="p">[</span><span class="s2">&quot;All&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">results</span><span class="o">.</span><span class="n">capacity</span><span class="p">[</span><span class="s2">&quot;Thermal&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">results</span><span class="o">.</span><span class="n">capacity</span><span class="p">[</span><span class="s2">&quot;Solar PV&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">results</span><span class="o">.</span><span class="n">capacity</span><span class="p">[</span><span class="s2">&quot;Wind&quot;</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Storage capacities</span>
+    <span class="n">storage_tech_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">j</span><span class="p">)</span>
+
+    <span class="n">charge_cap</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">discharge_cap</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">energy_cap</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">tech</span> <span class="ow">in</span> <span class="n">storage_tech_list</span><span class="p">:</span>
+        <span class="n">charge_cap</span><span class="p">[</span><span class="n">tech</span><span class="p">]</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">Pcha</span><span class="p">[</span><span class="n">tech</span><span class="p">])</span>
+        <span class="n">discharge_cap</span><span class="p">[</span><span class="n">tech</span><span class="p">]</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">Pdis</span><span class="p">[</span><span class="n">tech</span><span class="p">])</span>
+        <span class="n">energy_cap</span><span class="p">[</span><span class="n">tech</span><span class="p">]</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">Ecap</span><span class="p">[</span><span class="n">tech</span><span class="p">])</span>
+
+    <span class="n">charge_cap</span><span class="p">[</span><span class="s2">&quot;All&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">charge_cap</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">storage_tech_list</span><span class="p">)</span>
+    <span class="n">discharge_cap</span><span class="p">[</span><span class="s2">&quot;All&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">discharge_cap</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">storage_tech_list</span><span class="p">)</span>
+    <span class="n">energy_cap</span><span class="p">[</span><span class="s2">&quot;All&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">energy_cap</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">storage_tech_list</span><span class="p">)</span>
+
+    <span class="n">results</span><span class="o">.</span><span class="n">storage_capacity</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;charge&quot;</span><span class="p">:</span> <span class="n">charge_cap</span><span class="p">,</span>
+        <span class="s2">&quot;discharge&quot;</span><span class="p">:</span> <span class="n">discharge_cap</span><span class="p">,</span>
+        <span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="n">energy_cap</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="c1"># ----------------------------------------------------------------------------------</span>
+    <span class="c1"># Collect generation totals</span>
+    <span class="c1"># ----------------------------------------------------------------------------------</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Collecting generation totals...&quot;</span><span class="p">)</span>
+
+    <span class="n">results</span><span class="o">.</span><span class="n">generation_totals</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;Thermal&quot;</span><span class="p">:</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">thermal</span><span class="o">.</span><span class="n">total_generation</span><span class="p">),</span>
+        <span class="s2">&quot;Solar PV&quot;</span><span class="p">:</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">pv</span><span class="o">.</span><span class="n">total_generation</span><span class="p">),</span>
+        <span class="s2">&quot;Wind&quot;</span><span class="p">:</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">wind</span><span class="o">.</span><span class="n">total_generation</span><span class="p">),</span>
+        <span class="s2">&quot;Other renewables&quot;</span><span class="p">:</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">other_renewables</span><span class="o">.</span><span class="n">ts_parameter</span><span class="p">[</span><span class="n">h</span><span class="p">]</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">h</span><span class="p">))</span> <span class="o">*</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">other_renewables</span><span class="o">.</span><span class="n">alpha</span><span class="p">),</span>
+        <span class="s2">&quot;Hydro&quot;</span><span class="p">:</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">hydro</span><span class="o">.</span><span class="n">generation</span><span class="p">[</span><span class="n">h</span><span class="p">]</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">h</span><span class="p">))</span> <span class="o">*</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">hydro</span><span class="o">.</span><span class="n">alpha</span><span class="p">),</span>
+        <span class="s2">&quot;Nuclear&quot;</span><span class="p">:</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">nuclear</span><span class="o">.</span><span class="n">ts_parameter</span><span class="p">[</span><span class="n">h</span><span class="p">]</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">h</span><span class="p">))</span> <span class="o">*</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">nuclear</span><span class="o">.</span><span class="n">alpha</span><span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Storage discharge totals</span>
+    <span class="n">storage_discharge_total</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">tech</span> <span class="ow">in</span> <span class="n">storage_tech_list</span><span class="p">:</span>
+        <span class="n">tech_discharge</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">PD</span><span class="p">[</span><span class="n">h</span><span class="p">,</span> <span class="n">tech</span><span class="p">]</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">h</span><span class="p">))</span>
+        <span class="n">results</span><span class="o">.</span><span class="n">generation_totals</span><span class="p">[</span><span class="n">tech</span><span class="p">]</span> <span class="o">=</span> <span class="n">tech_discharge</span>
+        <span class="n">storage_discharge_total</span> <span class="o">+=</span> <span class="n">tech_discharge</span>
+
+    <span class="n">results</span><span class="o">.</span><span class="n">generation_totals</span><span class="p">[</span><span class="s2">&quot;All&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">results</span><span class="o">.</span><span class="n">generation_totals</span><span class="p">[</span><span class="s2">&quot;Thermal&quot;</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">results</span><span class="o">.</span><span class="n">generation_totals</span><span class="p">[</span><span class="s2">&quot;Solar PV&quot;</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">results</span><span class="o">.</span><span class="n">generation_totals</span><span class="p">[</span><span class="s2">&quot;Wind&quot;</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">results</span><span class="o">.</span><span class="n">generation_totals</span><span class="p">[</span><span class="s2">&quot;Other renewables&quot;</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">results</span><span class="o">.</span><span class="n">generation_totals</span><span class="p">[</span><span class="s2">&quot;Hydro&quot;</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">results</span><span class="o">.</span><span class="n">generation_totals</span><span class="p">[</span><span class="s2">&quot;Nuclear&quot;</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">storage_discharge_total</span>
+    <span class="p">)</span>
+
+    <span class="c1"># ----------------------------------------------------------------------------------</span>
+    <span class="c1"># Collect cost breakdown</span>
+    <span class="c1"># ----------------------------------------------------------------------------------</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Collecting cost breakdown...&quot;</span><span class="p">)</span>
+
+    <span class="c1"># CAPEX</span>
+    <span class="n">capex</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;Solar PV&quot;</span><span class="p">:</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">pv</span><span class="o">.</span><span class="n">capex_cost_expr</span><span class="p">),</span>
+        <span class="s2">&quot;Wind&quot;</span><span class="p">:</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">wind</span><span class="o">.</span><span class="n">capex_cost_expr</span><span class="p">),</span>
+        <span class="s2">&quot;Thermal&quot;</span><span class="p">:</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">thermal</span><span class="o">.</span><span class="n">capex_cost_expr</span><span class="p">),</span>
+    <span class="p">}</span>
+    <span class="n">capex</span><span class="p">[</span><span class="s2">&quot;All&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">capex</span><span class="p">[</span><span class="s2">&quot;Solar PV&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">capex</span><span class="p">[</span><span class="s2">&quot;Wind&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">capex</span><span class="p">[</span><span class="s2">&quot;Thermal&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Storage CAPEX</span>
+    <span class="n">power_capex</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">energy_capex</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">tech</span> <span class="ow">in</span> <span class="n">storage_tech_list</span><span class="p">:</span>
+        <span class="n">power_capex</span><span class="p">[</span><span class="n">tech</span><span class="p">]</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">power_capex_cost_expr</span><span class="p">[</span><span class="n">tech</span><span class="p">])</span>
+        <span class="n">energy_capex</span><span class="p">[</span><span class="n">tech</span><span class="p">]</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">energy_capex_cost_expr</span><span class="p">[</span><span class="n">tech</span><span class="p">])</span>
+
+    <span class="n">power_capex</span><span class="p">[</span><span class="s2">&quot;All&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">power_capex</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">storage_tech_list</span><span class="p">)</span>
+    <span class="n">energy_capex</span><span class="p">[</span><span class="s2">&quot;All&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">energy_capex</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">storage_tech_list</span><span class="p">)</span>
+
+    <span class="c1"># FOM</span>
+    <span class="n">fom</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;Thermal&quot;</span><span class="p">:</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">thermal</span><span class="o">.</span><span class="n">fixed_om_cost_expr</span><span class="p">),</span>
+        <span class="s2">&quot;Solar PV&quot;</span><span class="p">:</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">pv</span><span class="o">.</span><span class="n">fixed_om_cost_expr</span><span class="p">),</span>
+        <span class="s2">&quot;Wind&quot;</span><span class="p">:</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">wind</span><span class="o">.</span><span class="n">fixed_om_cost_expr</span><span class="p">),</span>
+    <span class="p">}</span>
+    <span class="n">fom_storage_total</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">tech</span> <span class="ow">in</span> <span class="n">storage_tech_list</span><span class="p">:</span>
+        <span class="n">fom</span><span class="p">[</span><span class="n">tech</span><span class="p">]</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span>
+            <span class="n">MW_TO_KW</span> <span class="o">*</span> <span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;CostRatio&quot;</span><span class="p">,</span> <span class="n">tech</span><span class="p">]</span> <span class="o">*</span> <span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;FOM&quot;</span><span class="p">,</span> <span class="n">tech</span><span class="p">]</span> <span class="o">*</span> <span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">Pcha</span><span class="p">[</span><span class="n">tech</span><span class="p">]</span>
+            <span class="o">+</span> <span class="n">MW_TO_KW</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;CostRatio&quot;</span><span class="p">,</span> <span class="n">tech</span><span class="p">])</span> <span class="o">*</span> <span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;FOM&quot;</span><span class="p">,</span> <span class="n">tech</span><span class="p">]</span> <span class="o">*</span> <span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">Pdis</span><span class="p">[</span><span class="n">tech</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">fom_storage_total</span> <span class="o">+=</span> <span class="n">fom</span><span class="p">[</span><span class="n">tech</span><span class="p">]</span>
+    <span class="n">fom</span><span class="p">[</span><span class="s2">&quot;All&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fom</span><span class="p">[</span><span class="s2">&quot;Thermal&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">fom</span><span class="p">[</span><span class="s2">&quot;Solar PV&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">fom</span><span class="p">[</span><span class="s2">&quot;Wind&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">fom_storage_total</span>
+
+    <span class="c1"># VOM</span>
+    <span class="n">vom</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;Thermal&quot;</span><span class="p">:</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">thermal</span><span class="o">.</span><span class="n">total_vom_cost_expr</span><span class="p">),</span>
+    <span class="p">}</span>
+    <span class="n">vom_storage_total</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">tech</span> <span class="ow">in</span> <span class="n">storage_tech_list</span><span class="p">:</span>
+        <span class="n">vom</span><span class="p">[</span><span class="n">tech</span><span class="p">]</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;VOM&quot;</span><span class="p">,</span> <span class="n">tech</span><span class="p">]</span> <span class="o">*</span> <span class="nb">sum</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">PD</span><span class="p">[</span><span class="n">h</span><span class="p">,</span> <span class="n">tech</span><span class="p">]</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">h</span><span class="p">))</span>
+        <span class="n">vom_storage_total</span> <span class="o">+=</span> <span class="n">vom</span><span class="p">[</span><span class="n">tech</span><span class="p">]</span>
+    <span class="n">vom</span><span class="p">[</span><span class="s2">&quot;All&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vom</span><span class="p">[</span><span class="s2">&quot;Thermal&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">vom_storage_total</span>
+
+    <span class="c1"># Fuel cost</span>
+    <span class="n">fuel_cost</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;Thermal&quot;</span><span class="p">:</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">thermal</span><span class="o">.</span><span class="n">total_fuel_cost_expr</span><span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Imports/Exports costs</span>
+    <span class="n">imports_cost</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">imports</span><span class="o">.</span><span class="n">total_cost_expr</span><span class="p">)</span>
+    <span class="n">exports_revenue</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">total_cost_expr</span><span class="p">)</span>
+
+    <span class="n">results</span><span class="o">.</span><span class="n">cost_breakdown</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;capex&quot;</span><span class="p">:</span> <span class="n">capex</span><span class="p">,</span>
+        <span class="s2">&quot;power_capex&quot;</span><span class="p">:</span> <span class="n">power_capex</span><span class="p">,</span>
+        <span class="s2">&quot;energy_capex&quot;</span><span class="p">:</span> <span class="n">energy_capex</span><span class="p">,</span>
+        <span class="s2">&quot;fom&quot;</span><span class="p">:</span> <span class="n">fom</span><span class="p">,</span>
+        <span class="s2">&quot;vom&quot;</span><span class="p">:</span> <span class="n">vom</span><span class="p">,</span>
+        <span class="s2">&quot;fuel_cost&quot;</span><span class="p">:</span> <span class="n">fuel_cost</span><span class="p">,</span>
+        <span class="s2">&quot;imports_cost&quot;</span><span class="p">:</span> <span class="n">imports_cost</span><span class="p">,</span>
+        <span class="s2">&quot;exports_revenue&quot;</span><span class="p">:</span> <span class="n">exports_revenue</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="c1"># ----------------------------------------------------------------------------------</span>
+    <span class="c1"># Build generation DataFrame</span>
+    <span class="c1"># ----------------------------------------------------------------------------------</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Building generation DataFrame...&quot;</span><span class="p">)</span>
+
+    <span class="n">gen_data</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;Scenario&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;Hour&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;Solar PV Generation (MW)&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;Solar PV Curtailment (MW)&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;Wind Generation (MW)&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;Wind Curtailment (MW)&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;All Thermal Generation (MW)&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;Hydro Generation (MW)&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;Nuclear Generation (MW)&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;Other Renewables Generation (MW)&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;Imports (MW)&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;Storage Charge/Discharge (MW)&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;Exports (MW)&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;Load (MW)&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;Net Load (MW)&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">h</span><span class="p">:</span>
+        <span class="n">solar_gen</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">pv</span><span class="o">.</span><span class="n">generation</span><span class="p">[</span><span class="n">h</span><span class="p">])</span>
+        <span class="n">solar_curt</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">pv</span><span class="o">.</span><span class="n">curtailment</span><span class="p">[</span><span class="n">h</span><span class="p">])</span>
+        <span class="n">wind_gen</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">wind</span><span class="o">.</span><span class="n">generation</span><span class="p">[</span><span class="n">h</span><span class="p">])</span>
+        <span class="n">wind_curt</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">wind</span><span class="o">.</span><span class="n">curtailment</span><span class="p">[</span><span class="n">h</span><span class="p">])</span>
+        <span class="n">thermal_gen</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">thermal</span><span class="o">.</span><span class="n">generation</span><span class="p">[</span><span class="n">h</span><span class="p">,</span> <span class="n">bu</span><span class="p">])</span> <span class="k">for</span> <span class="n">bu</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">thermal</span><span class="o">.</span><span class="n">plants_set</span><span class="p">)</span>
+        <span class="n">hydro</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">hydro</span><span class="o">.</span><span class="n">generation</span><span class="p">[</span><span class="n">h</span><span class="p">])</span>
+        <span class="n">nuclear</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">nuclear</span><span class="o">.</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">model</span><span class="o">.</span><span class="n">nuclear</span><span class="o">.</span><span class="n">ts_parameter</span><span class="p">[</span><span class="n">h</span><span class="p">])</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">nuclear</span><span class="p">,</span> <span class="s2">&quot;alpha&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">other_renewables</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">other_renewables</span><span class="o">.</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">model</span><span class="o">.</span><span class="n">other_renewables</span><span class="o">.</span><span class="n">ts_parameter</span><span class="p">[</span><span class="n">h</span><span class="p">])</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">other_renewables</span><span class="p">,</span> <span class="s2">&quot;alpha&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">imports</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">imports</span><span class="o">.</span><span class="n">variable</span><span class="p">[</span><span class="n">h</span><span class="p">])</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">imports</span><span class="p">,</span> <span class="s2">&quot;variable&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">exports</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">variable</span><span class="p">[</span><span class="n">h</span><span class="p">])</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">exports</span><span class="p">,</span> <span class="s2">&quot;variable&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">load</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">demand</span><span class="o">.</span><span class="n">ts_parameter</span><span class="p">[</span><span class="n">h</span><span class="p">])</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">demand</span><span class="p">,</span> <span class="s2">&quot;ts_parameter&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">net_load</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">net_load</span><span class="p">[</span><span class="n">h</span><span class="p">])</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;net_load&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">power_to_storage</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">PC</span><span class="p">[</span><span class="n">h</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span> <span class="ow">or</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">j</span><span class="p">)</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">PD</span><span class="p">[</span><span class="n">h</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span> <span class="ow">or</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">j</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="kc">None</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">solar_gen</span><span class="p">,</span> <span class="n">solar_curt</span><span class="p">,</span> <span class="n">wind_gen</span><span class="p">,</span> <span class="n">wind_curt</span><span class="p">,</span> <span class="n">thermal_gen</span><span class="p">,</span> <span class="n">hydro</span><span class="p">,</span> <span class="n">imports</span><span class="p">,</span> <span class="n">exports</span><span class="p">,</span> <span class="n">load</span><span class="p">]:</span>
+            <span class="n">gen_data</span><span class="p">[</span><span class="s2">&quot;Scenario&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">case_name</span><span class="p">)</span>
+            <span class="n">gen_data</span><span class="p">[</span><span class="s2">&quot;Hour&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+            <span class="n">gen_data</span><span class="p">[</span><span class="s2">&quot;Solar PV Generation (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">solar_gen</span><span class="p">)</span>
+            <span class="n">gen_data</span><span class="p">[</span><span class="s2">&quot;Solar PV Curtailment (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">solar_curt</span><span class="p">)</span>
+            <span class="n">gen_data</span><span class="p">[</span><span class="s2">&quot;Wind Generation (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">wind_gen</span><span class="p">)</span>
+            <span class="n">gen_data</span><span class="p">[</span><span class="s2">&quot;Wind Curtailment (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">wind_curt</span><span class="p">)</span>
+            <span class="n">gen_data</span><span class="p">[</span><span class="s2">&quot;All Thermal Generation (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">thermal_gen</span><span class="p">)</span>
+            <span class="n">gen_data</span><span class="p">[</span><span class="s2">&quot;Hydro Generation (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hydro</span><span class="p">)</span>
+            <span class="n">gen_data</span><span class="p">[</span><span class="s2">&quot;Nuclear Generation (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nuclear</span><span class="p">)</span>
+            <span class="n">gen_data</span><span class="p">[</span><span class="s2">&quot;Other Renewables Generation (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">other_renewables</span><span class="p">)</span>
+            <span class="n">gen_data</span><span class="p">[</span><span class="s2">&quot;Imports (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">imports</span><span class="p">)</span>
+            <span class="n">gen_data</span><span class="p">[</span><span class="s2">&quot;Storage Charge/Discharge (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">power_to_storage</span><span class="p">)</span>
+            <span class="n">gen_data</span><span class="p">[</span><span class="s2">&quot;Exports (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exports</span><span class="p">)</span>
+            <span class="n">gen_data</span><span class="p">[</span><span class="s2">&quot;Load (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">load</span><span class="p">)</span>
+            <span class="n">gen_data</span><span class="p">[</span><span class="s2">&quot;Net Load (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">net_load</span><span class="p">)</span>
+
+    <span class="n">results</span><span class="o">.</span><span class="n">generation_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">gen_data</span><span class="p">)</span>
+
+    <span class="c1"># ----------------------------------------------------------------------------------</span>
+    <span class="c1"># Build storage DataFrame</span>
+    <span class="c1"># ----------------------------------------------------------------------------------</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Building storage DataFrame...&quot;</span><span class="p">)</span>
+
+    <span class="n">storage_data</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;Hour&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;Technology&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;Charging power (MW)&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;Discharging power (MW)&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;State of charge (MWh)&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">h</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">j</span><span class="p">:</span>
+            <span class="n">charge_power</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">PC</span><span class="p">[</span><span class="n">h</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
+            <span class="n">discharge_power</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">PD</span><span class="p">[</span><span class="n">h</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
+            <span class="n">soc</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">SOC</span><span class="p">[</span><span class="n">h</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
+            <span class="k">if</span> <span class="kc">None</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">charge_power</span><span class="p">,</span> <span class="n">discharge_power</span><span class="p">,</span> <span class="n">soc</span><span class="p">]:</span>
+                <span class="n">storage_data</span><span class="p">[</span><span class="s2">&quot;Hour&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+                <span class="n">storage_data</span><span class="p">[</span><span class="s2">&quot;Technology&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+                <span class="n">storage_data</span><span class="p">[</span><span class="s2">&quot;Charging power (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">charge_power</span><span class="p">)</span>
+                <span class="n">storage_data</span><span class="p">[</span><span class="s2">&quot;Discharging power (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">discharge_power</span><span class="p">)</span>
+                <span class="n">storage_data</span><span class="p">[</span><span class="s2">&quot;State of charge (MWh)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">soc</span><span class="p">)</span>
+
+    <span class="n">results</span><span class="o">.</span><span class="n">storage_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">storage_data</span><span class="p">)</span>
+
+    <span class="c1"># ----------------------------------------------------------------------------------</span>
+    <span class="c1"># Build thermal generation DataFrame (disaggregated)</span>
+    <span class="c1"># ----------------------------------------------------------------------------------</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Building thermal generation DataFrame...&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">thermal</span><span class="o">.</span><span class="n">plants_set</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">thermal_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Hour&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+        <span class="k">for</span> <span class="n">plant</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">thermal</span><span class="o">.</span><span class="n">plants_set</span><span class="p">:</span>
+            <span class="n">thermal_data</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">plant</span><span class="p">)]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">h</span><span class="p">:</span>
+            <span class="n">thermal_data</span><span class="p">[</span><span class="s2">&quot;Hour&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">plant</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">thermal</span><span class="o">.</span><span class="n">plants_set</span><span class="p">:</span>
+                <span class="n">thermal_data</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">plant</span><span class="p">)]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">thermal</span><span class="o">.</span><span class="n">generation</span><span class="p">[</span><span class="n">h</span><span class="p">,</span> <span class="n">plant</span><span class="p">]))</span>
+
+        <span class="n">results</span><span class="o">.</span><span class="n">thermal_generation_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">thermal_data</span><span class="p">)</span>
+
+    <span class="c1"># ----------------------------------------------------------------------------------</span>
+    <span class="c1"># Build installed power plants DataFrame</span>
+    <span class="c1"># ----------------------------------------------------------------------------------</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Building installed power plants DataFrame...&quot;</span><span class="p">)</span>
+
+    <span class="n">installed_plants_data</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;Plant ID&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;Technology&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;Installed Capacity (MW)&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;Max Capacity (MW)&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;Capacity Fraction&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Solar PV plants</span>
+    <span class="k">for</span> <span class="n">plant</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">pv</span><span class="o">.</span><span class="n">plants_set</span><span class="p">:</span>
+        <span class="n">installed_cap</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">pv</span><span class="o">.</span><span class="n">plant_installed_capacity</span><span class="p">[</span><span class="n">plant</span><span class="p">])</span>
+        <span class="n">max_cap</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">pv</span><span class="o">.</span><span class="n">max_capacity</span><span class="p">[</span><span class="n">plant</span><span class="p">])</span>
+        <span class="n">cap_fraction</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">pv</span><span class="o">.</span><span class="n">capacity_fraction</span><span class="p">[</span><span class="n">plant</span><span class="p">])</span>
+        <span class="n">installed_plants_data</span><span class="p">[</span><span class="s2">&quot;Plant ID&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">plant</span><span class="p">))</span>
+        <span class="n">installed_plants_data</span><span class="p">[</span><span class="s2">&quot;Technology&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Solar PV&quot;</span><span class="p">)</span>
+        <span class="n">installed_plants_data</span><span class="p">[</span><span class="s2">&quot;Installed Capacity (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">installed_cap</span><span class="p">)</span>
+        <span class="n">installed_plants_data</span><span class="p">[</span><span class="s2">&quot;Max Capacity (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">max_cap</span><span class="p">)</span>
+        <span class="n">installed_plants_data</span><span class="p">[</span><span class="s2">&quot;Capacity Fraction&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cap_fraction</span><span class="p">)</span>
+
+    <span class="c1"># Wind plants</span>
+    <span class="k">for</span> <span class="n">plant</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">wind</span><span class="o">.</span><span class="n">plants_set</span><span class="p">:</span>
+        <span class="n">installed_cap</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">wind</span><span class="o">.</span><span class="n">plant_installed_capacity</span><span class="p">[</span><span class="n">plant</span><span class="p">])</span>
+        <span class="n">max_cap</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">wind</span><span class="o">.</span><span class="n">max_capacity</span><span class="p">[</span><span class="n">plant</span><span class="p">])</span>
+        <span class="n">cap_fraction</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">wind</span><span class="o">.</span><span class="n">capacity_fraction</span><span class="p">[</span><span class="n">plant</span><span class="p">])</span>
+        <span class="n">installed_plants_data</span><span class="p">[</span><span class="s2">&quot;Plant ID&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">plant</span><span class="p">))</span>
+        <span class="n">installed_plants_data</span><span class="p">[</span><span class="s2">&quot;Technology&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Wind&quot;</span><span class="p">)</span>
+        <span class="n">installed_plants_data</span><span class="p">[</span><span class="s2">&quot;Installed Capacity (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">installed_cap</span><span class="p">)</span>
+        <span class="n">installed_plants_data</span><span class="p">[</span><span class="s2">&quot;Max Capacity (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">max_cap</span><span class="p">)</span>
+        <span class="n">installed_plants_data</span><span class="p">[</span><span class="s2">&quot;Capacity Fraction&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cap_fraction</span><span class="p">)</span>
+
+    <span class="c1"># Thermal plants</span>
+    <span class="k">for</span> <span class="n">plant</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">thermal</span><span class="o">.</span><span class="n">plants_set</span><span class="p">:</span>
+        <span class="n">installed_cap</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">thermal</span><span class="o">.</span><span class="n">plant_installed_capacity</span><span class="p">[</span><span class="n">plant</span><span class="p">])</span>
+        <span class="n">max_cap</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">thermal</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;MaxCapacity&quot;</span><span class="p">,</span> <span class="n">plant</span><span class="p">])</span>
+        <span class="c1"># For thermal, capacity fraction is installed/max (there&#39;s no explicit fraction variable)</span>
+        <span class="n">cap_fraction</span> <span class="o">=</span> <span class="n">installed_cap</span> <span class="o">/</span> <span class="n">max_cap</span> <span class="k">if</span> <span class="n">max_cap</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">0.0</span>
+        <span class="n">installed_plants_data</span><span class="p">[</span><span class="s2">&quot;Plant ID&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">plant</span><span class="p">))</span>
+        <span class="n">installed_plants_data</span><span class="p">[</span><span class="s2">&quot;Technology&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Thermal&quot;</span><span class="p">)</span>
+        <span class="n">installed_plants_data</span><span class="p">[</span><span class="s2">&quot;Installed Capacity (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">installed_cap</span><span class="p">)</span>
+        <span class="n">installed_plants_data</span><span class="p">[</span><span class="s2">&quot;Max Capacity (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">max_cap</span><span class="p">)</span>
+        <span class="n">installed_plants_data</span><span class="p">[</span><span class="s2">&quot;Capacity Fraction&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cap_fraction</span><span class="p">)</span>
+
+    <span class="n">results</span><span class="o">.</span><span class="n">installed_plants_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">installed_plants_data</span><span class="p">)</span>
+
+    <span class="c1"># ----------------------------------------------------------------------------------</span>
+    <span class="c1"># Build summary DataFrame</span>
+    <span class="c1"># ----------------------------------------------------------------------------------</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Building summary DataFrame...&quot;</span><span class="p">)</span>
+
+    <span class="n">results</span><span class="o">.</span><span class="n">summary_df</span> <span class="o">=</span> <span class="n">_build_summary_dataframe</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="n">storage_tech_list</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">results</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_build_summary_dataframe</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="n">OptimizationResults</span><span class="p">,</span> <span class="n">storage_tech_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build the summary DataFrame from results.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : pyomo.core.base.PyomoModel.ConcreteModel</span>
+<span class="sd">        The solved Pyomo model instance.</span>
+<span class="sd">    results : OptimizationResults</span>
+<span class="sd">        The results object with collected data.</span>
+<span class="sd">    storage_tech_list : list</span>
+<span class="sd">        List of storage technology identifiers.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pd.DataFrame</span>
+<span class="sd">        Summary DataFrame with metrics.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.common.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">concatenate_dataframes</span>
+
+    <span class="c1"># Total cost</span>
+    <span class="n">total_cost</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span>
+        <span class="p">{</span><span class="s2">&quot;Total cost&quot;</span><span class="p">:</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">total_cost</span><span class="p">,</span> <span class="s2">&quot;$US&quot;</span><span class="p">]},</span>
+        <span class="n">orient</span><span class="o">=</span><span class="s2">&quot;index&quot;</span><span class="p">,</span>
+        <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Technology&quot;</span><span class="p">,</span> <span class="s2">&quot;Run&quot;</span><span class="p">,</span> <span class="s2">&quot;Optimal Value&quot;</span><span class="p">,</span> <span class="s2">&quot;Unit&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
+    <span class="n">total_cost</span> <span class="o">=</span> <span class="n">total_cost</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">names</span><span class="o">=</span><span class="s2">&quot;Metric&quot;</span><span class="p">)</span>
+    <span class="n">summary_results</span> <span class="o">=</span> <span class="n">total_cost</span>
+
+    <span class="c1"># Capacity</span>
+    <span class="n">summary_results</span> <span class="o">=</span> <span class="n">concatenate_dataframes</span><span class="p">(</span><span class="n">summary_results</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">capacity</span><span class="p">,</span> <span class="n">run</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;MW&quot;</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;Capacity&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Storage capacities</span>
+    <span class="n">summary_results</span> <span class="o">=</span> <span class="n">concatenate_dataframes</span><span class="p">(</span>
+        <span class="n">summary_results</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">storage_capacity</span><span class="p">[</span><span class="s2">&quot;charge&quot;</span><span class="p">],</span> <span class="n">run</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;MW&quot;</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;Charge power capacity&quot;</span>
+    <span class="p">)</span>
+    <span class="n">summary_results</span> <span class="o">=</span> <span class="n">concatenate_dataframes</span><span class="p">(</span>
+        <span class="n">summary_results</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">storage_capacity</span><span class="p">[</span><span class="s2">&quot;discharge&quot;</span><span class="p">],</span> <span class="n">run</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;MW&quot;</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;Discharge power capacity&quot;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Average power capacity</span>
+    <span class="n">avgpocap</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">tech</span> <span class="ow">in</span> <span class="n">storage_tech_list</span><span class="p">:</span>
+        <span class="n">avgpocap</span><span class="p">[</span><span class="n">tech</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">storage_capacity</span><span class="p">[</span><span class="s2">&quot;charge&quot;</span><span class="p">][</span><span class="n">tech</span><span class="p">]</span> <span class="o">+</span> <span class="n">results</span><span class="o">.</span><span class="n">storage_capacity</span><span class="p">[</span><span class="s2">&quot;discharge&quot;</span><span class="p">][</span><span class="n">tech</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">avgpocap</span><span class="p">[</span><span class="s2">&quot;All&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">avgpocap</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">storage_tech_list</span><span class="p">)</span>
+    <span class="n">summary_results</span> <span class="o">=</span> <span class="n">concatenate_dataframes</span><span class="p">(</span><span class="n">summary_results</span><span class="p">,</span> <span class="n">avgpocap</span><span class="p">,</span> <span class="n">run</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;MW&quot;</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;Average power capacity&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Energy capacity</span>
+    <span class="n">summary_results</span> <span class="o">=</span> <span class="n">concatenate_dataframes</span><span class="p">(</span>
+        <span class="n">summary_results</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">storage_capacity</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">],</span> <span class="n">run</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;MWh&quot;</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;Energy capacity&quot;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Duration</span>
+    <span class="n">dis_dur</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">tech</span> <span class="ow">in</span> <span class="n">storage_tech_list</span><span class="p">:</span>
+        <span class="n">dis_dur</span><span class="p">[</span><span class="n">tech</span><span class="p">]</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span>
+            <span class="n">sqrt</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Eff&quot;</span><span class="p">,</span> <span class="n">tech</span><span class="p">])</span> <span class="o">*</span> <span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">Ecap</span><span class="p">[</span><span class="n">tech</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">Pdis</span><span class="p">[</span><span class="n">tech</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1e-15</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="n">summary_results</span> <span class="o">=</span> <span class="n">concatenate_dataframes</span><span class="p">(</span><span class="n">summary_results</span><span class="p">,</span> <span class="n">dis_dur</span><span class="p">,</span> <span class="n">run</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;Duration&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Generation</span>
+    <span class="n">summary_results</span> <span class="o">=</span> <span class="n">concatenate_dataframes</span><span class="p">(</span>
+        <span class="n">summary_results</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">generation_totals</span><span class="p">,</span> <span class="n">run</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;MWh&quot;</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;Total generation&quot;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Imports/Exports totals</span>
+    <span class="n">imp_exp</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">imp_exp</span><span class="p">[</span><span class="s2">&quot;Imports&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">imports</span><span class="o">.</span><span class="n">variable</span><span class="p">[</span><span class="n">h</span><span class="p">]</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">h</span><span class="p">))</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">imports</span><span class="p">,</span> <span class="s2">&quot;variable&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+    <span class="n">imp_exp</span><span class="p">[</span><span class="s2">&quot;Exports&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">variable</span><span class="p">[</span><span class="n">h</span><span class="p">]</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">h</span><span class="p">))</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">exports</span><span class="p">,</span> <span class="s2">&quot;variable&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+    <span class="n">summary_results</span> <span class="o">=</span> <span class="n">concatenate_dataframes</span><span class="p">(</span><span class="n">summary_results</span><span class="p">,</span> <span class="n">imp_exp</span><span class="p">,</span> <span class="n">run</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;MWh&quot;</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;Total Imports/Exports&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Storage discharge</span>
+    <span class="n">stodisch</span> <span class="o">=</span> <span class="p">{</span><span class="n">tech</span><span class="p">:</span> <span class="n">results</span><span class="o">.</span><span class="n">generation_totals</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tech</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">tech</span> <span class="ow">in</span> <span class="n">storage_tech_list</span><span class="p">}</span>
+    <span class="n">stodisch</span><span class="p">[</span><span class="s2">&quot;All&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">stodisch</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">storage_tech_list</span><span class="p">)</span>
+    <span class="n">summary_results</span> <span class="o">=</span> <span class="n">concatenate_dataframes</span><span class="p">(</span><span class="n">summary_results</span><span class="p">,</span> <span class="n">stodisch</span><span class="p">,</span> <span class="n">run</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;MWh&quot;</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;Storage energy discharging&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Demand</span>
+    <span class="n">dem</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;demand&quot;</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">demand</span><span class="o">.</span><span class="n">ts_parameter</span><span class="p">[</span><span class="n">h</span><span class="p">]</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">h</span><span class="p">)}</span>
+    <span class="n">summary_results</span> <span class="o">=</span> <span class="n">concatenate_dataframes</span><span class="p">(</span><span class="n">summary_results</span><span class="p">,</span> <span class="n">dem</span><span class="p">,</span> <span class="n">run</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;MWh&quot;</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;Total demand&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Storage charging</span>
+    <span class="n">stoch</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">tech</span> <span class="ow">in</span> <span class="n">storage_tech_list</span><span class="p">:</span>
+        <span class="n">stoch</span><span class="p">[</span><span class="n">tech</span><span class="p">]</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">PC</span><span class="p">[</span><span class="n">h</span><span class="p">,</span> <span class="n">tech</span><span class="p">]</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">h</span><span class="p">))</span>
+    <span class="n">stoch</span><span class="p">[</span><span class="s2">&quot;All&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">stoch</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">storage_tech_list</span><span class="p">)</span>
+    <span class="n">summary_results</span> <span class="o">=</span> <span class="n">concatenate_dataframes</span><span class="p">(</span><span class="n">summary_results</span><span class="p">,</span> <span class="n">stoch</span><span class="p">,</span> <span class="n">run</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;MWh&quot;</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;Storage energy charging&quot;</span><span class="p">)</span>
+
+    <span class="c1"># CAPEX</span>
+    <span class="n">summary_results</span> <span class="o">=</span> <span class="n">concatenate_dataframes</span><span class="p">(</span>
+        <span class="n">summary_results</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">cost_breakdown</span><span class="p">[</span><span class="s2">&quot;capex&quot;</span><span class="p">],</span> <span class="n">run</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;$US&quot;</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;CAPEX&quot;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Power CAPEX</span>
+    <span class="n">summary_results</span> <span class="o">=</span> <span class="n">concatenate_dataframes</span><span class="p">(</span>
+        <span class="n">summary_results</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">cost_breakdown</span><span class="p">[</span><span class="s2">&quot;power_capex&quot;</span><span class="p">],</span> <span class="n">run</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;$US&quot;</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;Power-CAPEX&quot;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Energy CAPEX</span>
+    <span class="n">summary_results</span> <span class="o">=</span> <span class="n">concatenate_dataframes</span><span class="p">(</span>
+        <span class="n">summary_results</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">cost_breakdown</span><span class="p">[</span><span class="s2">&quot;energy_capex&quot;</span><span class="p">],</span> <span class="n">run</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;$US&quot;</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;Energy-CAPEX&quot;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Total CAPEX (storage)</span>
+    <span class="n">tcapex</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">tech</span> <span class="ow">in</span> <span class="n">storage_tech_list</span><span class="p">:</span>
+        <span class="n">tcapex</span><span class="p">[</span><span class="n">tech</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">cost_breakdown</span><span class="p">[</span><span class="s2">&quot;power_capex&quot;</span><span class="p">][</span><span class="n">tech</span><span class="p">]</span> <span class="o">+</span> <span class="n">results</span><span class="o">.</span><span class="n">cost_breakdown</span><span class="p">[</span><span class="s2">&quot;energy_capex&quot;</span><span class="p">][</span><span class="n">tech</span><span class="p">]</span>
+    <span class="n">tcapex</span><span class="p">[</span><span class="s2">&quot;All&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">tcapex</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">storage_tech_list</span><span class="p">)</span>
+    <span class="n">summary_results</span> <span class="o">=</span> <span class="n">concatenate_dataframes</span><span class="p">(</span><span class="n">summary_results</span><span class="p">,</span> <span class="n">tcapex</span><span class="p">,</span> <span class="n">run</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;$US&quot;</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;Total-CAPEX&quot;</span><span class="p">)</span>
+
+    <span class="c1"># FOM</span>
+    <span class="n">summary_results</span> <span class="o">=</span> <span class="n">concatenate_dataframes</span><span class="p">(</span><span class="n">summary_results</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">cost_breakdown</span><span class="p">[</span><span class="s2">&quot;fom&quot;</span><span class="p">],</span> <span class="n">run</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;$US&quot;</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;FOM&quot;</span><span class="p">)</span>
+
+    <span class="c1"># VOM</span>
+    <span class="n">summary_results</span> <span class="o">=</span> <span class="n">concatenate_dataframes</span><span class="p">(</span><span class="n">summary_results</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">cost_breakdown</span><span class="p">[</span><span class="s2">&quot;vom&quot;</span><span class="p">],</span> <span class="n">run</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;$US&quot;</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;VOM&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Fuel cost</span>
+    <span class="n">summary_results</span> <span class="o">=</span> <span class="n">concatenate_dataframes</span><span class="p">(</span>
+        <span class="n">summary_results</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">cost_breakdown</span><span class="p">[</span><span class="s2">&quot;fuel_cost&quot;</span><span class="p">],</span> <span class="n">run</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;$US&quot;</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;Fuel-Cost&quot;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># OPEX</span>
+    <span class="n">opex</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">opex</span><span class="p">[</span><span class="s2">&quot;Thermal&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">cost_breakdown</span><span class="p">[</span><span class="s2">&quot;fom&quot;</span><span class="p">][</span><span class="s2">&quot;Thermal&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">results</span><span class="o">.</span><span class="n">cost_breakdown</span><span class="p">[</span><span class="s2">&quot;vom&quot;</span><span class="p">][</span><span class="s2">&quot;Thermal&quot;</span><span class="p">]</span>
+    <span class="n">opex</span><span class="p">[</span><span class="s2">&quot;Solar PV&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">cost_breakdown</span><span class="p">[</span><span class="s2">&quot;fom&quot;</span><span class="p">][</span><span class="s2">&quot;Solar PV&quot;</span><span class="p">]</span>
+    <span class="n">opex</span><span class="p">[</span><span class="s2">&quot;Wind&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">cost_breakdown</span><span class="p">[</span><span class="s2">&quot;fom&quot;</span><span class="p">][</span><span class="s2">&quot;Wind&quot;</span><span class="p">]</span>
+    <span class="n">opex_storage_total</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">tech</span> <span class="ow">in</span> <span class="n">storage_tech_list</span><span class="p">:</span>
+        <span class="n">opex</span><span class="p">[</span><span class="n">tech</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">cost_breakdown</span><span class="p">[</span><span class="s2">&quot;fom&quot;</span><span class="p">][</span><span class="n">tech</span><span class="p">]</span> <span class="o">+</span> <span class="n">results</span><span class="o">.</span><span class="n">cost_breakdown</span><span class="p">[</span><span class="s2">&quot;vom&quot;</span><span class="p">][</span><span class="n">tech</span><span class="p">]</span>
+        <span class="n">opex_storage_total</span> <span class="o">+=</span> <span class="n">opex</span><span class="p">[</span><span class="n">tech</span><span class="p">]</span>
+    <span class="n">opex</span><span class="p">[</span><span class="s2">&quot;All&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">opex</span><span class="p">[</span><span class="s2">&quot;Thermal&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">opex</span><span class="p">[</span><span class="s2">&quot;Solar PV&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">opex</span><span class="p">[</span><span class="s2">&quot;Wind&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">opex_storage_total</span>
+    <span class="n">summary_results</span> <span class="o">=</span> <span class="n">concatenate_dataframes</span><span class="p">(</span><span class="n">summary_results</span><span class="p">,</span> <span class="n">opex</span><span class="p">,</span> <span class="n">run</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;$US&quot;</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;OPEX&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Imports/Exports costs</span>
+    <span class="n">cost_revenue</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Imports Cost&quot;</span><span class="p">:</span> <span class="n">results</span><span class="o">.</span><span class="n">cost_breakdown</span><span class="p">[</span><span class="s2">&quot;imports_cost&quot;</span><span class="p">]}</span>
+    <span class="n">summary_results</span> <span class="o">=</span> <span class="n">concatenate_dataframes</span><span class="p">(</span><span class="n">summary_results</span><span class="p">,</span> <span class="n">cost_revenue</span><span class="p">,</span> <span class="n">run</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;$US&quot;</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;Cost&quot;</span><span class="p">)</span>
+    <span class="n">cost_revenue</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Exports Revenue&quot;</span><span class="p">:</span> <span class="n">results</span><span class="o">.</span><span class="n">cost_breakdown</span><span class="p">[</span><span class="s2">&quot;exports_revenue&quot;</span><span class="p">]}</span>
+    <span class="n">summary_results</span> <span class="o">=</span> <span class="n">concatenate_dataframes</span><span class="p">(</span><span class="n">summary_results</span><span class="p">,</span> <span class="n">cost_revenue</span><span class="p">,</span> <span class="n">run</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;$US&quot;</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;Revenue&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Equivalent number of cycles</span>
+    <span class="n">cyc</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">tech</span> <span class="ow">in</span> <span class="n">storage_tech_list</span><span class="p">:</span>
+        <span class="n">cyc</span><span class="p">[</span><span class="n">tech</span><span class="p">]</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">generation_totals</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tech</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">Ecap</span><span class="p">[</span><span class="n">tech</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1e-15</span><span class="p">))</span>
+    <span class="n">summary_results</span> <span class="o">=</span> <span class="n">concatenate_dataframes</span><span class="p">(</span><span class="n">summary_results</span><span class="p">,</span> <span class="n">cyc</span><span class="p">,</span> <span class="n">run</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;Equivalent number of cycles&quot;</span><span class="p">)</span>
+
+    <span class="c1"># VRE Curtailment</span>
+    <span class="n">pv_curtailment</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">pv</span><span class="o">.</span><span class="n">total_curtailment</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">pv</span><span class="p">,</span> <span class="s2">&quot;total_curtailment&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="mf">0.0</span>
+    <span class="n">wind_curtailment</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">wind</span><span class="o">.</span><span class="n">total_curtailment</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">wind</span><span class="p">,</span> <span class="s2">&quot;total_curtailment&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="mf">0.0</span>
+    <span class="n">pv_generation</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">pv</span><span class="o">.</span><span class="n">total_generation</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">pv</span><span class="p">,</span> <span class="s2">&quot;total_generation&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="mf">0.0</span>
+    <span class="n">wind_generation</span> <span class="o">=</span> <span class="n">safe_pyomo_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">wind</span><span class="o">.</span><span class="n">total_generation</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">wind</span><span class="p">,</span> <span class="s2">&quot;total_generation&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="mf">0.0</span>
+    
+    <span class="n">total_vre_curtailment_mwh</span> <span class="o">=</span> <span class="n">pv_curtailment</span> <span class="o">+</span> <span class="n">wind_curtailment</span>
+    <span class="n">total_vre_availability</span> <span class="o">=</span> <span class="n">pv_generation</span> <span class="o">+</span> <span class="n">wind_generation</span> <span class="o">+</span> <span class="n">pv_curtailment</span> <span class="o">+</span> <span class="n">wind_curtailment</span>
+    <span class="n">total_vre_curtailment_pct</span> <span class="o">=</span> <span class="p">(</span><span class="n">total_vre_curtailment_mwh</span> <span class="o">/</span> <span class="n">total_vre_availability</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span> <span class="k">if</span> <span class="n">total_vre_availability</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">0.0</span>
+    
+    <span class="n">vre_curt_mwh</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Solar PV&quot;</span><span class="p">:</span> <span class="n">pv_curtailment</span><span class="p">,</span> <span class="s2">&quot;Wind&quot;</span><span class="p">:</span> <span class="n">wind_curtailment</span><span class="p">,</span> <span class="s2">&quot;All&quot;</span><span class="p">:</span> <span class="n">total_vre_curtailment_mwh</span><span class="p">}</span>
+    <span class="n">summary_results</span> <span class="o">=</span> <span class="n">concatenate_dataframes</span><span class="p">(</span><span class="n">summary_results</span><span class="p">,</span> <span class="n">vre_curt_mwh</span><span class="p">,</span> <span class="n">run</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;MWh&quot;</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;Total VRE curtailment&quot;</span><span class="p">)</span>
+    
+    <span class="n">vre_curt_pct</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;All&quot;</span><span class="p">:</span> <span class="n">total_vre_curtailment_pct</span><span class="p">}</span>
+    <span class="n">summary_results</span> <span class="o">=</span> <span class="n">concatenate_dataframes</span><span class="p">(</span><span class="n">summary_results</span><span class="p">,</span> <span class="n">vre_curt_pct</span><span class="p">,</span> <span class="n">run</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;%&quot;</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;VRE curtailment percentage&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">summary_results</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, NREL SDOM Team.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

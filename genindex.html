@@ -1,0 +1,1181 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Index &#8212; SDOM v0.0.11</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=0c446633"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'genindex';</script>
+    <link rel="index" title="Index" href="#" />
+    <link rel="search" title="Search" href="search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.0.11" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="light">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">SDOM Documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/introduction.html">
+    Introduction to SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/inputs.html">
+    SDOM Input Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/running_and_outputs.html">
+    Running SDOM and Understanding Outputs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/exploring_model.html">
+    Exploring the Pyomo Model
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/sdom_math_formulation.html">
+    SDOM Formulation
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="api/core.html">
+    Core Optimization Functions
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="api/results.html">
+    Results Module
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="api/models.html">
+    Model Formulations
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="api/io_manager.html">
+    Data I/O Manager
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="api/utilities.html">
+    Utility Functions
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="sdom_Developers_guide.html">
+    GUIDELINES FOR DEVELOPING SDOM
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="sdom_publications.html">
+    PUBLICATIONS AND USE CASES OF SDOM
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://github.com/Omar0902/SDOM">
+    GitHub Repository
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Omar0902/SDOM" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/introduction.html">
+    Introduction to SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/inputs.html">
+    SDOM Input Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/running_and_outputs.html">
+    Running SDOM and Understanding Outputs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/exploring_model.html">
+    Exploring the Pyomo Model
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/sdom_math_formulation.html">
+    SDOM Formulation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/core.html">
+    Core Optimization Functions
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/results.html">
+    Results Module
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/models.html">
+    Model Formulations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/io_manager.html">
+    Data I/O Manager
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/utilities.html">
+    Utility Functions
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="sdom_Developers_guide.html">
+    GUIDELINES FOR DEVELOPING SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="sdom_publications.html">
+    PUBLICATIONS AND USE CASES OF SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/Omar0902/SDOM">
+    GitHub Repository
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Omar0902/SDOM" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none"></div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+
+<h1 id="index">Index</h1>
+
+<div class="genindex-jumpbox">
+ <a href="#_"><strong>_</strong></a>
+ | <a href="#A"><strong>A</strong></a>
+ | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
+ | <a href="#E"><strong>E</strong></a>
+ | <a href="#F"><strong>F</strong></a>
+ | <a href="#G"><strong>G</strong></a>
+ | <a href="#I"><strong>I</strong></a>
+ | <a href="#L"><strong>L</strong></a>
+ | <a href="#M"><strong>M</strong></a>
+ | <a href="#N"><strong>N</strong></a>
+ | <a href="#O"><strong>O</strong></a>
+ | <a href="#P"><strong>P</strong></a>
+ | <a href="#R"><strong>R</strong></a>
+ | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
+ | <a href="#V"><strong>V</strong></a>
+ 
+</div>
+<h2 id="_">_</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#id14">__init__() (sdom.OptimizationResults method)</a>, <a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.__init__">[1]</a>
+
+      <ul>
+        <li><a href="api/results.html#sdom.results.OptimizationResults.__init__">(sdom.results.OptimizationResults method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="A">A</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/models.html#sdom.models.models_utils.add_alpha_and_ts_parameters">add_alpha_and_ts_parameters() (in module sdom.models.models_utils)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.models_utils.add_alpha_parameter">add_alpha_parameter() (in module sdom.models.models_utils)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.models_utils.add_budget_parameter">add_budget_parameter() (in module sdom.models.models_utils)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_imports_exports.add_exports_constraints">add_exports_constraints() (in module sdom.models.formulations_imports_exports)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_imports_exports.add_exports_parameters">add_exports_parameters() (in module sdom.models.formulations_imports_exports)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_imports_exports.add_exports_variables">add_exports_variables() (in module sdom.models.formulations_imports_exports)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.models_utils.add_generation_variables">add_generation_variables() (in module sdom.models.models_utils)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.models_utils.add_generic_fixed_costs">add_generic_fixed_costs() (in module sdom.models.models_utils)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_hydro.add_hydro_budget_constraints">add_hydro_budget_constraints() (in module sdom.models.formulations_hydro)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_hydro.add_hydro_run_of_river_constraints">add_hydro_run_of_river_constraints() (in module sdom.models.formulations_hydro)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_hydro.add_hydro_variables">add_hydro_variables() (in module sdom.models.formulations_hydro)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_imports_exports.add_import_export_binary_variable">add_import_export_binary_variable() (in module sdom.models.formulations_imports_exports)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_imports_exports.add_import_export_ts_parameters">add_import_export_ts_parameters() (in module sdom.models.formulations_imports_exports)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_imports_exports.add_imports_constraints">add_imports_constraints() (in module sdom.models.formulations_imports_exports)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_imports_exports.add_imports_exports_cost">add_imports_exports_cost() (in module sdom.models.formulations_imports_exports)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_imports_exports.add_imports_exports_cost_expressions">add_imports_exports_cost_expressions() (in module sdom.models.formulations_imports_exports)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_imports_exports.add_imports_parameters">add_imports_parameters() (in module sdom.models.formulations_imports_exports)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_imports_exports.add_imports_variables">add_imports_variables() (in module sdom.models.formulations_imports_exports)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_hydro.add_large_hydro_bound_parameters">add_large_hydro_bound_parameters() (in module sdom.models.formulations_hydro)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_hydro.add_large_hydro_parameters">add_large_hydro_parameters() (in module sdom.models.formulations_hydro)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/models.html#sdom.models.models_utils.add_lower_bound_paramenters">add_lower_bound_paramenters() (in module sdom.models.models_utils)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_storage.add_storage_constraints">add_storage_constraints() (in module sdom.models.formulations_storage)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_storage.add_storage_expressions">add_storage_expressions() (in module sdom.models.formulations_storage)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_storage.add_storage_fixed_costs">add_storage_fixed_costs() (in module sdom.models.formulations_storage)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_storage.add_storage_parameters">add_storage_parameters() (in module sdom.models.formulations_storage)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_storage.add_storage_variable_costs">add_storage_variable_costs() (in module sdom.models.formulations_storage)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_storage.add_storage_variables">add_storage_variables() (in module sdom.models.formulations_storage)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_system.add_system_constraints">add_system_constraints() (in module sdom.models.formulations_system)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_system.add_system_expressions">add_system_expressions() (in module sdom.models.formulations_system)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_thermal.add_thermal_constraints">add_thermal_constraints() (in module sdom.models.formulations_thermal)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_thermal.add_thermal_expressions">add_thermal_expressions() (in module sdom.models.formulations_thermal)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_thermal.add_thermal_fixed_costs">add_thermal_fixed_costs() (in module sdom.models.formulations_thermal)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_thermal.add_thermal_parameters">add_thermal_parameters() (in module sdom.models.formulations_thermal)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_thermal.add_thermal_variable_costs">add_thermal_variable_costs() (in module sdom.models.formulations_thermal)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_thermal.add_thermal_variables">add_thermal_variables() (in module sdom.models.formulations_thermal)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.models_utils.add_upper_bound_paramenters">add_upper_bound_paramenters() (in module sdom.models.models_utils)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_vre.add_vre_balance_constraints">add_vre_balance_constraints() (in module sdom.models.formulations_vre)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_vre.add_vre_expressions">add_vre_expressions() (in module sdom.models.formulations_vre)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_vre.add_vre_fixed_costs">add_vre_fixed_costs() (in module sdom.models.formulations_vre)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_vre.add_vre_parameters">add_vre_parameters() (in module sdom.models.formulations_vre)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_vre.add_vre_variables">add_vre_variables() (in module sdom.models.formulations_vre)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="C">C</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#id10">capacity (sdom.OptimizationResults attribute)</a>, <a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.capacity">[1]</a>
+
+      <ul>
+        <li><a href="api/results.html#id10">(sdom.results.OptimizationResults attribute)</a>, <a href="api/results.html#sdom.results.OptimizationResults.capacity">[1]</a>
+</li>
+      </ul></li>
+      <li><a href="api/utilities.html#sdom.common.utilities.check_file_exists">check_file_exists() (in module sdom.common.utilities)</a>
+</li>
+      <li><a href="api/io_manager.html#sdom.io_manager.check_formulation">check_formulation() (in module sdom.io_manager)</a>
+</li>
+      <li><a href="api/models.html#sdom.initializations.check_n_hours">check_n_hours() (in module sdom.initializations)</a>
+</li>
+      <li><a href="api/results.html#sdom.results.collect_results_from_model">collect_results_from_model() (in module sdom.results)</a>
+</li>
+      <li><a href="api/core.html#sdom.config_sdom.ColorFormatter">ColorFormatter (class in sdom.config_sdom)</a>
+</li>
+      <li><a href="api/core.html#id0">COLORS (sdom.config_sdom.ColorFormatter attribute)</a>, <a href="api/core.html#sdom.config_sdom.ColorFormatter.COLORS">[1]</a>
+</li>
+      <li><a href="api/utilities.html#sdom.common.utilities.compare_lists">compare_lists() (in module sdom.common.utilities)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/utilities.html#sdom.common.utilities.concatenate_dataframes">concatenate_dataframes() (in module sdom.common.utilities)</a>
+</li>
+      <li><a href="api/_autosummary/sdom.configure_logging.html#sdom.configure_logging">configure_logging() (in module sdom)</a>
+
+      <ul>
+        <li><a href="api/core.html#sdom.config_sdom.configure_logging">(in module sdom.config_sdom)</a>
+</li>
+      </ul></li>
+      <li><a href="api/core.html#sdom.optimization_main.configure_solver">configure_solver() (in module sdom.optimization_main)</a>
+</li>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#id13">cost_breakdown (sdom.OptimizationResults attribute)</a>, <a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.cost_breakdown">[1]</a>
+
+      <ul>
+        <li><a href="api/results.html#id13">(sdom.results.OptimizationResults attribute)</a>, <a href="api/results.html#sdom.results.OptimizationResults.cost_breakdown">[1]</a>
+</li>
+      </ul></li>
+      <li><a href="api/models.html#sdom.initializations.create_budget_set">create_budget_set() (in module sdom.initializations)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_system.create_supply_balance_rule">create_supply_balance_rule() (in module sdom.models.formulations_system)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.models_utils.crf_rule">crf_rule() (in module sdom.models.models_utils)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/models.html#sdom.models.models_utils.different_fcr_capex_cost_expr_rule">different_fcr_capex_cost_expr_rule() (in module sdom.models.models_utils)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/_autosummary/sdom.export_results.html#sdom.export_results">export_results() (in module sdom)</a>
+
+      <ul>
+        <li><a href="api/io_manager.html#sdom.io_manager.export_results">(in module sdom.io_manager)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/models.html#sdom.models.models_utils.fcr_rule">fcr_rule() (in module sdom.models.models_utils)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/core.html#sdom.config_sdom.ColorFormatter.format">format() (sdom.config_sdom.ColorFormatter method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="G">G</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#id3">gen_mix_target (sdom.OptimizationResults attribute)</a>, <a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.gen_mix_target">[1]</a>
+
+      <ul>
+        <li><a href="api/results.html#id3">(sdom.results.OptimizationResults attribute)</a>, <a href="api/results.html#sdom.results.OptimizationResults.gen_mix_target">[1]</a>
+</li>
+      </ul></li>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#id4">generation_df (sdom.OptimizationResults attribute)</a>, <a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.generation_df">[1]</a>
+
+      <ul>
+        <li><a href="api/results.html#id4">(sdom.results.OptimizationResults attribute)</a>, <a href="api/results.html#sdom.results.OptimizationResults.generation_df">[1]</a>
+</li>
+      </ul></li>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#id12">generation_totals (sdom.OptimizationResults attribute)</a>, <a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.generation_totals">[1]</a>
+
+      <ul>
+        <li><a href="api/results.html#id12">(sdom.results.OptimizationResults attribute)</a>, <a href="api/results.html#sdom.results.OptimizationResults.generation_totals">[1]</a>
+</li>
+      </ul></li>
+      <li><a href="api/models.html#sdom.models.models_utils.generic_budget_rule">generic_budget_rule() (in module sdom.models.models_utils)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.models_utils.generic_capex_cost_expr_rule">generic_capex_cost_expr_rule() (in module sdom.models.models_utils)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.models_utils.generic_fixed_om_cost_expr_rule">generic_fixed_om_cost_expr_rule() (in module sdom.models.models_utils)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_system.genmix_share_rule">genmix_share_rule() (in module sdom.models.formulations_system)</a>
+</li>
+      <li><a href="api/utilities.html#sdom.common.utilities.get_complete_path">get_complete_path() (in module sdom.common.utilities)</a>
+</li>
+      <li><a href="api/_autosummary/sdom.get_default_solver_config_dict.html#sdom.get_default_solver_config_dict">get_default_solver_config_dict() (in module sdom)</a>
+
+      <ul>
+        <li><a href="api/core.html#sdom.optimization_main.get_default_solver_config_dict">(in module sdom.optimization_main)</a>
+</li>
+      </ul></li>
+      <li><a href="api/utilities.html#sdom.common.utilities.get_dict_string_void_list_from_keys_in_list">get_dict_string_void_list_from_keys_in_list() (in module sdom.common.utilities)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/models.html#sdom.models.models_utils.get_filtered_ts_parameter_dict">get_filtered_ts_parameter_dict() (in module sdom.models.models_utils)</a>
+</li>
+      <li><a href="api/io_manager.html#sdom.io_manager.get_formulation">get_formulation() (in module sdom.io_manager)</a>
+</li>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.get_generation_dataframe">get_generation_dataframe() (sdom.OptimizationResults method)</a>
+
+      <ul>
+        <li><a href="api/results.html#sdom.results.OptimizationResults.get_generation_dataframe">(sdom.results.OptimizationResults method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.get_installed_plants_dataframe">get_installed_plants_dataframe() (sdom.OptimizationResults method)</a>
+
+      <ul>
+        <li><a href="api/results.html#sdom.results.OptimizationResults.get_installed_plants_dataframe">(sdom.results.OptimizationResults method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.get_problem_info">get_problem_info() (sdom.OptimizationResults method)</a>
+
+      <ul>
+        <li><a href="api/results.html#sdom.results.OptimizationResults.get_problem_info">(sdom.results.OptimizationResults method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.get_storage_dataframe">get_storage_dataframe() (sdom.OptimizationResults method)</a>
+
+      <ul>
+        <li><a href="api/results.html#sdom.results.OptimizationResults.get_storage_dataframe">(sdom.results.OptimizationResults method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.get_summary_dataframe">get_summary_dataframe() (sdom.OptimizationResults method)</a>
+
+      <ul>
+        <li><a href="api/results.html#sdom.results.OptimizationResults.get_summary_dataframe">(sdom.results.OptimizationResults method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.get_thermal_generation_dataframe">get_thermal_generation_dataframe() (sdom.OptimizationResults method)</a>
+
+      <ul>
+        <li><a href="api/results.html#sdom.results.OptimizationResults.get_thermal_generation_dataframe">(sdom.results.OptimizationResults method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/_autosummary/sdom.initialize_model.html#sdom.initialize_model">initialize_model() (in module sdom)</a>
+
+      <ul>
+        <li><a href="api/core.html#sdom.optimization_main.initialize_model">(in module sdom.optimization_main)</a>
+</li>
+      </ul></li>
+      <li><a href="api/models.html#sdom.initializations.initialize_params">initialize_params() (in module sdom.initializations)</a>
+</li>
+      <li><a href="api/models.html#sdom.initializations.initialize_sets">initialize_sets() (in module sdom.initializations)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_storage.initialize_storage_sets">initialize_storage_sets() (in module sdom.models.formulations_storage)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/models.html#sdom.models.formulations_thermal.initialize_thermal_sets">initialize_thermal_sets() (in module sdom.models.formulations_thermal)</a>
+</li>
+      <li><a href="api/models.html#sdom.initializations.initialize_vre_sets">initialize_vre_sets() (in module sdom.initializations)</a>
+</li>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#id7">installed_plants_df (sdom.OptimizationResults attribute)</a>, <a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.installed_plants_df">[1]</a>
+
+      <ul>
+        <li><a href="api/results.html#id7">(sdom.results.OptimizationResults attribute)</a>, <a href="api/results.html#sdom.results.OptimizationResults.installed_plants_df">[1]</a>
+</li>
+      </ul></li>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.is_optimal">is_optimal (sdom.OptimizationResults property)</a>
+
+      <ul>
+        <li><a href="api/results.html#sdom.results.OptimizationResults.is_optimal">(sdom.results.OptimizationResults property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="L">L</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/_autosummary/sdom.load_data.html#sdom.load_data">load_data() (in module sdom)</a>
+
+      <ul>
+        <li><a href="api/io_manager.html#sdom.io_manager.load_data">(in module sdom.io_manager)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="M">M</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/models.html#sdom.models.formulations_storage.max_cycle_year_rule">max_cycle_year_rule() (in module sdom.models.formulations_storage)</a>
+</li>
+      <li>
+    module
+
+      <ul>
+        <li><a href="api/models.html#module-sdom.initializations">sdom.initializations</a>
+</li>
+        <li><a href="api/models.html#module-sdom.models.formulations_hydro">sdom.models.formulations_hydro</a>
+</li>
+        <li><a href="api/models.html#module-sdom.models.formulations_imports_exports">sdom.models.formulations_imports_exports</a>
+</li>
+        <li><a href="api/models.html#module-sdom.models.formulations_storage">sdom.models.formulations_storage</a>
+</li>
+        <li><a href="api/models.html#module-sdom.models.formulations_system">sdom.models.formulations_system</a>
+</li>
+        <li><a href="api/models.html#module-sdom.models.formulations_thermal">sdom.models.formulations_thermal</a>
+</li>
+        <li><a href="api/models.html#module-sdom.models.formulations_vre">sdom.models.formulations_vre</a>
+</li>
+        <li><a href="api/models.html#module-sdom.models.models_utils">sdom.models.models_utils</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="N">N</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/models.html#sdom.models.formulations_system.net_load_rule">net_load_rule() (in module sdom.models.formulations_system)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/utilities.html#sdom.common.utilities.normalize_string">normalize_string() (in module sdom.common.utilities)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/models.html#sdom.models.formulations_system.objective_rule">objective_rule() (in module sdom.models.formulations_system)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults">OptimizationResults (class in sdom)</a>
+
+      <ul>
+        <li><a href="api/results.html#sdom.results.OptimizationResults">(class in sdom.results)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#id9">problem_info (sdom.OptimizationResults attribute)</a>, <a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.problem_info">[1]</a>
+
+      <ul>
+        <li><a href="api/results.html#id9">(sdom.results.OptimizationResults attribute)</a>, <a href="api/results.html#sdom.results.OptimizationResults.problem_info">[1]</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/core.html#id1">RESET (sdom.config_sdom.ColorFormatter attribute)</a>, <a href="api/core.html#sdom.config_sdom.ColorFormatter.RESET">[1]</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/_autosummary/sdom.run_solver.html#sdom.run_solver">run_solver() (in module sdom)</a>
+
+      <ul>
+        <li><a href="api/core.html#sdom.optimization_main.run_solver">(in module sdom.optimization_main)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="S">S</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/utilities.html#sdom.common.utilities.safe_pyomo_value">safe_pyomo_value() (in module sdom.common.utilities)</a>
+</li>
+      <li>
+    sdom.initializations
+
+      <ul>
+        <li><a href="api/models.html#module-sdom.initializations">module</a>
+</li>
+      </ul></li>
+      <li>
+    sdom.models.formulations_hydro
+
+      <ul>
+        <li><a href="api/models.html#module-sdom.models.formulations_hydro">module</a>
+</li>
+      </ul></li>
+      <li>
+    sdom.models.formulations_imports_exports
+
+      <ul>
+        <li><a href="api/models.html#module-sdom.models.formulations_imports_exports">module</a>
+</li>
+      </ul></li>
+      <li>
+    sdom.models.formulations_storage
+
+      <ul>
+        <li><a href="api/models.html#module-sdom.models.formulations_storage">module</a>
+</li>
+      </ul></li>
+      <li>
+    sdom.models.formulations_system
+
+      <ul>
+        <li><a href="api/models.html#module-sdom.models.formulations_system">module</a>
+</li>
+      </ul></li>
+      <li>
+    sdom.models.formulations_thermal
+
+      <ul>
+        <li><a href="api/models.html#module-sdom.models.formulations_thermal">module</a>
+</li>
+      </ul></li>
+      <li>
+    sdom.models.formulations_vre
+
+      <ul>
+        <li><a href="api/models.html#module-sdom.models.formulations_vre">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    sdom.models.models_utils
+
+      <ul>
+        <li><a href="api/models.html#module-sdom.models.models_utils">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/models.html#sdom.models.formulations_storage.soc_balance_rule">soc_balance_rule() (in module sdom.models.formulations_storage)</a>
+</li>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#id1">solver_status (sdom.OptimizationResults attribute)</a>, <a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.solver_status">[1]</a>
+
+      <ul>
+        <li><a href="api/results.html#id1">(sdom.results.OptimizationResults attribute)</a>, <a href="api/results.html#sdom.results.OptimizationResults.solver_status">[1]</a>
+</li>
+      </ul></li>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#id11">storage_capacity (sdom.OptimizationResults attribute)</a>, <a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.storage_capacity">[1]</a>
+
+      <ul>
+        <li><a href="api/results.html#id11">(sdom.results.OptimizationResults attribute)</a>, <a href="api/results.html#sdom.results.OptimizationResults.storage_capacity">[1]</a>
+</li>
+      </ul></li>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#id5">storage_df (sdom.OptimizationResults attribute)</a>, <a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.storage_df">[1]</a>
+
+      <ul>
+        <li><a href="api/results.html#id5">(sdom.results.OptimizationResults attribute)</a>, <a href="api/results.html#sdom.results.OptimizationResults.storage_df">[1]</a>
+</li>
+      </ul></li>
+      <li><a href="api/models.html#sdom.models.formulations_storage.storage_energy_capex_cost_expr_rule">storage_energy_capex_cost_expr_rule() (in module sdom.models.formulations_storage)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_storage.storage_fixed_om_cost_expr_rule">storage_fixed_om_cost_expr_rule() (in module sdom.models.formulations_storage)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.formulations_storage.storage_power_capex_cost_expr_rule">storage_power_capex_cost_expr_rule() (in module sdom.models.formulations_storage)</a>
+</li>
+      <li><a href="api/models.html#sdom.models.models_utils.sum_installed_capacity_by_plants_set_expr_rule">sum_installed_capacity_by_plants_set_expr_rule() (in module sdom.models.models_utils)</a>
+</li>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#id8">summary_df (sdom.OptimizationResults attribute)</a>, <a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.summary_df">[1]</a>
+
+      <ul>
+        <li><a href="api/results.html#id8">(sdom.results.OptimizationResults attribute)</a>, <a href="api/results.html#sdom.results.OptimizationResults.summary_df">[1]</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#id0">termination_condition (sdom.OptimizationResults attribute)</a>, <a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.termination_condition">[1]</a>
+
+      <ul>
+        <li><a href="api/results.html#id0">(sdom.results.OptimizationResults attribute)</a>, <a href="api/results.html#sdom.results.OptimizationResults.termination_condition">[1]</a>
+</li>
+      </ul></li>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#id6">thermal_generation_df (sdom.OptimizationResults attribute)</a>, <a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.thermal_generation_df">[1]</a>
+
+      <ul>
+        <li><a href="api/results.html#id6">(sdom.results.OptimizationResults attribute)</a>, <a href="api/results.html#sdom.results.OptimizationResults.thermal_generation_df">[1]</a>
+</li>
+      </ul></li>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.total_cap_pv">total_cap_pv (sdom.OptimizationResults property)</a>
+
+      <ul>
+        <li><a href="api/results.html#sdom.results.OptimizationResults.total_cap_pv">(sdom.results.OptimizationResults property)</a>
+</li>
+      </ul></li>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.total_cap_storage_charge">total_cap_storage_charge (sdom.OptimizationResults property)</a>
+
+      <ul>
+        <li><a href="api/results.html#sdom.results.OptimizationResults.total_cap_storage_charge">(sdom.results.OptimizationResults property)</a>
+</li>
+      </ul></li>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.total_cap_storage_discharge">total_cap_storage_discharge (sdom.OptimizationResults property)</a>
+
+      <ul>
+        <li><a href="api/results.html#sdom.results.OptimizationResults.total_cap_storage_discharge">(sdom.results.OptimizationResults property)</a>
+</li>
+      </ul></li>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.total_cap_storage_energy">total_cap_storage_energy (sdom.OptimizationResults property)</a>
+
+      <ul>
+        <li><a href="api/results.html#sdom.results.OptimizationResults.total_cap_storage_energy">(sdom.results.OptimizationResults property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.total_cap_thermal">total_cap_thermal (sdom.OptimizationResults property)</a>
+
+      <ul>
+        <li><a href="api/results.html#sdom.results.OptimizationResults.total_cap_thermal">(sdom.results.OptimizationResults property)</a>
+</li>
+      </ul></li>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.total_cap_wind">total_cap_wind (sdom.OptimizationResults property)</a>
+
+      <ul>
+        <li><a href="api/results.html#sdom.results.OptimizationResults.total_cap_wind">(sdom.results.OptimizationResults property)</a>
+</li>
+      </ul></li>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#id2">total_cost (sdom.OptimizationResults attribute)</a>, <a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.total_cost">[1]</a>
+
+      <ul>
+        <li><a href="api/results.html#id2">(sdom.results.OptimizationResults attribute)</a>, <a href="api/results.html#sdom.results.OptimizationResults.total_cost">[1]</a>
+</li>
+      </ul></li>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.total_gen_pv">total_gen_pv (sdom.OptimizationResults property)</a>
+
+      <ul>
+        <li><a href="api/results.html#sdom.results.OptimizationResults.total_gen_pv">(sdom.results.OptimizationResults property)</a>
+</li>
+      </ul></li>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.total_gen_thermal">total_gen_thermal (sdom.OptimizationResults property)</a>
+
+      <ul>
+        <li><a href="api/results.html#sdom.results.OptimizationResults.total_gen_thermal">(sdom.results.OptimizationResults property)</a>
+</li>
+      </ul></li>
+      <li><a href="api/_autosummary/sdom.OptimizationResults.html#sdom.OptimizationResults.total_gen_wind">total_gen_wind (sdom.OptimizationResults property)</a>
+
+      <ul>
+        <li><a href="api/results.html#sdom.results.OptimizationResults.total_gen_wind">(sdom.results.OptimizationResults property)</a>
+</li>
+      </ul></li>
+      <li><a href="api/models.html#sdom.models.formulations_thermal.total_thermal_expr_rule">total_thermal_expr_rule() (in module sdom.models.formulations_thermal)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/models.html#sdom.models.formulations_vre.vre_balance_rule">vre_balance_rule() (in module sdom.models.formulations_vre)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, NREL SDOM Team.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

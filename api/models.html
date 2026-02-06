@@ -1,0 +1,1672 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Model Formulations &#8212; SDOM v0.0.11</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=0c446633"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/models';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Data I/O Manager" href="io_manager.html" />
+    <link rel="prev" title="Results Module" href="results.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.0.11" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="light">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">SDOM Documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/introduction.html">
+    Introduction to SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/inputs.html">
+    SDOM Input Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/running_and_outputs.html">
+    Running SDOM and Understanding Outputs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/exploring_model.html">
+    Exploring the Pyomo Model
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/sdom_math_formulation.html">
+    SDOM Formulation
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="core.html">
+    Core Optimization Functions
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="results.html">
+    Results Module
+  </a>
+</li>
+
+
+<li class=" current active">
+  <a class="nav-link dropdown-item nav-internal" href="#">
+    Model Formulations
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="io_manager.html">
+    Data I/O Manager
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="utilities.html">
+    Utility Functions
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../sdom_Developers_guide.html">
+    GUIDELINES FOR DEVELOPING SDOM
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../sdom_publications.html">
+    PUBLICATIONS AND USE CASES OF SDOM
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://github.com/Omar0902/SDOM">
+    GitHub Repository
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Omar0902/SDOM" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/introduction.html">
+    Introduction to SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/inputs.html">
+    SDOM Input Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/running_and_outputs.html">
+    Running SDOM and Understanding Outputs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/exploring_model.html">
+    Exploring the Pyomo Model
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/sdom_math_formulation.html">
+    SDOM Formulation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="core.html">
+    Core Optimization Functions
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="results.html">
+    Results Module
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Model Formulations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="io_manager.html">
+    Data I/O Manager
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="utilities.html">
+    Utility Functions
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../sdom_Developers_guide.html">
+    GUIDELINES FOR DEVELOPING SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../sdom_publications.html">
+    PUBLICATIONS AND USE CASES OF SDOM
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/Omar0902/SDOM">
+    GitHub Repository
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Omar0902/SDOM" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">API Reference</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Model Formulations</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="model-formulations">
+<h1>Model Formulations<a class="headerlink" href="#model-formulations" title="Link to this heading">#</a></h1>
+<p>Documentation for model formulation modules.</p>
+<section id="module-sdom.models.formulations_system">
+<span id="system-formulations"></span><h2>System Formulations<a class="headerlink" href="#module-sdom.models.formulations_system" title="Link to this heading">#</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_system.objective_rule">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_system.</span></span><span class="sig-name descname"><span class="pre">objective_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_system.html#objective_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_system.objective_rule" title="Link to this definition">#</a></dt>
+<dd><p>Calculates the total objective value for the optimization model.
+This function computes the sum of annual fixed costs and variable costs for the system.
+Fixed costs include VRE (Variable Renewable Energy), storage, and gas combined cycle (Gas CC) fixed costs.
+Variable costs include Gas CC fuel and variable operation &amp; maintenance (VOM) costs, as well as storage VOM costs.
+:param model: The optimization model instance containing relevant parameters and variables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The total objective value as the sum of fixed and variable costs.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_system.net_load_rule">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_system.</span></span><span class="sig-name descname"><span class="pre">net_load_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_system.html#net_load_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_system.net_load_rule" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_system.add_system_expressions">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_system.</span></span><span class="sig-name descname"><span class="pre">add_system_expressions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_system.html#add_system_expressions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_system.add_system_expressions" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_system.create_supply_balance_rule">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_system.</span></span><span class="sig-name descname"><span class="pre">create_supply_balance_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">has_imports</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_exports</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_system.html#create_supply_balance_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_system.create_supply_balance_rule" title="Link to this definition">#</a></dt>
+<dd><p>Creates a supply balance rule function based on whether imports and exports are enabled.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>has_imports</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether imports are included in the model.</p></li>
+<li><p><strong>has_exports</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether exports are included in the model.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A Pyomo constraint rule function for supply balance.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>function</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_system.genmix_share_rule">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_system.</span></span><span class="sig-name descname"><span class="pre">genmix_share_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_system.html#genmix_share_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_system.genmix_share_rule" title="Link to this definition">#</a></dt>
+<dd><p>Defines the carbon-free generation target constraint.</p>
+<p>This constraint ensures that total thermal (balancing unit) generation plus imports
+does not exceed (1 - GenMix_Target) of the adjusted demand. The adjusted demand
+accounts for net storage loading (charging minus discharging).</p>
+<dl class="simple">
+<dt>The constraint is:</dt><dd><p>thermal_generation + imports &lt;= (1 - tau) * (demand + storage_charging - storage_discharging)</p>
+</dd>
+</dl>
+<p>Where tau (GenMix_Target) represents the minimum clean-energy generation share.
+Imports are treated as non-clean energy in this constraint.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model</strong> (<a class="reference external" href="https://pyomo.readthedocs.io/en/stable/api/pyomo.core.base.PyomoModel.ConcreteModel.html#pyomo.core.base.PyomoModel.ConcreteModel" title="(in Pyomo v6.9.5)"><em>pyomo.core.base.PyomoModel.ConcreteModel</em></a>) – The optimization model containing thermal generation, imports, demand,
+storage variables, and GenMix_Target parameter.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The constraint expression for the generation mix target.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pyomo.readthedocs.io/en/stable/api/pyomo.core.expr.relational_expr.InequalityExpression.html#pyomo.core.expr.relational_expr.InequalityExpression" title="(in Pyomo v6.9.5)">pyomo.core.expr.relational_expr.InequalityExpression</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>If imports are not modeled (Imports formulation is “NotModel”),
+only thermal generation is constrained.</p></li>
+<li><p>The constraint uses hasattr() to check if imports are available,
+making it robust to different model configurations.</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_system.add_system_constraints">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_system.</span></span><span class="sig-name descname"><span class="pre">add_system_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_system.html#add_system_constraints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_system.add_system_constraints" title="Link to this definition">#</a></dt>
+<dd><p>Adds system constraints to the optimization model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<a class="reference external" href="https://pyomo.readthedocs.io/en/stable/api/pyomo.core.base.PyomoModel.ConcreteModel.html#pyomo.core.base.PyomoModel.ConcreteModel" title="(in Pyomo v6.9.5)"><em>pyomo.core.base.PyomoModel.ConcreteModel</em></a>) – The optimization model to which system constraints will be added.</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Dictionary containing formulation configuration data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-sdom.models.formulations_vre">
+<span id="vre-formulations"></span><h2>VRE Formulations<a class="headerlink" href="#module-sdom.models.formulations_vre" title="Link to this heading">#</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_vre.add_vre_parameters">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_vre.</span></span><span class="sig-name descname"><span class="pre">add_vre_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_vre.html#add_vre_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_vre.add_vre_parameters" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_vre.add_vre_variables">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_vre.</span></span><span class="sig-name descname"><span class="pre">add_vre_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_vre.html#add_vre_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_vre.add_vre_variables" title="Link to this definition">#</a></dt>
+<dd><p>Add variables related to variable renewable energy (VRE) to the model.</p>
+<p>Parameters:
+model: The optimization model to which VRE variables will be added.</p>
+<p>Returns:
+None</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_vre.add_vre_expressions">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_vre.</span></span><span class="sig-name descname"><span class="pre">add_vre_expressions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_vre.html#add_vre_expressions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_vre.add_vre_expressions" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_vre.add_vre_fixed_costs">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_vre.</span></span><span class="sig-name descname"><span class="pre">add_vre_fixed_costs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_vre.html#add_vre_fixed_costs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_vre.add_vre_fixed_costs" title="Link to this definition">#</a></dt>
+<dd><p>Add cost-related variables for variable renewable energy (VRE) to the model.</p>
+<p>Parameters:
+model: The optimization model to which VRE cost variables will be added.</p>
+<p>Returns:
+Costs sum for solar PV and wind energy, including capital and fixed O&amp;M costs.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_vre.vre_balance_rule">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_vre.</span></span><span class="sig-name descname"><span class="pre">vre_balance_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_vre.html#vre_balance_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_vre.vre_balance_rule" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_vre.add_vre_balance_constraints">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_vre.</span></span><span class="sig-name descname"><span class="pre">add_vre_balance_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_vre.html#add_vre_balance_constraints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_vre.add_vre_balance_constraints" title="Link to this definition">#</a></dt>
+<dd><p>Add constraints related to variable renewable energy (VRE) to the model.</p>
+<p>Parameters:
+model: The optimization model to which VRE constraints will be added.</p>
+<p>Returns:
+None</p>
+</dd></dl>
+
+</section>
+<section id="module-sdom.models.formulations_storage">
+<span id="storage-formulations"></span><h2>Storage Formulations<a class="headerlink" href="#module-sdom.models.formulations_storage" title="Link to this heading">#</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_storage.initialize_storage_sets">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_storage.</span></span><span class="sig-name descname"><span class="pre">initialize_storage_sets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_storage.html#initialize_storage_sets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_storage.initialize_storage_sets" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_storage.add_storage_parameters">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_storage.</span></span><span class="sig-name descname"><span class="pre">add_storage_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_storage.html#add_storage_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_storage.add_storage_parameters" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_storage.add_storage_variables">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_storage.</span></span><span class="sig-name descname"><span class="pre">add_storage_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_storage.html#add_storage_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_storage.add_storage_variables" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_storage.storage_power_capex_cost_expr_rule">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_storage.</span></span><span class="sig-name descname"><span class="pre">storage_power_capex_cost_expr_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_storage.html#storage_power_capex_cost_expr_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_storage.storage_power_capex_cost_expr_rule" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_storage.storage_energy_capex_cost_expr_rule">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_storage.</span></span><span class="sig-name descname"><span class="pre">storage_energy_capex_cost_expr_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_storage.html#storage_energy_capex_cost_expr_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_storage.storage_energy_capex_cost_expr_rule" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_storage.storage_fixed_om_cost_expr_rule">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_storage.</span></span><span class="sig-name descname"><span class="pre">storage_fixed_om_cost_expr_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_storage.html#storage_fixed_om_cost_expr_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_storage.storage_fixed_om_cost_expr_rule" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_storage.add_storage_expressions">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_storage.</span></span><span class="sig-name descname"><span class="pre">add_storage_expressions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_storage.html#add_storage_expressions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_storage.add_storage_expressions" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_storage.add_storage_fixed_costs">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_storage.</span></span><span class="sig-name descname"><span class="pre">add_storage_fixed_costs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_storage.html#add_storage_fixed_costs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_storage.add_storage_fixed_costs" title="Link to this definition">#</a></dt>
+<dd><p>Add cost-related variables for storage technologies to the model.</p>
+<p>Parameters:
+model: The optimization model to which storage cost variables will be added.</p>
+<p>Returns:
+Costs sum for storage technologies, including capital and fixed O&amp;M costs.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_storage.add_storage_variable_costs">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_storage.</span></span><span class="sig-name descname"><span class="pre">add_storage_variable_costs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_storage.html#add_storage_variable_costs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_storage.add_storage_variable_costs" title="Link to this definition">#</a></dt>
+<dd><p>Add variable costs for storage technologies to the model.</p>
+<p>Parameters:
+model: The optimization model to which storage variable costs will be added.</p>
+<p>Returns:
+Variable costs sum for storage technologies, including variable O&amp;M costs.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_storage.soc_balance_rule">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_storage.</span></span><span class="sig-name descname"><span class="pre">soc_balance_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_storage.html#soc_balance_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_storage.soc_balance_rule" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_storage.max_cycle_year_rule">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_storage.</span></span><span class="sig-name descname"><span class="pre">max_cycle_year_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_storage.html#max_cycle_year_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_storage.max_cycle_year_rule" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_storage.add_storage_constraints">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_storage.</span></span><span class="sig-name descname"><span class="pre">add_storage_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_storage.html#add_storage_constraints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_storage.add_storage_constraints" title="Link to this definition">#</a></dt>
+<dd><p>Add storage-related constraints to the model.</p>
+<p>Parameters:
+model: The optimization model to which storage constraints will be added.</p>
+<p>Returns:
+None</p>
+</dd></dl>
+
+</section>
+<section id="module-sdom.models.formulations_thermal">
+<span id="thermal-formulations"></span><h2>Thermal Formulations<a class="headerlink" href="#module-sdom.models.formulations_thermal" title="Link to this heading">#</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_thermal.initialize_thermal_sets">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_thermal.</span></span><span class="sig-name descname"><span class="pre">initialize_thermal_sets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_thermal.html#initialize_thermal_sets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_thermal.initialize_thermal_sets" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_thermal.add_thermal_parameters">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_thermal.</span></span><span class="sig-name descname"><span class="pre">add_thermal_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_thermal.html#add_thermal_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_thermal.add_thermal_parameters" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_thermal.add_thermal_variables">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_thermal.</span></span><span class="sig-name descname"><span class="pre">add_thermal_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_thermal.html#add_thermal_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_thermal.add_thermal_variables" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_thermal.total_thermal_expr_rule">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_thermal.</span></span><span class="sig-name descname"><span class="pre">total_thermal_expr_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_thermal.html#total_thermal_expr_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_thermal.total_thermal_expr_rule" title="Link to this definition">#</a></dt>
+<dd><p>Expression to calculate the total generation from thermal units.</p>
+<p>Parameters:
+m: The optimization model instance.
+h: Time period index.
+bu: Balancing unit index.</p>
+<p>Returns:
+The sum of generation from the specified thermal unit across all time periods.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_thermal.add_thermal_expressions">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_thermal.</span></span><span class="sig-name descname"><span class="pre">add_thermal_expressions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_thermal.html#add_thermal_expressions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_thermal.add_thermal_expressions" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_thermal.add_thermal_constraints">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_thermal.</span></span><span class="sig-name descname"><span class="pre">add_thermal_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_thermal.html#add_thermal_constraints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_thermal.add_thermal_constraints" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_thermal.add_thermal_fixed_costs">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_thermal.</span></span><span class="sig-name descname"><span class="pre">add_thermal_fixed_costs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_thermal.html#add_thermal_fixed_costs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_thermal.add_thermal_fixed_costs" title="Link to this definition">#</a></dt>
+<dd><p>Add cost-related variables for thermal units to the model.</p>
+<p>Parameters:
+model: The optimization model to which thermal cost variables will be added.</p>
+<p>Returns:
+Costs sum for each thermal unit, including capital and fixed O&amp;M costs.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_thermal.add_thermal_variable_costs">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_thermal.</span></span><span class="sig-name descname"><span class="pre">add_thermal_variable_costs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_thermal.html#add_thermal_variable_costs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_thermal.add_thermal_variable_costs" title="Link to this definition">#</a></dt>
+<dd><p>Add variable costs (Fuel cost + VOM cost) for thermal units to the model.</p>
+<p>Parameters:
+model: The optimization model to which thermal variable costs will be added.</p>
+<p>Returns:
+Variable costs sum for thermal units, including fuel costs.</p>
+</dd></dl>
+
+</section>
+<section id="module-sdom.models.formulations_hydro">
+<span id="hydropower-formulations"></span><h2>Hydropower Formulations<a class="headerlink" href="#module-sdom.models.formulations_hydro" title="Link to this heading">#</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_hydro.add_large_hydro_parameters">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_hydro.</span></span><span class="sig-name descname"><span class="pre">add_large_hydro_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_hydro.html#add_large_hydro_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_hydro.add_large_hydro_parameters" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_hydro.add_large_hydro_bound_parameters">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_hydro.</span></span><span class="sig-name descname"><span class="pre">add_large_hydro_bound_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_hydro.html#add_large_hydro_bound_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_hydro.add_large_hydro_bound_parameters" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_hydro.add_hydro_variables">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_hydro.</span></span><span class="sig-name descname"><span class="pre">add_hydro_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_hydro.html#add_hydro_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_hydro.add_hydro_variables" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_hydro.add_hydro_run_of_river_constraints">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_hydro.</span></span><span class="sig-name descname"><span class="pre">add_hydro_run_of_river_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_hydro.html#add_hydro_run_of_river_constraints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_hydro.add_hydro_run_of_river_constraints" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_hydro.add_hydro_budget_constraints">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_hydro.</span></span><span class="sig-name descname"><span class="pre">add_hydro_budget_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_hydro.html#add_hydro_budget_constraints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_hydro.add_hydro_budget_constraints" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-sdom.models.formulations_imports_exports">
+<span id="import-export-formulations"></span><h2>Import/Export Formulations<a class="headerlink" href="#module-sdom.models.formulations_imports_exports" title="Link to this heading">#</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_imports_exports.add_import_export_ts_parameters">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_imports_exports.</span></span><span class="sig-name descname"><span class="pre">add_import_export_ts_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hourly_set</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_ts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_imports_exports.html#add_import_export_ts_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_imports_exports.add_import_export_ts_parameters" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_imports_exports.add_imports_parameters">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_imports_exports.</span></span><span class="sig-name descname"><span class="pre">add_imports_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_imports_exports.html#add_imports_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_imports_exports.add_imports_parameters" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_imports_exports.add_exports_parameters">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_imports_exports.</span></span><span class="sig-name descname"><span class="pre">add_exports_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_imports_exports.html#add_exports_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_imports_exports.add_exports_parameters" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_imports_exports.add_imports_variables">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_imports_exports.</span></span><span class="sig-name descname"><span class="pre">add_imports_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_imports_exports.html#add_imports_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_imports_exports.add_imports_variables" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_imports_exports.add_exports_variables">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_imports_exports.</span></span><span class="sig-name descname"><span class="pre">add_exports_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_imports_exports.html#add_exports_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_imports_exports.add_exports_variables" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_imports_exports.add_imports_exports_cost_expressions">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_imports_exports.</span></span><span class="sig-name descname"><span class="pre">add_imports_exports_cost_expressions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_imports_exports.html#add_imports_exports_cost_expressions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_imports_exports.add_imports_exports_cost_expressions" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_imports_exports.add_import_export_binary_variable">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_imports_exports.</span></span><span class="sig-name descname"><span class="pre">add_import_export_binary_variable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">big_m_constant</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_imports_exports.html#add_import_export_binary_variable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_imports_exports.add_import_export_binary_variable" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_imports_exports.add_imports_constraints">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_imports_exports.</span></span><span class="sig-name descname"><span class="pre">add_imports_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_imports_exports.html#add_imports_constraints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_imports_exports.add_imports_constraints" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_imports_exports.add_exports_constraints">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_imports_exports.</span></span><span class="sig-name descname"><span class="pre">add_exports_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_imports_exports.html#add_exports_constraints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_imports_exports.add_exports_constraints" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.formulations_imports_exports.add_imports_exports_cost">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.formulations_imports_exports.</span></span><span class="sig-name descname"><span class="pre">add_imports_exports_cost</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/formulations_imports_exports.html#add_imports_exports_cost"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.formulations_imports_exports.add_imports_exports_cost" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="model-utilities">
+<h2>Model Utilities<a class="headerlink" href="#model-utilities" title="Link to this heading">#</a></h2>
+<p>Helper functions for building model components.</p>
+<dl class="py function" id="module-sdom.models.models_utils">
+<dt class="sig sig-object py" id="sdom.models.models_utils.fcr_rule">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.models_utils.</span></span><span class="sig-name descname"><span class="pre">fcr_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lifetime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/models_utils.html#fcr_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.models_utils.fcr_rule" title="Link to this definition">#</a></dt>
+<dd><p>Calculate the Fixed Charge Rate (FCR) for capital cost annualization.</p>
+<p>Computes the fixed charge rate used to annualize capital expenditures for
+VRE technologies (solar PV, wind) and thermal generators. The FCR converts
+upfront capital costs into equivalent annual payments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – The Pyomo model instance containing the discount rate parameter (model.r).</p></li>
+<li><p><strong>lifetime</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Expected lifetime of the technology in years.
+Defaults to 30.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The calculated fixed charge rate as a fraction.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Formula: FCR = [r * (1+r)^lifetime] / [(1+r)^lifetime - 1]
+where r is the discount rate from model.r.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.models_utils.crf_rule">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.models_utils.</span></span><span class="sig-name descname"><span class="pre">crf_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/models_utils.html#crf_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.models_utils.crf_rule" title="Link to this definition">#</a></dt>
+<dd><p>Calculate the Capital Recovery Factor (CRF) for storage technologies.</p>
+<p>Computes the capital recovery factor used to annualize capital expenditures
+for storage technologies. The CRF is technology-specific based on each
+storage type’s expected lifetime.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – The Pyomo model instance containing discount rate and storage data.</p></li>
+<li><p><strong>j</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Storage technology identifier (e.g., ‘Li-Ion’, ‘CAES’, ‘PHS’, ‘H2’).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The calculated capital recovery factor for the specified storage technology.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Formula: CRF = [r * (1+r)^lifetime] / [(1+r)^lifetime - 1]
+Lifetime is retrieved from model.data[‘Lifetime’, j] for technology j.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.models_utils.get_filtered_ts_parameter_dict">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.models_utils.</span></span><span class="sig-name descname"><span class="pre">get_filtered_ts_parameter_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hourly_set</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_ts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/models_utils.html#get_filtered_ts_parameter_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.models_utils.get_filtered_ts_parameter_dict" title="Link to this definition">#</a></dt>
+<dd><p>Extract and filter time-series parameter data for a specific hourly set.</p>
+<p>Retrieves time-series data from a DataFrame and filters it to include only
+the hours present in the model’s hourly set. Used to initialize Pyomo Param
+objects with time-indexed data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>hourly_set</strong> – The Pyomo Set containing hour indices for the model (e.g., model.h).</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Dictionary containing all input data DataFrames.</p></li>
+<li><p><strong>key_ts</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Key to access the time-series DataFrame in the data dict
+(e.g., ‘load_data’, ‘nuclear_data’).</p></li>
+<li><p><strong>key_col</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Column name in the DataFrame to extract values from
+(e.g., ‘Load’, ‘Nuclear’).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Dictionary mapping hour indices to parameter values, filtered to</dt><dd><p>only include hours in hourly_set.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Expects DataFrame to have a ‘<a href="#id1"><span class="problematic" id="id2">*</span></a>Hour’ column for indexing.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.models_utils.add_alpha_parameter">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.models_utils.</span></span><span class="sig-name descname"><span class="pre">add_alpha_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_scalars</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/models_utils.html#add_alpha_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.models_utils.add_alpha_parameter" title="Link to this definition">#</a></dt>
+<dd><p>Add a control parameter (alpha) to a Pyomo block to enable/disable a component.</p>
+<p>Creates a scalar Pyomo Param named ‘alpha’ on the block if it doesn’t already exist.
+The alpha parameter acts as an activation flag (typically 0 or 1) for controlling
+whether a technology or component is included in the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>block</strong> – The Pyomo Block where the parameter will be added.</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Dictionary containing the ‘scalars’ DataFrame with parameter values.</p></li>
+<li><p><strong>key_scalars</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Index key to look up the alpha value in the scalars DataFrame.
+If empty string, no parameter is added.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Only adds the parameter if the block doesn’t already have an ‘alpha’ attribute.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.models_utils.add_alpha_and_ts_parameters">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.models_utils.</span></span><span class="sig-name descname"><span class="pre">add_alpha_and_ts_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hourly_set</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_scalars</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_ts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/models_utils.html#add_alpha_and_ts_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.models_utils.add_alpha_and_ts_parameters" title="Link to this definition">#</a></dt>
+<dd><p>Add both control parameter (alpha) and time-series parameter to a block.</p>
+<p>Convenience function that adds an activation control parameter and a time-indexed
+parameter to a Pyomo block. Commonly used for fixed generation sources like
+nuclear, hydro, or other renewables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>block</strong> – The Pyomo Block where parameters will be added.</p></li>
+<li><p><strong>hourly_set</strong> – The Pyomo Set containing hour indices (e.g., model.h).</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Dictionary containing input DataFrames.</p></li>
+<li><p><strong>key_scalars</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Index key for the alpha control parameter in scalars DataFrame.</p></li>
+<li><p><strong>key_ts</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Key to access the time-series DataFrame (e.g., ‘nuclear_data’).</p></li>
+<li><p><strong>key_col</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Column name in the time-series DataFrame to extract.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Creates block.alpha as a scalar Param and block.ts_parameter as time-indexed Param.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.models_utils.add_budget_parameter">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.models_utils.</span></span><span class="sig-name descname"><span class="pre">add_budget_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formulation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_formulation_to_budget_map</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/models_utils.html#add_budget_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.models_utils.add_budget_parameter" title="Link to this definition">#</a></dt>
+<dd><p>Add a budget aggregation parameter to a block based on the selected formulation.</p>
+<p>Creates a scalar Pyomo Param indicating the number of hours in each budget period
+(i.e., the budget period interval in hours, e.g., 730 for monthly, 24 for daily
+budgets). Used primarily for hydropower budget formulations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>block</strong> – The Pyomo Block where the parameter will be added.</p></li>
+<li><p><strong>formulation</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The selected formulation name (e.g., ‘MonthlyBudgetFormulation’).</p></li>
+<li><p><strong>valid_formulation_to_budget_map</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Mapping from formulation names to</p></li>
+<li><p><strong>hours.</strong> (<em>budget period intervals in</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Only adds block.budget_scalar if it doesn’t already exist on the block.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.models_utils.add_upper_bound_paramenters">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.models_utils.</span></span><span class="sig-name descname"><span class="pre">add_upper_bound_paramenters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hourly_set</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_ts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'large_hydro_max'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'LargeHydro'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/models_utils.html#add_upper_bound_paramenters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.models_utils.add_upper_bound_paramenters" title="Link to this definition">#</a></dt>
+<dd><p>Add time-series upper bound parameters to a block.</p>
+<p>Extracts maximum capacity or generation limits from time-series data and adds
+them as a time-indexed Pyomo Param to the block. Used for technologies with
+hourly-varying upper bounds (e.g., hydro max generation).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>block</strong> – The Pyomo Block where the parameter will be added.</p></li>
+<li><p><strong>hourly_set</strong> – The Pyomo Set containing hour indices.</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Dictionary containing input DataFrames.</p></li>
+<li><p><strong>key_ts</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Key to access the DataFrame with upper bound data.
+Defaults to ‘large_hydro_max’.</p></li>
+<li><p><strong>key_col</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Column name to extract from the DataFrame.
+Defaults to ‘LargeHydro’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Creates block.ts_parameter_upper_bound as a time-indexed Param.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.models_utils.add_lower_bound_paramenters">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.models_utils.</span></span><span class="sig-name descname"><span class="pre">add_lower_bound_paramenters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hourly_set</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_ts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'large_hydro_min'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'LargeHydro'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/models_utils.html#add_lower_bound_paramenters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.models_utils.add_lower_bound_paramenters" title="Link to this definition">#</a></dt>
+<dd><p>Add time-series lower bound parameters to a block.</p>
+<p>Extracts minimum capacity or generation requirements from time-series data and
+adds them as a time-indexed Pyomo Param to the block. Used for technologies
+with hourly-varying lower bounds (e.g., hydro minimum flow requirements).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>block</strong> – The Pyomo Block where the parameter will be added.</p></li>
+<li><p><strong>hourly_set</strong> – The Pyomo Set containing hour indices.</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Dictionary containing input DataFrames.</p></li>
+<li><p><strong>key_ts</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Key to access the DataFrame with lower bound data.
+Defaults to ‘large_hydro_min’.</p></li>
+<li><p><strong>key_col</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Column name to extract from the DataFrame.
+Defaults to ‘LargeHydro’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Creates block.ts_parameter_lower_bound as a time-indexed Param.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.models_utils.add_generation_variables">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.models_utils.</span></span><span class="sig-name descname"><span class="pre">add_generation_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*sets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">domain=&lt;pyomo.core.base.set.DeclareGlobalSet.&lt;locals&gt;.GlobalSet</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialize=0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/models_utils.html#add_generation_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.models_utils.add_generation_variables" title="Link to this definition">#</a></dt>
+<dd><p>Add a generation variable to a Pyomo block indexed over arbitrary sets.</p>
+<p>Creates a Pyomo Var named ‘generation’ on the block, indexed over the provided
+sets. Supports flexible indexing (e.g., by hour only, or by plant and hour).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>block</strong> – The Pyomo Block to which the variable will be added.</p></li>
+<li><p><strong>*sets</strong> – Variable number of Pyomo Sets to use as indices. Can be single set
+(e.g., hours) or multiple sets (e.g., plants, hours).</p></li>
+<li><p><strong>domain</strong> (<em>pyomo.core.base.set</em><em>, </em><em>optional</em>) – Domain constraint for the variable.
+Defaults to NonNegativeReals.</p></li>
+<li><p><strong>initialize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Initial value for all variable indices.
+Defaults to 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">add_generation_variables</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">h</span><span class="p">)</span>  <span class="c1"># Indexed by hours</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add_generation_variables</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">plants_set</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">h</span><span class="p">)</span>  <span class="c1"># By plant and hour</span>
+</pre></div>
+</div>
+<p class="rubric">Notes</p>
+<p>Creates block.generation as a Var. Commonly used for hourly generation dispatch.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.models_utils.sum_installed_capacity_by_plants_set_expr_rule">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.models_utils.</span></span><span class="sig-name descname"><span class="pre">sum_installed_capacity_by_plants_set_expr_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/models_utils.html#sum_installed_capacity_by_plants_set_expr_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.models_utils.sum_installed_capacity_by_plants_set_expr_rule" title="Link to this definition">#</a></dt>
+<dd><p>Create a Pyomo expression for total installed capacity across all plants in a block.</p>
+<p>Sums the plant_installed_capacity variable over all plants in block.plants_set.
+This expression is used to aggregate individual plant capacities into a total
+capacity metric for a technology (e.g., total PV capacity, total wind capacity).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>block</strong> – The Pyomo Block containing plant_installed_capacity Var and plants_set Set.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A Pyomo expression representing the sum of</dt><dd><p>installed capacities.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Pyomo expression</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Expects block.plant_installed_capacity to be indexed by block.plants_set.
+Used as a rule function for creating Pyomo Expression objects.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.models_utils.generic_fixed_om_cost_expr_rule">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.models_utils.</span></span><span class="sig-name descname"><span class="pre">generic_fixed_om_cost_expr_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/models_utils.html#generic_fixed_om_cost_expr_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.models_utils.generic_fixed_om_cost_expr_rule" title="Link to this definition">#</a></dt>
+<dd><p>Create a Pyomo expression for total fixed O&amp;M costs across all plants.</p>
+<p>Calculates the annual fixed operation and maintenance costs for all plants
+in a technology block. Cost is based on fixed O&amp;M rate ($/kW-yr) times
+installed capacity (MW).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>block</strong> – The Pyomo Block containing FOM_M Param, plant_installed_capacity Var,
+and plants_set Set.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Pyomo expression for total annual fixed O&amp;M costs.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pyomo.core.expr.numeric_expr</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Formula: sum over plants of (FOM_M[k] * MW_TO_KW * capacity[k])
+FOM_M is in $/kW-yr, capacity is in MW, so MW_TO_KW converts units.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.models_utils.generic_capex_cost_expr_rule">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.models_utils.</span></span><span class="sig-name descname"><span class="pre">generic_capex_cost_expr_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/models_utils.html#generic_capex_cost_expr_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.models_utils.generic_capex_cost_expr_rule" title="Link to this definition">#</a></dt>
+<dd><p>Create a Pyomo expression for total CAPEX costs with uniform FCR across plants.</p>
+<p>Calculates the annualized capital expenditures for all plants in a technology
+block when all plants share the same fixed charge rate (FCR). Includes both
+technology CAPEX and transmission/interconnection costs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>block</strong> – The Pyomo Block containing CAPEX_M Param, trans_cap_cost Param,
+plant_installed_capacity Var, and plants_set Set.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Pyomo expression for total annualized CAPEX.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Pyomo Expression</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Formula: sum over plants of [(CAPEX_M[k]*MW_TO_KW + trans_cap_cost[k]) * capacity[k]].
+CAPEX_M is in $/kW, trans_cap_cost in $, capacity in MW.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.models_utils.different_fcr_capex_cost_expr_rule">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.models_utils.</span></span><span class="sig-name descname"><span class="pre">different_fcr_capex_cost_expr_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/models_utils.html#different_fcr_capex_cost_expr_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.models_utils.different_fcr_capex_cost_expr_rule" title="Link to this definition">#</a></dt>
+<dd><p>Create a Pyomo expression for total annualized CAPEX with plant-specific FCRs.</p>
+<p>Calculates the annualized capital expenditures when each plant has its own
+fixed charge rate based on technology-specific lifetime. The FCR is applied
+within this expression for each plant individually.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>block</strong> – The Pyomo Block containing FCR Param, CAPEX_M Param, trans_cap_cost Param,
+plant_installed_capacity Var, and plants_set Set.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Pyomo expression for total annualized CAPEX.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pyomo.core.expr.numeric_expr</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Formula: sum over plants of [FCR[k] * (CAPEX_M[k]*MW_TO_KW + trans_cap_cost[k]) * capacity[k]]
+Used when plants have different lifetimes, requiring plant-specific FCRs.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.models_utils.generic_budget_rule">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.models_utils.</span></span><span class="sig-name descname"><span class="pre">generic_budget_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hhh</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/models_utils.html#generic_budget_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.models_utils.generic_budget_rule" title="Link to this definition">#</a></dt>
+<dd><p>Create a budget constraint ensuring generation matches fixed time-series over an interval.</p>
+<p>Constraint rule that ensures total generation over a budget period (e.g., month, day)
+equals the sum of the time-series parameter over that same period. Used for
+technologies with energy budgets like hydropower with monthly/daily constraints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>block</strong> – The Pyomo Block containing generation Var, ts_parameter Param, and
+budget_scalar Param.</p></li>
+<li><p><strong>hhh</strong> – Index for the budget period (e.g., 1 for first month, 2 for second month).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Constraint expression enforcing budget equality.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pyomo.core.expr.relational_expr</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Calculates start/end hours based on: start = (hhh-1)*budget_scalar + 1,
+end = hhh*budget_scalar.
+Constraint: sum(generation[h]) == sum(ts_parameter[h]) over budget period.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.models.models_utils.add_generic_fixed_costs">
+<span class="sig-prename descclassname"><span class="pre">sdom.models.models_utils.</span></span><span class="sig-name descname"><span class="pre">add_generic_fixed_costs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/models/models_utils.html#add_generic_fixed_costs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.models.models_utils.add_generic_fixed_costs" title="Link to this definition">#</a></dt>
+<dd><p>Calculate total fixed annual costs (CAPEX + FOM) for a technology block.</p>
+<p>Aggregates annualized capital expenditures and fixed operation &amp; maintenance
+costs for a technology. This function is used in objective function formulation
+to sum up the fixed cost components.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>block</strong> – The Pyomo Block that must have capex_cost_expr and fixed_om_cost_expr
+Expression attributes already defined.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Sum of CAPEX and FOM expressions representing</dt><dd><p>total annual fixed costs.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pyomo.core.expr.numeric_expr</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Requires block.capex_cost_expr and block.fixed_om_cost_expr to be defined
+before calling this function.
+Returns the sum that can be used directly in objective function or cost expressions.</p>
+</dd></dl>
+
+</section>
+<section id="initialization-functions">
+<h2>Initialization Functions<a class="headerlink" href="#initialization-functions" title="Link to this heading">#</a></h2>
+<p>Functions for initializing model sets and parameters.</p>
+<dl class="py function" id="module-sdom.initializations">
+<dt class="sig sig-object py" id="sdom.initializations.initialize_vre_sets">
+<span class="sig-prename descclassname"><span class="pre">sdom.initializations.</span></span><span class="sig-name descname"><span class="pre">initialize_vre_sets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vre_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/initializations.html#initialize_vre_sets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.initializations.initialize_vre_sets" title="Link to this definition">#</a></dt>
+<dd><p>Initialize VRE (Variable Renewable Energy) plant sets and filter data for a technology.</p>
+<p>Identifies common plants between capacity factor and CAPEX datasets, filters out
+incomplete records, and creates a Pyomo Set for the VRE plants. Also stores
+filtered capacity data back into the data dictionary for later use.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Dictionary containing all input DataFrames including capacity
+factors and CAPEX data for VRE technologies.</p></li>
+<li><p><strong>block</strong> – The Pyomo Block (e.g., model.pv or model.wind) where the plants_set
+will be created.</p></li>
+<li><p><strong>vre_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Type of VRE technology - either ‘solar’ or ‘wind’. Used to
+construct dictionary keys for accessing the appropriate DataFrames.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Creates block.plants_set as a Pyomo Set containing plant identifiers</p></li>
+<li><p>Filters plants that have complete data (CAPEX_M, trans_cap_cost, FOM_M, capacity)</p></li>
+<li><p>Updates data dict with ‘filtered_cap_{vre_type}_dict’ and ‘complete_{vre_type}_data’</p></li>
+<li><p>Plant IDs are converted to strings for consistent indexing</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.initializations.check_n_hours">
+<span class="sig-prename descclassname"><span class="pre">sdom.initializations.</span></span><span class="sig-name descname"><span class="pre">check_n_hours</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_hours</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/initializations.html#check_n_hours"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.initializations.check_n_hours" title="Link to this definition">#</a></dt>
+<dd><p>Validate and adjust the number of simulation hours to match budget interval.</p>
+<p>Ensures that the number of hours is a multiple of the budget aggregation interval
+(e.g., 24 for daily budgets, 730 for monthly budgets). If not, rounds up to the
+nearest multiple and logs a warning.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_hours</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Requested number of simulation hours.</p></li>
+<li><p><strong>interval</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Budget aggregation interval in hours (e.g., 24, 730).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Validated number of hours that is a multiple of the interval. Returns</dt><dd><p>n_hours unchanged if already valid, otherwise returns rounded-up value.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Logs a warning when adjustment is needed, informing the user of the approximation.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.initializations.create_budget_set">
+<span class="sig-prename descclassname"><span class="pre">sdom.initializations.</span></span><span class="sig-name descname"><span class="pre">create_budget_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_hours_checked</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">budget_hours_aggregation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/initializations.html#create_budget_set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.initializations.create_budget_set" title="Link to this definition">#</a></dt>
+<dd><p>Create a Pyomo Set representing budget periods for aggregated constraints.</p>
+<p>Generates a set of budget period indices based on the aggregation interval.
+For example, with 8760 hours and 730-hour intervals (monthly), creates a set
+{1, 2, 3, …, 12} representing 12 monthly budget periods.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – The Pyomo ConcreteModel instance containing the hourly set (model.h).</p></li>
+<li><p><strong>block</strong> – The Pyomo Block (e.g., model.hydro) where budget_set will be created.</p></li>
+<li><p><strong>n_hours_checked</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Total number of simulation hours (validated/adjusted).</p></li>
+<li><p><strong>budget_hours_aggregation</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of hours per budget period
+(e.g., 24 for daily, 730 for monthly).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Creates block.budget_set as a Pyomo Set indexed 1, 2, 3, …, n_periods.
+The set is declared within=model.h to maintain consistency with hourly indices.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.initializations.initialize_sets">
+<span class="sig-prename descclassname"><span class="pre">sdom.initializations.</span></span><span class="sig-name descname"><span class="pre">initialize_sets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_hours</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8760</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/initializations.html#initialize_sets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.initializations.initialize_sets" title="Link to this definition">#</a></dt>
+<dd><p>Initialize all Pyomo Sets for the SDOM optimization model.</p>
+<p>Creates sets for all model components including VRE plants, storage technologies,
+thermal units, and hourly time steps. Handles different hydro formulations by
+adjusting the hourly set and creating budget sets when needed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – The Pyomo ConcreteModel instance to initialize.</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Dictionary containing all input data including DataFrames for
+capacity factors, CAPEX data, storage data, and formulation specifications.</p></li>
+<li><p><strong>n_hours</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Number of simulation hours. Defaults to 8760 (full year).
+May be adjusted if using budget formulations requiring specific intervals.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Initializes model.pv.plants_set and model.wind.plants_set for VRE plants</p></li>
+<li><p>Creates model.storage.j (all storage techs) and model.storage.b (coupled techs)</p></li>
+<li><p>Initializes model.thermal.plants_set for thermal balancing units</p></li>
+<li><p>Creates model.h as the hourly RangeSet (1-based indexing)</p></li>
+<li><p>For budget hydro formulations, adjusts n_hours and creates model.hydro.budget_set</p></li>
+<li><p>Logs information about storage technologies being modeled</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sdom.initializations.initialize_params">
+<span class="sig-prename descclassname"><span class="pre">sdom.initializations.</span></span><span class="sig-name descname"><span class="pre">initialize_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sdom/initializations.html#initialize_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sdom.initializations.initialize_params" title="Link to this definition">#</a></dt>
+<dd><p>Initialize all Pyomo Parameters for the SDOM optimization model.</p>
+<p>Adds parameters to the model for all components including VRE technologies,
+storage, thermal units, fixed generation sources (hydro, nuclear, other renewables),
+demand, imports/exports, and system-level scalars. Parameter initialization is
+conditional based on the selected formulations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – The Pyomo ConcreteModel instance to initialize. Must have Sets already
+initialized via initialize_sets().</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Dictionary containing all input data including:
+- scalars DataFrame: discount rate (r), GenMix_Target, alpha values
+- Time-series DataFrames: load, nuclear, hydro, other renewables
+- Technology data: VRE CAPEX/FOM, storage characteristics, thermal parameters
+- Import/export data (if applicable)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Creates Pyomo parameters model.r (discount rate) and model.GenMix_Target (carbon-free target)</p></li>
+<li><p>Initializes time-series parameters for each hour in model.h</p></li>
+<li><p>For budget hydro formulations, adds upper/lower bound parameters</p></li>
+<li><p>Conditionally adds import/export parameters based on formulation selection</p></li>
+<li><p>model.GenMix_Target is mutable to allow sensitivity analysis across runs</p></li>
+<li><p>All monetary values use MW/kW conversion via MW_TO_KW constant</p></li>
+</ul>
+</dd></dl>
+
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="results.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Results Module</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="io_manager.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Data I/O Manager</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-sdom.models.formulations_system">System Formulations</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_system.objective_rule"><code class="docutils literal notranslate"><span class="pre">objective_rule()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_system.net_load_rule"><code class="docutils literal notranslate"><span class="pre">net_load_rule()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_system.add_system_expressions"><code class="docutils literal notranslate"><span class="pre">add_system_expressions()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_system.create_supply_balance_rule"><code class="docutils literal notranslate"><span class="pre">create_supply_balance_rule()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_system.genmix_share_rule"><code class="docutils literal notranslate"><span class="pre">genmix_share_rule()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_system.add_system_constraints"><code class="docutils literal notranslate"><span class="pre">add_system_constraints()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-sdom.models.formulations_vre">VRE Formulations</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_vre.add_vre_parameters"><code class="docutils literal notranslate"><span class="pre">add_vre_parameters()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_vre.add_vre_variables"><code class="docutils literal notranslate"><span class="pre">add_vre_variables()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_vre.add_vre_expressions"><code class="docutils literal notranslate"><span class="pre">add_vre_expressions()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_vre.add_vre_fixed_costs"><code class="docutils literal notranslate"><span class="pre">add_vre_fixed_costs()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_vre.vre_balance_rule"><code class="docutils literal notranslate"><span class="pre">vre_balance_rule()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_vre.add_vre_balance_constraints"><code class="docutils literal notranslate"><span class="pre">add_vre_balance_constraints()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-sdom.models.formulations_storage">Storage Formulations</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_storage.initialize_storage_sets"><code class="docutils literal notranslate"><span class="pre">initialize_storage_sets()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_storage.add_storage_parameters"><code class="docutils literal notranslate"><span class="pre">add_storage_parameters()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_storage.add_storage_variables"><code class="docutils literal notranslate"><span class="pre">add_storage_variables()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_storage.storage_power_capex_cost_expr_rule"><code class="docutils literal notranslate"><span class="pre">storage_power_capex_cost_expr_rule()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_storage.storage_energy_capex_cost_expr_rule"><code class="docutils literal notranslate"><span class="pre">storage_energy_capex_cost_expr_rule()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_storage.storage_fixed_om_cost_expr_rule"><code class="docutils literal notranslate"><span class="pre">storage_fixed_om_cost_expr_rule()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_storage.add_storage_expressions"><code class="docutils literal notranslate"><span class="pre">add_storage_expressions()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_storage.add_storage_fixed_costs"><code class="docutils literal notranslate"><span class="pre">add_storage_fixed_costs()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_storage.add_storage_variable_costs"><code class="docutils literal notranslate"><span class="pre">add_storage_variable_costs()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_storage.soc_balance_rule"><code class="docutils literal notranslate"><span class="pre">soc_balance_rule()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_storage.max_cycle_year_rule"><code class="docutils literal notranslate"><span class="pre">max_cycle_year_rule()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_storage.add_storage_constraints"><code class="docutils literal notranslate"><span class="pre">add_storage_constraints()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-sdom.models.formulations_thermal">Thermal Formulations</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_thermal.initialize_thermal_sets"><code class="docutils literal notranslate"><span class="pre">initialize_thermal_sets()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_thermal.add_thermal_parameters"><code class="docutils literal notranslate"><span class="pre">add_thermal_parameters()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_thermal.add_thermal_variables"><code class="docutils literal notranslate"><span class="pre">add_thermal_variables()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_thermal.total_thermal_expr_rule"><code class="docutils literal notranslate"><span class="pre">total_thermal_expr_rule()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_thermal.add_thermal_expressions"><code class="docutils literal notranslate"><span class="pre">add_thermal_expressions()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_thermal.add_thermal_constraints"><code class="docutils literal notranslate"><span class="pre">add_thermal_constraints()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_thermal.add_thermal_fixed_costs"><code class="docutils literal notranslate"><span class="pre">add_thermal_fixed_costs()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_thermal.add_thermal_variable_costs"><code class="docutils literal notranslate"><span class="pre">add_thermal_variable_costs()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-sdom.models.formulations_hydro">Hydropower Formulations</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_hydro.add_large_hydro_parameters"><code class="docutils literal notranslate"><span class="pre">add_large_hydro_parameters()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_hydro.add_large_hydro_bound_parameters"><code class="docutils literal notranslate"><span class="pre">add_large_hydro_bound_parameters()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_hydro.add_hydro_variables"><code class="docutils literal notranslate"><span class="pre">add_hydro_variables()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_hydro.add_hydro_run_of_river_constraints"><code class="docutils literal notranslate"><span class="pre">add_hydro_run_of_river_constraints()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_hydro.add_hydro_budget_constraints"><code class="docutils literal notranslate"><span class="pre">add_hydro_budget_constraints()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-sdom.models.formulations_imports_exports">Import/Export Formulations</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_imports_exports.add_import_export_ts_parameters"><code class="docutils literal notranslate"><span class="pre">add_import_export_ts_parameters()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_imports_exports.add_imports_parameters"><code class="docutils literal notranslate"><span class="pre">add_imports_parameters()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_imports_exports.add_exports_parameters"><code class="docutils literal notranslate"><span class="pre">add_exports_parameters()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_imports_exports.add_imports_variables"><code class="docutils literal notranslate"><span class="pre">add_imports_variables()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_imports_exports.add_exports_variables"><code class="docutils literal notranslate"><span class="pre">add_exports_variables()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_imports_exports.add_imports_exports_cost_expressions"><code class="docutils literal notranslate"><span class="pre">add_imports_exports_cost_expressions()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_imports_exports.add_import_export_binary_variable"><code class="docutils literal notranslate"><span class="pre">add_import_export_binary_variable()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_imports_exports.add_imports_constraints"><code class="docutils literal notranslate"><span class="pre">add_imports_constraints()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_imports_exports.add_exports_constraints"><code class="docutils literal notranslate"><span class="pre">add_exports_constraints()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.formulations_imports_exports.add_imports_exports_cost"><code class="docutils literal notranslate"><span class="pre">add_imports_exports_cost()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-utilities">Model Utilities</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.models_utils.fcr_rule"><code class="docutils literal notranslate"><span class="pre">fcr_rule()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.models_utils.crf_rule"><code class="docutils literal notranslate"><span class="pre">crf_rule()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.models_utils.get_filtered_ts_parameter_dict"><code class="docutils literal notranslate"><span class="pre">get_filtered_ts_parameter_dict()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.models_utils.add_alpha_parameter"><code class="docutils literal notranslate"><span class="pre">add_alpha_parameter()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.models_utils.add_alpha_and_ts_parameters"><code class="docutils literal notranslate"><span class="pre">add_alpha_and_ts_parameters()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.models_utils.add_budget_parameter"><code class="docutils literal notranslate"><span class="pre">add_budget_parameter()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.models_utils.add_upper_bound_paramenters"><code class="docutils literal notranslate"><span class="pre">add_upper_bound_paramenters()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.models_utils.add_lower_bound_paramenters"><code class="docutils literal notranslate"><span class="pre">add_lower_bound_paramenters()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.models_utils.add_generation_variables"><code class="docutils literal notranslate"><span class="pre">add_generation_variables()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.models_utils.sum_installed_capacity_by_plants_set_expr_rule"><code class="docutils literal notranslate"><span class="pre">sum_installed_capacity_by_plants_set_expr_rule()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.models_utils.generic_fixed_om_cost_expr_rule"><code class="docutils literal notranslate"><span class="pre">generic_fixed_om_cost_expr_rule()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.models_utils.generic_capex_cost_expr_rule"><code class="docutils literal notranslate"><span class="pre">generic_capex_cost_expr_rule()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.models_utils.different_fcr_capex_cost_expr_rule"><code class="docutils literal notranslate"><span class="pre">different_fcr_capex_cost_expr_rule()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.models_utils.generic_budget_rule"><code class="docutils literal notranslate"><span class="pre">generic_budget_rule()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.models.models_utils.add_generic_fixed_costs"><code class="docutils literal notranslate"><span class="pre">add_generic_fixed_costs()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#initialization-functions">Initialization Functions</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.initializations.initialize_vre_sets"><code class="docutils literal notranslate"><span class="pre">initialize_vre_sets()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.initializations.check_n_hours"><code class="docutils literal notranslate"><span class="pre">check_n_hours()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.initializations.create_budget_set"><code class="docutils literal notranslate"><span class="pre">create_budget_set()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.initializations.initialize_sets"><code class="docutils literal notranslate"><span class="pre">initialize_sets()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdom.initializations.initialize_params"><code class="docutils literal notranslate"><span class="pre">initialize_params()</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/models.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, NREL SDOM Team.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

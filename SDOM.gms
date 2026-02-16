@@ -15,10 +15,10 @@ $setGlobal sim_year         2030
 $setGlobal NumberOfPeriods  8760
 $setGlobal OutageDur        24
 $setGlobal ResilienceOption 1
-$setGlobal DemandCharges    1
+$setGlobal DemandCharges    0
 $setGlobal indir            Data
 $setGlobal outdir           Outputs
-$setGlobal case_name        test
+$setGlobal case_name        Checks
 
 $call mkdir "%outdir%" > nul 2> nul
 
@@ -141,7 +141,10 @@ Scalars
          max_backup_power_dur maximum backup power storage duration in hours 
          outage_start_hour first hour of outage throughout the year
          SOC_restore_hours number of hours required for restoring the storage system
-         critical_peak_load desired critical peak load for the design of back-up power (MW)       
+         critical_peak_load desired critical peak load for the design of back-up power (MW)
+         pv_footprint unit pv footprint in acres
+         wind_footprint unit wind footprint in acres
+         total_available_footprint total available footprint in acres
 ;
 
 $call CSV2GDX %indir%\%case_name%\Scalars.csv Output=%indir%\%case_name%\Scalars.gdx ID=ScalarInputs StoreZero = Y UseHeader=y Index=1 Values=(2..LastCol)
@@ -171,6 +174,9 @@ FOM_GasCC         = ScalarInputs('FOM_GasCC');
 VOM_GasCC         = ScalarInputs('VOM_GasCC');
 MaxCycles         = ScalarInputs('MaxCycles');
 critical_peak_load = ScalarInputs('critical_peak_load');
+pv_footprint      = ScalarInputs('pv_footprint');
+wind_footprint    = ScalarInputs('wind_footprint');
+total_available_footprint = ScalarInputs('total_available_footprint');
 GenMix_Target_step2 = GenMix_Target ;
 
 FCR_VRE = (r*(1+r)**LifeTimeVRE)/((1+r)**LifeTimeVRE-1);
@@ -195,6 +201,8 @@ If (critical_peak_load = 0,
 Parameter Load_step2(h) ;
 
 Load_step2(h) = Load(h) ;
+
+Parameter BackupSOC(j) ; 
 
 
 Parameter Nuclear(h) Generation from nuclear power plants for every hour in the analysis period (MW)
@@ -242,7 +250,9 @@ Parameter ImportCap(h) Max import power (MW)
 $Ondelim
 $include %indir%\%case_name%\Import_Cap_%sim_year%.csv
 $Offdelim
-/
+/;
+
+*ImportCap(h) = 0 ; 
 
 Parameter ExportCap(h) Max export power (MW)
 /
@@ -251,6 +261,9 @@ $include %indir%\%case_name%\Export_Cap_%sim_year%.csv
 $Offdelim
 /
 ;
+
+ExportCap(h) = 0 ; 
+
 
 Parameter ImportPrices(h) Prices for power imports ($ per MWh)
 /
@@ -268,7 +281,7 @@ $Offdelim
 ;
 
 *ImportPrices(h) = 0*ImportPrices(h) ;
-*ExportPrices(h) = 0*ExportPrices(h) ;
+ExportPrices(h) = 0*ExportPrices(h) ;
 
 Parameter LargeHydroBudget(h) Generation from large hydro power plants for every hour in the analysis period (MW)
 /
@@ -352,8 +365,8 @@ Ywind.fx(w) = 1;
 
 Imports.up(h) = ImportCap(h);
 Exports.up(h) = ExportCap(h);
-Imports.up(h) = max (0, Load(h)-sum(k,CFSolar(h,k)*CapSolar(k,'capacity'))-sum(w, CFWind(h,w)*CapWind(w,'capacity'))- AlphaNuclear*Nuclear(h)-AlphaLargHy*LargeHydroBudget(h)-AlphaOtheRe*OtherRenewables(h));
-Imports.up(h) = max (0, Load(h)-sum(k,CFSolar(h,k)*CapSolar(k,'capacity'))-sum(w, CFWind(h,w)*CapWind(w,'capacity'))- AlphaNuclear*Nuclear(h)-AlphaLargHy*LargeHydroBudget(h)-AlphaOtheRe*OtherRenewables(h));
+*Imports.up(h) = max (0, Load(h)-sum(k,CFSolar(h,k)*CapSolar(k,'capacity'))-sum(w, CFWind(h,w)*CapWind(w,'capacity'))- AlphaNuclear*Nuclear(h)-AlphaLargHy*LargeHydroBudget(h)-AlphaOtheRe*OtherRenewables(h));
+*Imports.up(h) = max (0, Load(h)-sum(k,CFSolar(h,k)*CapSolar(k,'capacity'))-sum(w, CFWind(h,w)*CapWind(w,'capacity'))- AlphaNuclear*Nuclear(h)-AlphaLargHy*LargeHydroBudget(h)-AlphaOtheRe*OtherRenewables(h));
 
 ExportCap(h)= 1.0*ExportCap(h);
 
@@ -364,11 +377,14 @@ Binary variables
 ;
 
 Equations
+         ObjDes objective function
          Obj objective function
          Supply Electricity supply during hour h
          GenMix_Share Equation for VRE target
          SolarBal Balance of availability of solar PV power during hour h
          WindBal Balance of availability of wind power during hour h
+         Footprint Footprint for renewables available
+
          HydroBudget
          ChargSt Constraint for charging the storage devices
          DischargSt Constraint for discharging the storage devices
@@ -380,6 +396,7 @@ Equations
          MaxPcha Maximum charge power capacity for storage technology j
          MaxPdis Maximum discharge power capacity for storage technology j
          PchaPdis Coupling of charge and discharge power capacity for battery technology b
+         PchaPdisDes
          MinEcap Minimum energy capacity for storage technology j
          MaxEcap Maximum energy capacity for storage technology j
          BackupGen Required capacity from backup combined cycle units
@@ -396,12 +413,8 @@ Equations
          MaxPDDes Maximum discharging power for storage technology j during hour h the design for resilience design
          MaxSOCDes Maximum SOC for storage technology j during hour h the design for resilience design
          SOCBalDes SOC balance storage technology j during hour h > 1 the design for resilience design
-         IniBalDes Initial (h = 1) SOC balance for storage technology j the design for resilience design
          BackupGenDes Required capacity from backup combined cycle units the design for resilience design
-         
-         BackupEnergy Energy requirement for back-up storage     
-         MinPdisBackup Minimum dispatch power
-         MinEcapBackup Minimum energy capacity 
+
          BackupEnergyOutage State of charge requirement to be kept in hours outside of outages
          
          Fixed_demand_charge Fixed monthly demand charges 
@@ -409,7 +422,7 @@ Equations
          Offpeak_variable_demand_charge Variable monthly demand charges corresponding to offpeak hours
 
 ;
-
+                 
 Obj..    TSC =e= sum(k, (FCR_VRE*(1000*CapSolar(k,'CAPEX_M') + CapSolar(k,'trans_cap_cost')) + 1000*CapSolar(k,'FOM_M'))*CapSolar(k,'capacity')*Ypv(k)) +
 
                  sum(w, (FCR_VRE*(1000*CapWind(w,'CAPEX_M') + CapWind(w,'trans_cap_cost')) + 1000*CapWind(w,'FOM_M'))*CapWind(w,'capacity')*Ywind(w))  +
@@ -458,6 +471,8 @@ SolarBal(h)..    GenPV(h)+ CurtPV(h) =e= sum(k, CFSolar(h,k)*CapSolar(k,'capacit
 
 WindBal(h)..     GenWind(h)+ CurtWind(h) =e= sum(w, CFWind(h,w)*CapWind(w,'capacity')*Ywind(w));
 
+Footprint..      sum(k,pv_footprint * CapSolar(k,'capacity') * Ypv(k)) + sum(w,wind_footprint * CapWind(w,'capacity') * Ywind(w)) =l= total_available_footprint ; 
+
 HydroBudget(hhh).. sum (h$(ord(h)> 24*(ord(hhh)-1) and ord(h)<=24*ord(hhh)),LargeHydro(h)) =e= sum (h$(ord(h)> 24*(ord(hhh)-1) and ord(h)<=24*ord(hhh)),LargeHydroBudget(h));  
 
 ChargSt(j,h)..   PC(j,h) =l= StorageData('Max_P',j)*Ystorage(j,h);
@@ -472,8 +487,6 @@ MaxSOC(j,h)..    SOC(j,h) =l= Ecap(j);
 
 SOCBalDes(j,h)$(h_step1(h) and ord(h) > 1  and %ResilienceOption%=1)..       SOC(j,h) =e= sum(hh$(ord(hh) = ord(h) -1), SOC(j,hh))+ sqrt(StorageData('Eff',j))*PC(j,h)-(1/sqrt(StorageData('Eff',j)))*PD(j,h);
 
-IniBalDes(j,h)$(h_step1(h) and ord(h) = 1  and %ResilienceOption%=1)..       SOC(j,h) =e= sum(hh $ (ord(hh) = card(hh)), SOC(j,hh)) + sqrt(StorageData('Eff',j))*PC(j,h)-(1/sqrt(StorageData('Eff',j)))*PD(j,h);
-
 SOCBal(j,h)$(ord(h) > 1)..       SOC(j,h) =e= sum(hh$(ord(hh) = ord(h) -1), SOC(j,hh))+ sqrt(StorageData('Eff',j))*PC(j,h)-(1/sqrt(StorageData('Eff',j)))*PD(j,h);
 
 IniBal(j,h)$(ord(h) = 1)..       SOC(j,h) =e= sum(hh $ (ord(hh) = card(hh)), SOC(j,hh)) + sqrt(StorageData('Eff',j))*PC(j,h)-(1/sqrt(StorageData('Eff',j)))*PD(j,h);
@@ -481,6 +494,8 @@ IniBal(j,h)$(ord(h) = 1)..       SOC(j,h) =e= sum(hh $ (ord(hh) = card(hh)), SOC
 MaxPcha(j)..     Pcha(j) =l= StorageData('Max_P',j);
 
 MaxPdis(j)..     Pdis(j) =l= StorageData('Max_P',j);
+
+PchaPdisDes(j)$(%ResilienceOption%=1 and sum(h,h_step1(h)))..    Pcha(j) =e= Pdis(j);
 
 PchaPdis(b)..    Pcha(b) =e= Pdis(b);
 
@@ -494,13 +509,7 @@ BackupGen(bu,h)..   CapCC(bu) =g= GenCC(h,bu);
 
 MaxCycleYear..   sum(h,PD('Li-Ion',h)) =l= (MaxCycles/StorageData('Lifetime','Li-Ion'))*Ecap('Li-Ion') ;
 
-BackupEnergy(h)$(h_step1(h) and %ResilienceOption%=1).. sum(j, sqrt(StorageData('Eff',j))*SOC(j,h))=g= sum(hh$(ord(hh)>=ord(h) and ord(hh)<ord(h)), (Load(hh)));
-
-MinPdisBackup$(%ResilienceOption%=1)..  sum(j,Pdis(j)) =g= critical_peak_load ;
-
-MinEcapBackup$(%ResilienceOption%=1)..  sum(j,sqrt(StorageData('Eff',j)) * Ecap(j)) =g= max_backup_power_dur * critical_peak_load ;
-
-BackupEnergyOutage(h)$(ord(h)<outage_start_hour or ord(h)>(outage_start_hour + max_backup_power_dur + SOC_restore_hours) and %ResilienceOption%=1).. sum(j, sqrt(StorageData('Eff',j))*SOC(j,h))=g= sum(hh$(ord(hh)>=ord(h) and ord(hh)<ord(h)+ max_backup_power_dur), (Load(hh) - (GenPV(hh) + CurtPV(hh) + GenWind(hh) + CurtWind(hh))));
+BackupEnergyOutage(j,h)$(ord(h)<outage_start_hour or ord(h)>(outage_start_hour + max_backup_power_dur + SOC_restore_hours) and %ResilienceOption%=1).. sqrt(StorageData('Eff',j))*SOC(j,h) =g= BackupSOC(j);
 
 *****************
 $offlisting
@@ -516,6 +525,7 @@ Model TechMix
                  Offpeak_variable_demand_charge
                  SolarBal
                  WindBal
+*                 Footprint
                  HydroBudget
                  ChargSt
                  DischargSt
@@ -539,6 +549,7 @@ Model SDOM_ResDesign
                  GenMix_ShareDes
                  SolarBalDes
                  WindBalDes
+*                 Footprint
                  HydroBudgetDes
                  ChargStDes
                  DischargStDes
@@ -548,14 +559,11 @@ Model SDOM_ResDesign
                  SOCBalDes
                  MaxPcha
                  MaxPdis
-                 PchaPdis
+                 PchaPdisDes
                  MinEcap
                  MaxEcap
                  BackupGenDes
                  MaxCycleYear         
-                 MinPdisBackup
-                 MinEcapBackup
-                 BackupEnergy
                  / ;
 
 Model SDOM_ResOutage
@@ -567,6 +575,7 @@ Model SDOM_ResOutage
                  Offpeak_variable_demand_charge
                  SolarBal
                  WindBal
+*                 Footprint
                  HydroBudget
                  ChargSt
                  DischargSt
@@ -652,10 +661,10 @@ Parameter
          Li_Ion_Ecapex(Runs) Total Energy Capex for Li-Ion
          Li_Ion_FOM(Runs) Total FOM for Li-Ion
          Li_Ion_VOM(Runs) Total VOM for Li-Ion
-         CAES_Pcapex(Runs) Total Power Capex for CAES
-         CAES_Ecapex(Runs) Total Energy Capex for CAES
-         CAES_FOM(Runs) Total FOM for CAES
-         CAES_VOM(Runs) Total VOM for CAES
+         Vanadium_Pcapex(Runs) Total Power Capex for Vanadium
+         Vanadium_Ecapex(Runs) Total Energy Capex for Vanadium
+         Vanadium_FOM(Runs) Total FOM for Vanadium
+         Vanadium_VOM(Runs) Total VOM for Vanadium
          PHS_Pcapex(Runs) Total Power Capex for PHS
          PHS_Ecapex(Runs) Total Energy Capex for PHS
          PHS_FOM(Runs) Total FOM for PHS
@@ -690,17 +699,18 @@ if(%ResilienceOption%=1,
 
          Load(h) = Load_step2(h) ; 
          CapCC.up(bu) = smax (h, Load(h)-AlphaNuclear*Nuclear(h)-AlphaLargHy*LargeHydro(h)-AlphaOtheRe*OtherRenewables(h));
+         CapCC.fx(bu) = 0 ;
          GenCC.fx(h,bu)$(ord(h)>= outage_start_hour and ord(h)<= outage_start_hour + max_backup_power_dur) =0;
          Imports.up(h) = ImportCap(h);
          Exports.up(h) = ExportCap(h);
-         Imports.up(h) = max (0, Load(h)-sum(k,CFSolar(h,k)*CapSolar(k,'capacity'))-sum(w, CFWind(h,w)*CapWind(w,'capacity'))- AlphaNuclear*Nuclear(h)-AlphaLargHy*LargeHydroBudget(h)-AlphaOtheRe*OtherRenewables(h));
-         Imports.up(h) = max (0, Load(h)-sum(k,CFSolar(h,k)*CapSolar(k,'capacity'))-sum(w, CFWind(h,w)*CapWind(w,'capacity'))- AlphaNuclear*Nuclear(h)-AlphaLargHy*LargeHydroBudget(h)-AlphaOtheRe*OtherRenewables(h));
          GenMix_Target = GenMix_Target_step2 ;
          Pdis.lo(j) = Pdis.l(j) ;
          Pcha.lo(j) = Pcha.l(j) ;
          Ecap.lo(j) = Ecap.l(j) ;
+         BackupSOC(j) = SOC.l(j,'1') ; 
          Ypv.up(k)   = 1;
          Ywind.up(w) = 1;
+         Exports.fx(h) = 0 ; 
          Solve SDOM_ResOutage using mip minimizing TSC;
     
          TotalCost(Runs) = TSC.l;
@@ -741,16 +751,16 @@ if(%ResilienceOption%=1,
          WindFOM(Runs) = sum(w, 1000*CapWind(w,'FOM_M')*CapWind(w,'capacity')*Ywind.l(w));
          Li_Ion_Pcapex(Runs) = CRF('Li-Ion')*(1000*StorageData('CostRatio','Li-Ion')*StorageData('P_Capex','Li-Ion')*Pcha.l('Li-Ion') + 1000*(1-StorageData('CostRatio','Li-Ion'))*StorageData('P_Capex','Li-Ion')*Pdis.l('Li-Ion') );
          Li_Ion_Ecapex(Runs)  = CRF('Li-Ion')*1000*StorageData('E_Capex','Li-Ion')*Ecap.l('Li-Ion');
-         CAES_Pcapex(Runs) = CRF('CAES')*(1000*StorageData('CostRatio','CAES')*StorageData('P_Capex','CAES')*Pcha.l('CAES') + 1000*(1-StorageData('CostRatio','CAES'))*StorageData('P_Capex','CAES')*Pdis.l('CAES') );
-         CAES_Ecapex(Runs)  = CRF('CAES')*1000*StorageData('E_Capex','CAES')*Ecap.l('CAES');
+         Vanadium_Pcapex(Runs) = CRF('Vanadium')*(1000*StorageData('CostRatio','Vanadium')*StorageData('P_Capex','Vanadium')*Pcha.l('Vanadium') + 1000*(1-StorageData('CostRatio','Vanadium'))*StorageData('P_Capex','Vanadium')*Pdis.l('Vanadium') );
+         Vanadium_Ecapex(Runs)  = CRF('Vanadium')*1000*StorageData('E_Capex','Vanadium')*Ecap.l('Vanadium');
          PHS_Pcapex(Runs) = CRF('PHS')*(1000*StorageData('CostRatio','PHS')*StorageData('P_Capex','PHS')*Pcha.l('PHS') + 1000*(1-StorageData('CostRatio','PHS'))*StorageData('P_Capex','PHS')*Pdis.l('PHS') );
          PHS_Ecapex(Runs)  = CRF('PHS')*1000*StorageData('E_Capex','PHS')*Ecap.l('PHS');
          H2_Pcapex(Runs) = CRF('H2')*(1000*StorageData('CostRatio','H2')*StorageData('P_Capex','H2')*Pcha.l('H2') + 1000*(1-StorageData('CostRatio','H2'))*StorageData('P_Capex','H2')*Pdis.l('H2') );
          H2_Ecapex(Runs)  = CRF('H2')*1000*StorageData('E_Capex','H2')*Ecap.l('H2');
          Li_Ion_FOM(Runs) = 1000*StorageData('CostRatio','Li-Ion')*StorageData('FOM','Li-Ion')*Pcha.l('Li-Ion') + 1000*(1-StorageData('CostRatio','Li-Ion'))*StorageData('FOM','Li-Ion')*Pdis.l('Li-Ion') ;
          Li_Ion_VOM(Runs) = StorageData('VOM','Li-Ion')*sum(h,PD.l('Li-Ion',h));
-         CAES_FOM(Runs) = 1000*StorageData('CostRatio','CAES')*StorageData('FOM','CAES')*Pcha.l('CAES') + 1000*(1-StorageData('CostRatio','CAES'))*StorageData('FOM','CAES')*Pdis.l('CAES') ;
-         CAES_VOM(Runs) = StorageData('VOM','CAES')*sum(h,PD.l('CAES',h));
+         Vanadium_FOM(Runs) = 1000*StorageData('CostRatio','Vanadium')*StorageData('FOM','Vanadium')*Pcha.l('Vanadium') + 1000*(1-StorageData('CostRatio','Vanadium'))*StorageData('FOM','Vanadium')*Pdis.l('Vanadium') ;
+         Vanadium_VOM(Runs) = StorageData('VOM','Vanadium')*sum(h,PD.l('Vanadium',h));
          PHS_FOM(Runs) = 1000*StorageData('CostRatio','PHS')*StorageData('FOM','PHS')*Pcha.l('PHS') + 1000*(1-StorageData('CostRatio','PHS'))*StorageData('FOM','PHS')*Pdis.l('PHS') ;
          PHS_VOM(Runs) = StorageData('VOM','PHS')*sum(h,PD.l('PHS',h));
          H2_FOM(Runs) = 1000*StorageData('CostRatio','H2')*StorageData('FOM','H2')*Pcha.l('H2') + 1000*(1-StorageData('CostRatio','H2'))*StorageData('FOM','H2')*Pdis.l('H2') ;
@@ -809,16 +819,16 @@ if(%ResilienceOption%=1,
          WindFOM(Runs) = sum(w, 1000*CapWind(w,'FOM_M')*CapWind(w,'capacity')*Ywind.l(w));
          Li_Ion_Pcapex(Runs) = CRF('Li-Ion')*(1000*StorageData('CostRatio','Li-Ion')*StorageData('P_Capex','Li-Ion')*Pcha.l('Li-Ion') + 1000*(1-StorageData('CostRatio','Li-Ion'))*StorageData('P_Capex','Li-Ion')*Pdis.l('Li-Ion') );
          Li_Ion_Ecapex(Runs)  = CRF('Li-Ion')*1000*StorageData('E_Capex','Li-Ion')*Ecap.l('Li-Ion');
-         CAES_Pcapex(Runs) = CRF('CAES')*(1000*StorageData('CostRatio','CAES')*StorageData('P_Capex','CAES')*Pcha.l('CAES') + 1000*(1-StorageData('CostRatio','CAES'))*StorageData('P_Capex','CAES')*Pdis.l('CAES') );
-         CAES_Ecapex(Runs)  = CRF('CAES')*1000*StorageData('E_Capex','CAES')*Ecap.l('CAES');
+         Vanadium_Pcapex(Runs) = CRF('Vanadium')*(1000*StorageData('CostRatio','Vanadium')*StorageData('P_Capex','Vanadium')*Pcha.l('Vanadium') + 1000*(1-StorageData('CostRatio','Vanadium'))*StorageData('P_Capex','Vanadium')*Pdis.l('Vanadium') );
+         Vanadium_Ecapex(Runs)  = CRF('Vanadium')*1000*StorageData('E_Capex','Vanadium')*Ecap.l('Vanadium');
          PHS_Pcapex(Runs) = CRF('PHS')*(1000*StorageData('CostRatio','PHS')*StorageData('P_Capex','PHS')*Pcha.l('PHS') + 1000*(1-StorageData('CostRatio','PHS'))*StorageData('P_Capex','PHS')*Pdis.l('PHS') );
          PHS_Ecapex(Runs)  = CRF('PHS')*1000*StorageData('E_Capex','PHS')*Ecap.l('PHS');
          H2_Pcapex(Runs) = CRF('H2')*(1000*StorageData('CostRatio','H2')*StorageData('P_Capex','H2')*Pcha.l('H2') + 1000*(1-StorageData('CostRatio','H2'))*StorageData('P_Capex','H2')*Pdis.l('H2') );
          H2_Ecapex(Runs)  = CRF('H2')*1000*StorageData('E_Capex','H2')*Ecap.l('H2');
          Li_Ion_FOM(Runs) = 1000*StorageData('CostRatio','Li-Ion')*StorageData('FOM','Li-Ion')*Pcha.l('Li-Ion') + 1000*(1-StorageData('CostRatio','Li-Ion'))*StorageData('FOM','Li-Ion')*Pdis.l('Li-Ion') ;
          Li_Ion_VOM(Runs) = StorageData('VOM','Li-Ion')*sum(h,PD.l('Li-Ion',h));
-         CAES_FOM(Runs) = 1000*StorageData('CostRatio','CAES')*StorageData('FOM','CAES')*Pcha.l('CAES') + 1000*(1-StorageData('CostRatio','CAES'))*StorageData('FOM','CAES')*Pdis.l('CAES') ;
-         CAES_VOM(Runs) = StorageData('VOM','CAES')*sum(h,PD.l('CAES',h));
+         Vanadium_FOM(Runs) = 1000*StorageData('CostRatio','Vanadium')*StorageData('FOM','Vanadium')*Pcha.l('Vanadium') + 1000*(1-StorageData('CostRatio','Vanadium'))*StorageData('FOM','Vanadium')*Pdis.l('Vanadium') ;
+         Vanadium_VOM(Runs) = StorageData('VOM','Vanadium')*sum(h,PD.l('Vanadium',h));
          PHS_FOM(Runs) = 1000*StorageData('CostRatio','PHS')*StorageData('FOM','PHS')*Pcha.l('PHS') + 1000*(1-StorageData('CostRatio','PHS'))*StorageData('FOM','PHS')*Pdis.l('PHS') ;
          PHS_VOM(Runs) = StorageData('VOM','PHS')*sum(h,PD.l('PHS',h));
          H2_FOM(Runs) = 1000*StorageData('CostRatio','H2')*StorageData('FOM','H2')*Pcha.l('H2') + 1000*(1-StorageData('CostRatio','H2'))*StorageData('FOM','H2')*Pdis.l('H2') ;
@@ -892,9 +902,6 @@ loop ((Runs,j),
      
 loop (Runs,
      PUT 'Storage energy charging', 'All', Runs.tl, TotalAllPCarge(Runs):0:5, 'MWh' /);
-
-loop (Runs,
-     PUT 'Total Capex', 'Li-Ion', Runs.tl, (Li_Ion_Ecapex(Runs) + Li_Ion_Pcapex(Runs)):0:5, 'US$' /);
      
 loop (Runs,
      PUT 'Total demand', '', Runs.tl, sum(h, Load(h)):0:5, 'MWh' /);
@@ -915,7 +922,7 @@ loop (Runs,
      PUT 'Power Capex', 'Li-Ion', Runs.tl, Li_Ion_Pcapex(Runs):0:5, 'US$' /);
      
 loop (Runs,
-     PUT 'Power Capex', 'CAES', Runs.tl, CAES_Pcapex(Runs):0:5, 'US$' /);
+     PUT 'Power Capex', 'Vanadium', Runs.tl, Vanadium_Pcapex(Runs):0:5, 'US$' /);
      
 loop (Runs,
      PUT 'Power Capex', 'PHS', Runs.tl, PHS_Pcapex(Runs):0:5, 'US$' /);
@@ -924,13 +931,13 @@ loop (Runs,
      PUT 'Power Capex', 'H2', Runs.tl, H2_Pcapex(Runs):0:5, 'US$' /);
 
 loop (Runs,
-     PUT 'Total Power Capex', 'All', Runs.tl, (Li_Ion_Pcapex(Runs) + CAES_Pcapex(Runs) + PHS_Pcapex(Runs) + H2_Pcapex(Runs)):0:5, 'US$' /);
+     PUT 'Total Power Capex', 'All', Runs.tl, (Li_Ion_Pcapex(Runs) + Vanadium_Pcapex(Runs) + PHS_Pcapex(Runs) + H2_Pcapex(Runs)):0:5, 'US$' /);
      
 loop (Runs,
      PUT 'Energy Capex', 'Li-Ion', Runs.tl, Li_Ion_Ecapex(Runs):0:5, 'US$' /);
 
 loop (Runs,
-     PUT 'Energy Capex', 'CAES', Runs.tl, CAES_Ecapex(Runs):0:5, 'US$' /);
+     PUT 'Energy Capex', 'Vanadium', Runs.tl, Vanadium_Ecapex(Runs):0:5, 'US$' /);
      
 loop (Runs,
      PUT 'Energy Capex', 'PHS', Runs.tl, PHS_Ecapex(Runs):0:5, 'US$' /);
@@ -939,13 +946,13 @@ loop (Runs,
      PUT 'Energy Capex', 'H2', Runs.tl, H2_Ecapex(Runs):0:5, 'US$' /);
      
 loop (Runs,
-     PUT 'Energy Capex', 'All', Runs.tl, (Li_Ion_Ecapex(Runs) + CAES_Ecapex(Runs) + PHS_Ecapex(Runs) + H2_Ecapex(Runs)):0:5, 'US$' /);
+     PUT 'Energy Capex', 'All', Runs.tl, (Li_Ion_Ecapex(Runs) + Vanadium_Ecapex(Runs) + PHS_Ecapex(Runs) + H2_Ecapex(Runs)):0:5, 'US$' /);
 
 loop (Runs,
      PUT 'Total Capex', 'Li-Ion', Runs.tl, (Li_Ion_Ecapex(Runs) + Li_Ion_Pcapex(Runs)):0:5, 'US$' /);
 
 loop (Runs,
-     PUT 'Total Capex', 'CAES', Runs.tl, (CAES_Ecapex(Runs) + CAES_Pcapex(Runs)):0:5, 'US$' /);
+     PUT 'Total Capex', 'Vanadium', Runs.tl, (Vanadium_Ecapex(Runs) + Vanadium_Pcapex(Runs)):0:5, 'US$' /);
      
 loop (Runs,
      PUT 'Total Capex', 'PHS', Runs.tl, (PHS_Ecapex(Runs) + PHS_Pcapex(Runs)):0:5, 'US$' /);
@@ -954,7 +961,7 @@ loop (Runs,
      PUT 'Total Capex', 'H2', Runs.tl, (H2_Ecapex(Runs) + H2_Pcapex(Runs)):0:5, 'US$' /);
      
 loop (Runs,
-     PUT 'Total Capex', 'All', Runs.tl, (Li_Ion_Pcapex(Runs) + CAES_Pcapex(Runs) + PHS_Pcapex(Runs) + H2_Pcapex(Runs) + Li_Ion_Ecapex(Runs) + CAES_Ecapex(Runs) + PHS_Ecapex(Runs) + H2_Ecapex(Runs)):0:5, 'US$' /);
+     PUT 'Total Capex', 'All', Runs.tl, (Li_Ion_Pcapex(Runs) + Vanadium_Pcapex(Runs) + PHS_Pcapex(Runs) + H2_Pcapex(Runs) + Li_Ion_Ecapex(Runs) + Vanadium_Ecapex(Runs) + PHS_Ecapex(Runs) + H2_Ecapex(Runs)):0:5, 'US$' /);
      
 
 loop (Runs,
@@ -970,7 +977,7 @@ loop (Runs,
      PUT 'FOM', 'Li-Ion ', Runs.tl, Li_Ion_FOM(Runs):0:5, 'US$' /);
      
 loop (Runs,
-     PUT 'FOM', 'CAES', Runs.tl, CAES_FOM(Runs):0:5, 'US$' /);
+     PUT 'FOM', 'Vanadium', Runs.tl, Vanadium_FOM(Runs):0:5, 'US$' /);
      
 loop (Runs,
      PUT 'FOM', 'PHS', Runs.tl, PHS_FOM(Runs):0:5, 'US$' /);
@@ -979,7 +986,7 @@ loop (Runs,
      PUT 'FOM', 'H2', Runs.tl, H2_FOM(Runs):0:5, 'US$' /);
      
 loop (Runs,
-     PUT 'FOM', 'All', Runs.tl, (GasCC_FOM(Runs) + SolarFOM(Runs) + WindFOM(Runs) + Li_Ion_FOM(Runs) + CAES_FOM(Runs) + PHS_FOM(Runs) + H2_FOM(Runs)):0:5, 'US$' /);
+     PUT 'FOM', 'All', Runs.tl, (GasCC_FOM(Runs) + SolarFOM(Runs) + WindFOM(Runs) + Li_Ion_FOM(Runs) + Vanadium_FOM(Runs) + PHS_FOM(Runs) + H2_FOM(Runs)):0:5, 'US$' /);
      
 loop (Runs,
      PUT 'VOM', 'GasCC', Runs.tl, (GasCC_VOM(Runs) + GasCC_FUEL(Runs)):0:5, 'US$' /);
@@ -988,7 +995,7 @@ loop (Runs,
      PUT 'VOM', 'Li-Ion', Runs.tl, Li_Ion_VOM(Runs):0:5, 'US$' /);
 
 loop (Runs,
-     PUT 'VOM', 'CAES', Runs.tl, CAES_VOM(Runs):0:5, 'US$' /);
+     PUT 'VOM', 'Vanadium', Runs.tl, Vanadium_VOM(Runs):0:5, 'US$' /);
 
 loop (Runs,
      PUT 'VOM', 'PHS', Runs.tl, PHS_VOM(Runs):0:5, 'US$' /);
@@ -997,13 +1004,13 @@ loop (Runs,
      PUT 'VOM', 'H2', Runs.tl, H2_VOM(Runs):0:5, 'US$' /);
 
 loop (Runs,
-     PUT 'VOM', 'H2', Runs.tl, (GasCC_VOM(Runs) + GasCC_FUEL(Runs) + Li_Ion_VOM(Runs) + CAES_VOM(Runs) + PHS_VOM(Runs) + H2_VOM(Runs)):0:5, 'US$' /);
+     PUT 'VOM', 'H2', Runs.tl, (GasCC_VOM(Runs) + GasCC_FUEL(Runs) + Li_Ion_VOM(Runs) + Vanadium_VOM(Runs) + PHS_VOM(Runs) + H2_VOM(Runs)):0:5, 'US$' /);
      
 loop (Runs,
      PUT 'VOM', 'Import Cost', Runs.tl, ImportsCost(Runs):0:5, 'US$' /);
      
 loop (Runs,
-     PUT 'VOM', 'Export Revenue', Runs.tl, ExportsCost(Runs):0:5, 'US$' /);
+     PUT 'VOM', 'Export Cost', Runs.tl, ExportsCost(Runs):0:5, 'US$' /);
      
 loop (Runs,
      PUT 'VOM', 'Demand Charges', Runs.tl, DemandCharges(Runs):0:5, 'US$' /);
@@ -1021,7 +1028,7 @@ loop (Runs,
      PUT 'OPEX', 'Li-Ion ', Runs.tl, (Li_Ion_FOM(Runs) + Li_Ion_VOM(Runs)):0:5, 'US$' /);
      
 loop (Runs,
-     PUT 'OPEX', 'CAES', Runs.tl, (CAES_FOM(Runs) + CAES_VOM(Runs)):0:5, 'US$' /);
+     PUT 'OPEX', 'Vanadium', Runs.tl, (Vanadium_FOM(Runs) + Vanadium_VOM(Runs)):0:5, 'US$' /);
      
 loop (Runs,
      PUT 'OPEX', 'PHS', Runs.tl, (PHS_FOM(Runs) + PHS_VOM(Runs)):0:5, 'US$' /);
@@ -1030,7 +1037,7 @@ loop (Runs,
      PUT 'OPEX', 'H2', Runs.tl, (H2_FOM(Runs) + H2_VOM(Runs)):0:5, 'US$' /);
      
 loop (Runs,
-     PUT 'OPEX', 'H2', Runs.tl, (GasCC_FOM(Runs) + SolarFOM(Runs) + WindFOM(Runs) + Li_Ion_FOM(Runs) + CAES_FOM(Runs) + PHS_FOM(Runs) + H2_FOM(Runs) + GasCC_VOM(Runs) + GasCC_FUEL(Runs) + Li_Ion_VOM(Runs) + CAES_VOM(Runs) + PHS_VOM(Runs) + H2_VOM(Runs)):0:5, 'US$' /);
+     PUT 'OPEX', 'All', Runs.tl, (GasCC_FOM(Runs) + SolarFOM(Runs) + WindFOM(Runs) + Li_Ion_FOM(Runs) + Vanadium_FOM(Runs) + PHS_FOM(Runs) + H2_FOM(Runs) + GasCC_VOM(Runs) + GasCC_FUEL(Runs) + Li_Ion_VOM(Runs) + Vanadium_VOM(Runs) + PHS_VOM(Runs) + H2_VOM(Runs)):0:5, 'US$' /);
   
 loop ((Runs,j),
      PUT 'Charge power capacity', j.tl, Runs.tl,  TotalCapScha(Runs,j):0:5, 'MW' /);

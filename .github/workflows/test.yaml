@@ -16,6 +16,9 @@ jobs:
         os: [windows-latest]
         python-version: ['3.11', '3.12', '3.13']  
 
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
     steps:
       - name: 🧾 Checkout code
         uses: actions/checkout@v4
@@ -36,7 +39,7 @@ jobs:
 
       - name: 📥 Install package
         run: |
-            pip install . highspy pytest
+            pip install . highspy pytest pytest-cov
 
       - name: ▶️ Run tests
         run: |

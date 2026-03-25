@@ -39,7 +39,7 @@ jobs:
 
       - name: 📥 Install package
         run: |
-            pip install . highspy pytest pytest-cov
+            pip install . pytest pytest-cov
 
       - name: ▶️ Run tests
         run: |

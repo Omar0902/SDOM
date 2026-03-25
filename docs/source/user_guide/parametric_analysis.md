@@ -92,10 +92,10 @@ The column name is resolved automatically:
 | `"large_hydro_data"` | `"LargeHydro"` |
 | `"large_hydro_max"` | `"LargeHydro_max"` |
 | `"large_hydro_min"` | `"LargeHydro_min"` |
-| `"import_cap"` | `"Imports"` |
-| `"import_prices"` | `"Imports_price"` |
-| `"export_cap"` | `"Exports"` |
-| `"export_prices"` | `"Exports_price"` |
+| `"cap_imports"` | `"Imports"` |
+| `"price_imports"` | `"Imports_price"` |
+| `"cap_exports"` | `"Exports"` |
+| `"price_exports"` | `"Exports_price"` |
 
 ```python
 study.add_ts_sweep("load_data", [0.9, 1.0, 1.1])
@@ -114,7 +114,7 @@ Each case receives a deterministic, filesystem-safe name derived from its
 parameter values, for example:
 
 ```
-GenMix_Target=0.90_P_Capexxx0.8_load_datax1.05
+GenMix_Target=0.90_P_Capexx0.8_load_datax1.05
 ```
 
 This name is used as the `case_name` in `run_solver` and as the
@@ -126,12 +126,12 @@ sub-directory name under `output_dir`.
 
 ```
 output_dir/
-├── GenMix_Target=0.70_P_Capexxx0.7_load_datax0.95/
+├── GenMix_Target=0.70_P_Capexx0.7_load_datax0.95/
 │   ├── OutputGeneration_<case_name>.csv
 │   ├── OutputStorage_<case_name>.csv
 │   ├── OutputSummary_<case_name>.csv
 │   └── OutputThermalGeneration_<case_name>.csv   # only if >1 thermal plant
-├── GenMix_Target=0.70_P_Capexxx0.7_load_datax1.00/
+├── GenMix_Target=0.70_P_Capexx0.7_load_datax1.00/
 │   └── ...
 └── parametric_summary.csv
 ```

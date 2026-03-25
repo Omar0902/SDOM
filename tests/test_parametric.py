@@ -175,10 +175,10 @@ def test_ts_key_to_column_covers_all_known_keys():
         "large_hydro_data",
         "large_hydro_max",
         "large_hydro_min",
-        "import_cap",
-        "import_prices",
-        "export_cap",
-        "export_prices",
+        "cap_imports",
+        "price_imports",
+        "cap_exports",
+        "price_exports",
     }
     assert expected_keys.issubset(set(TS_KEY_TO_COLUMN.keys()))
 
@@ -362,9 +362,14 @@ def test_parametric_study_scalar_and_ts(tmp_path):
     ]
     assert (tmp_path / "parametric_summary.csv").exists()
 
-    # Per-case sub-directories must exist for optimal results
-    for result in results:
-        if result.is_optimal:
-            case_dir = tmp_path / result.gen_mix_target.__class__.__name__  # just check any sub-dir
-            break
-    assert any(tmp_path.iterdir())  # at least one sub-dir was created
+    # Per-case sub-directories must exist and contain CSV outputs
+    from sdom.parametric.study import _make_safe_name
+    expected_case_names = [
+        _make_safe_name(f"GenMix_Target={gmt}_load_datax{ldf}")
+        for gmt in [0.0, 1.0]
+        for ldf in [0.9, 1.1]
+    ]
+    for case_name in expected_case_names:
+        case_dir = tmp_path / case_name
+        assert case_dir.is_dir(), f"Expected per-case directory {case_dir} to exist."
+        assert any(case_dir.glob("*.csv")), f"Expected CSV output in per-case directory {case_dir}."

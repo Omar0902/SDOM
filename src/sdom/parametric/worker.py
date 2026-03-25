@@ -30,7 +30,10 @@ def _run_single_case(case_dict: dict):
         Serialisable description of the case with the following keys:
 
         ``"data"``
-            Deep-copied SDOM data dict (already mutated for this combination).
+            Deep-copied SDOM data dict for this combination. Mutations
+            specified in ``"scalar_mutations"``, ``"storage_factor_mutations"``,
+            and ``"ts_mutations"`` are applied in the worker before
+            model initialisation.
         ``"solver_config"``
             Solver configuration dict from
             :func:`sdom.optimization_main.get_default_solver_config_dict`.
@@ -82,6 +85,7 @@ def _run_single_case(case_dict: dict):
             termination_condition="exception",
             solver_status="error",
             gen_mix_target=float("nan"),
+            total_cost=float("nan"),
         )
 
     return results

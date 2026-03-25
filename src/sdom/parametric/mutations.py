@@ -1,11 +1,11 @@
 """Data mutation helpers for SDOM parametric analysis.
 
-Each helper applies one parameter change to a **copy** of the data dict.
-The data dict itself is never modified in-place by these functions; callers
-are responsible for deep-copying before passing here.
+Each helper applies one parameter change to the provided data dict.
+These helpers mutate the given data structure in-place; callers who need to
+preserve the original data are responsible for deep-copying before passing it
+here.
 """
 
-import copy
 import logging
 from typing import Any
 
@@ -24,10 +24,10 @@ TS_KEY_TO_COLUMN: dict[str, str] = {
     "large_hydro_data": "LargeHydro",
     "large_hydro_max": "LargeHydro_max",
     "large_hydro_min": "LargeHydro_min",
-    "import_cap": "Imports",
-    "import_prices": "Imports_price",
-    "export_cap": "Exports",
-    "export_prices": "Exports_price",
+    "cap_imports": "Imports",
+    "price_imports": "Imports_price",
+    "cap_exports": "Exports",
+    "price_exports": "Exports_price",
     "nuclear_data": "Nuclear",
     "other_renewables_data": "OtherRenewables",
 }

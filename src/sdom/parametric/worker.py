@@ -5,6 +5,7 @@ It **must** be defined at module level (not nested or as a lambda) so that
 ``pickle`` can serialise it for ``ProcessPoolExecutor``.
 """
 
+import copy
 import logging
 
 from ..optimization_main import initialize_model, run_solver
@@ -30,10 +31,10 @@ def _run_single_case(case_dict: dict):
         Serialisable description of the case with the following keys:
 
         ``"data"``
-            Deep-copied SDOM data dict for this combination. Mutations
-            specified in ``"scalar_mutations"``, ``"storage_factor_mutations"``,
-            and ``"ts_mutations"`` are applied in the worker before
-            model initialisation.
+            The shared SDOM base data dict.  A deep copy is made inside
+            the worker so that mutations are isolated to this case and
+            the original is not modified.  This avoids creating all
+            copies up-front in the parent process.
         ``"solver_config"``
             Solver configuration dict from
             :func:`sdom.optimization_main.get_default_solver_config_dict`.
@@ -58,11 +59,11 @@ def _run_single_case(case_dict: dict):
     from ..results import OptimizationResults
 
     case_name: str = case_dict["case_name"]
-    data: dict = case_dict["data"]
+    data: dict = copy.deepcopy(case_dict["data"])
     solver_config: dict = case_dict["solver_config"]
     n_hours: int = case_dict["n_hours"]
 
-    # Apply mutations on the already-deep-copied data dict
+    # Apply mutations on the deep-copied data dict
     try:
         for data_key, param_name, value in case_dict.get("scalar_mutations", []):
             _apply_scalar_mutation(data, data_key, param_name, value)

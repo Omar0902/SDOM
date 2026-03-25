@@ -265,15 +265,44 @@ def test_case_names_are_unique():
     assert len(names) == len(set(names))
 
 
-def test_base_data_is_deep_copied(scalars_df):
+def test_base_data_is_not_deep_copied_in_build(scalars_df):
+    """_build_case_dicts should share the base_data reference, not copy it."""
     base_data = {"scalars": scalars_df}
     study = ParametricStudy(base_data=base_data, solver_config={})
     study.add_scalar_sweep("scalars", "GenMix_Target", [0.9, 1.0])
     cases = study._build_case_dicts()
 
-    # Mutating the case dict must not affect the original base_data
-    cases[0]["data"]["scalars"].loc["GenMix_Target", "Value"] = 999.0
-    assert base_data["scalars"].loc["GenMix_Target", "Value"] != 999.0
+    # case dicts share the same base_data reference (no copy in main process)
+    assert cases[0]["data"] is base_data
+    assert cases[1]["data"] is base_data
+
+
+def test_worker_does_not_mutate_base_data(scalars_df):
+    """_run_single_case must deep-copy data so base_data is never mutated."""
+    from unittest.mock import MagicMock, patch
+
+    from sdom.parametric.worker import _run_single_case
+
+    base_data = {"scalars": scalars_df.copy()}
+    original_value = base_data["scalars"].loc["GenMix_Target", "Value"]
+
+    case_dict = {
+        "data": base_data,
+        "solver_config": {},
+        "n_hours": 8760,
+        "case_name": "test_isolation",
+        "scalar_mutations": [("scalars", "GenMix_Target", 42.0)],
+        "storage_factor_mutations": [],
+        "ts_mutations": [],
+    }
+
+    with patch("sdom.parametric.worker.initialize_model"), \
+         patch("sdom.parametric.worker.run_solver") as mock_run_solver:
+        mock_run_solver.return_value = MagicMock()
+        _run_single_case(case_dict)
+
+    # Worker must not have mutated the shared base_data
+    assert base_data["scalars"].loc["GenMix_Target", "Value"] == original_value
 
 
 def test_no_sweeps_returns_empty():

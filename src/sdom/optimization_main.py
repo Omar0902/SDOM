@@ -4,6 +4,7 @@ import logging
 from pyomo.opt import SolverFactory, SolverStatus, TerminationCondition, check_available_solvers
 from pyomo.util.infeasible import log_infeasible_constraints
 from pyomo.environ import ConcreteModel, Objective, Block, minimize
+from pyomo.common.errors import ApplicationError
 
 from .initializations import initialize_sets, initialize_params
 from .common.utilities import safe_pyomo_value
@@ -324,8 +325,11 @@ def configure_solver(solver_config_dict:dict):
     else:
         solver = SolverFactory(solver_config_dict["solver_name"])
 
-    if not solver.available():
-        raise RuntimeError(f"Solver '{solver_config_dict['solver_name']}' is not available on this system.")
+    try:
+        if not solver.available():
+            raise RuntimeError(f"Solver '{solver_config_dict['solver_name']}' is not available on this system.")
+    except ApplicationError as e:
+        raise RuntimeError(f"Solver '{solver_config_dict['solver_name']}' is not available on this system: {e}")
 
     # Apply solver-specific options
     if solver_config_dict["options"]:
@@ -346,6 +350,9 @@ def get_default_solver_config_dict(solver_name="cbc", executable_path=".\\Solver
             - 'cbc': COIN-OR CBC open-source MILP solver (requires executable_path)
             - 'highs': HiGHS open-source MILP solver (uses appsi interface)
             - 'xpress': FICO Xpress commercial solver (uses direct interface)
+            - 'cuopt': NVIDIA cuOpt GPU-accelerated LP/MILP solver (requires
+              NVIDIA GPU with Volta+ architecture and the cuopt Python package
+              installed from https://pypi.nvidia.com; Linux/WSL2 only)
             Defaults to 'cbc'.
         executable_path (str, optional): Path to solver executable file. Required
             for CBC solver. Defaults to '.\\Solver\\bin\\cbc.exe'.
@@ -388,6 +395,10 @@ def get_default_solver_config_dict(solver_name="cbc", executable_path=".\\Solver
         solver_dict["solver_name"] = "xpress_direct"
         #solver_dict = {"solver_name": "xpress",}
         #solver_dict["executable_path"] = executable_path
+    elif solver_name == "cuopt":
+        # cuopt is a Python-direct solver (requires NVIDIA GPU + cuopt Python package)
+        # No executable path is needed; install via: pip install cuopt-cu12 --extra-index-url=https://pypi.nvidia.com
+        solver_dict["solver_name"] = "cuopt"
 
     return solver_dict
 

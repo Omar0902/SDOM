@@ -265,6 +265,31 @@ def test_case_names_are_unique():
     assert len(names) == len(set(names))
 
 
+def test_case_names_unique_after_safe_name_collision():
+    """_build_case_dicts must disambiguate when _make_safe_name produces collisions.
+
+    Using values '1/2' and '1 2' both collapse to '1_2' after sanitisation.
+    The collision-disambiguation path must append the case index so that all
+    resulting names are still unique.
+    """
+    study = ParametricStudy(base_data={}, solver_config={})
+    # '1/2' and '1 2' both become '1_2' via _make_safe_name
+    study.add_scalar_sweep("scalars", "GenMix_Target", ["1/2", "1 2"])
+    cases = study._build_case_dicts()
+    names = [c["case_name"] for c in cases]
+    assert len(names) == len(set(names)), f"Duplicate case names: {names}"
+
+
+def test_case_index_matches_cartesian_order():
+    """case_index must equal the position of each case in the Cartesian product."""
+    study = ParametricStudy(base_data={}, solver_config={})
+    study.add_scalar_sweep("scalars", "GenMix_Target", [0.8, 0.9])
+    study.add_ts_sweep("load_data", [0.9, 1.1])
+    cases = study._build_case_dicts()
+    for expected_idx, cd in enumerate(cases):
+        assert cd["case_index"] == expected_idx
+
+
 def test_base_data_is_not_deep_copied_in_build(scalars_df):
     """_build_case_dicts should share the base_data reference, not copy it."""
     base_data = {"scalars": scalars_df}

@@ -1,6 +1,5 @@
 """ParametricStudy orchestrator for SDOM sensitivity analysis."""
 
-import copy
 import itertools
 import logging
 import os
@@ -29,7 +28,8 @@ class ParametricStudy:
     ----------
     base_data : dict
         SDOM data dictionary returned by :func:`sdom.load_data`.  This
-        object is **never** modified; each case receives its own deep copy.
+        object is **never** modified; each worker process receives its own
+        deep copy before applying mutations.
     solver_config : dict
         Solver configuration dict from
         :func:`sdom.get_default_solver_config_dict`.
@@ -292,7 +292,7 @@ class ParametricStudy:
                     ts_mutations.append((ts_key, factor))
 
             case_dicts.append({
-                "data": copy.deepcopy(self._base_data),
+                "data": self._base_data,
                 "solver_config": self._solver_config,
                 "n_hours": self._n_hours,
                 "case_name": case_name,

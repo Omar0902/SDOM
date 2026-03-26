@@ -4,7 +4,7 @@ import itertools
 import logging
 import os
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import pandas as pd
 
@@ -171,7 +171,6 @@ class ParametricStudy:
 
         # Map future → case_dict so we can report and export on completion
         ordered_results: List[Optional[OptimizationResults]] = [None] * n_total
-        case_name_to_index = {cd["case_name"]: i for i, cd in enumerate(case_dicts)}
 
         with ProcessPoolExecutor(max_workers=self._n_cores) as executor:
             future_to_case = {
@@ -208,8 +207,7 @@ class ParametricStudy:
                     case_output_dir = os.path.join(self._output_dir, case_name)
                     export_results(result, case=case_name, output_dir=case_output_dir)
 
-                idx = case_name_to_index[case_name]
-                ordered_results[idx] = result
+                ordered_results[cd["case_index"]] = result
 
         # Write summary CSV
         if self._output_dir:
@@ -271,7 +269,7 @@ class ParametricStudy:
             return []
 
         case_dicts = []
-        for combination in itertools.product(*dimensions):
+        for i, combination in enumerate(itertools.product(*dimensions)):
             # combination is a tuple of (label, mutation_spec) per dimension
             labels, mutations = zip(*combination)
             case_name = _make_safe_name("_".join(labels))
@@ -296,10 +294,21 @@ class ParametricStudy:
                 "solver_config": self._solver_config,
                 "n_hours": self._n_hours,
                 "case_name": case_name,
+                "case_index": i,
                 "scalar_mutations": scalar_mutations,
                 "storage_factor_mutations": storage_factor_mutations,
                 "ts_mutations": ts_mutations,
             })
+
+        # Detect and disambiguate colliding safe names by appending the index.
+        # Two distinct combinations can produce the same safe name because
+        # _make_safe_name collapses several characters to '_'.
+        name_counts: Dict[str, int] = {}
+        for cd in case_dicts:
+            name_counts[cd["case_name"]] = name_counts.get(cd["case_name"], 0) + 1
+        for cd in case_dicts:
+            if name_counts[cd["case_name"]] > 1:
+                cd["case_name"] = f"{cd['case_name']}_{cd['case_index']}"
 
         logger.info(
             "ParametricStudy: %d case(s) generated from %d sweep dimension(s).",

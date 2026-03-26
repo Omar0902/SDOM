@@ -72,7 +72,7 @@ def plot_results(
 
     Raises
     ------
-    ValueError
+    Warning
         If neither *output_dir* nor *plots_dir* is provided, or if the result
         is not optimal.
     """

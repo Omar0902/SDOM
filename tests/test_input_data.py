@@ -1,6 +1,4 @@
 import os
-import shutil
-import tempfile
 
 import pandas as pd
 import pytest
@@ -12,7 +10,7 @@ from constants_test import (
     DICT_EXPECTED_DATA_KEYS_TO_TYPE,
 )
 
-from sdom import load_data, initialize_model, run_solver, export_results, get_default_solver_config_dict
+from sdom import load_data, initialize_model
 from sdom.io_manager import check_formulation, get_formulation
 
 def test_load_data_folder_exist():

@@ -300,15 +300,26 @@ def _make_vre_df(generation_df: pd.DataFrame) -> pd.DataFrame:
     wind_curt = "Wind Curtailment (MW)"
 
     cols_present = set(df.columns)
-    if pv_gen in cols_present and wind_gen in cols_present:
-        df["VRE Generation (MW)"] = df[pv_gen].fillna(0) + df[wind_gen].fillna(0)
-    if pv_curt in cols_present and wind_curt in cols_present:
-        df["VRE Curtailment (MW)"] = df[pv_curt].fillna(0) + df[wind_curt].fillna(0)
+    has_pv_gen = pv_gen in cols_present
+    has_wind_gen = wind_gen in cols_present
+    has_pv_curt = pv_curt in cols_present
+    has_wind_curt = wind_curt in cols_present
 
-    # Drop the individual source columns
-    for col in (pv_gen, wind_gen, pv_curt, wind_curt):
-        if col in df.columns:
-            df = df.drop(columns=[col])
+    if has_pv_gen or has_wind_gen:
+        pv_series = df[pv_gen].fillna(0) if has_pv_gen else 0
+        wind_series = df[wind_gen].fillna(0) if has_wind_gen else 0
+        df["VRE Generation (MW)"] = pv_series + wind_series
+        for col in (pv_gen, wind_gen):
+            if col in df.columns:
+                df = df.drop(columns=[col])
+
+    if has_pv_curt or has_wind_curt:
+        pv_series = df[pv_curt].fillna(0) if has_pv_curt else 0
+        wind_series = df[wind_curt].fillna(0) if has_wind_curt else 0
+        df["VRE Curtailment (MW)"] = pv_series + wind_series
+        for col in (pv_curt, wind_curt):
+            if col in df.columns:
+                df = df.drop(columns=[col])
 
     return df
 

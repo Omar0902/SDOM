@@ -120,6 +120,13 @@ GenMix_Target=0.90_P_Capexx0.8_load_datax1.05
 This name is used as the `case_name` in `run_solver` and as the
 sub-directory name under `output_dir`.
 
+```{note}
+If two combinations happen to produce the same safe name after character
+substitution (e.g. both `1.0/2` and `1.0_2` collapse to `1.0_2`), SDOM
+automatically appends the case's Cartesian-product index as a suffix
+(`<name>_<index>`) so every case directory is always unique.
+```
+
 ---
 
 ## Output structure
@@ -189,11 +196,13 @@ print(f"{len(optimal)}/{len(results)} cases solved optimally")
 
 ## Performance guidance
 
-- **`n_cores`** — Each worker process loads data, builds a Pyomo model, and
-  runs the solver independently.  Memory consumption scales roughly linearly
-  with the number of workers.  A safe starting point is 4 workers; increase
-  only if memory usage is comfortable.  Pass `n_cores=None` to use all
-  available cores minus one.
+- **`n_cores`** — Each worker process builds its own Pyomo model and runs
+  the solver independently.  Memory consumption scales roughly linearly with
+  the number of *concurrent* workers — not with the total sweep size — because
+  each worker deep-copies the base data **inside its own process** (lazy copy),
+  so the parent process holds only one copy of the data at all times.
+  A safe starting point is 4 workers; increase only if memory usage is comfortable.
+  Pass `n_cores=None` to use all available cores minus one.
 
 - **Large sweeps** — For 50+ cases, consider whether `output_dir` is on a
   fast local disk; solver log files (HiGHS/CBC) are written per process and
@@ -205,3 +214,5 @@ print(f"{len(optimal)}/{len(results)} cases solved optimally")
 - **Failed cases** — `ParametricStudy.run()` never raises on individual case
   failures.  Inspect `result.is_optimal` and `result.termination_condition`
   per result, and check `parametric_summary.csv` for a consolidated view.
+  Failed cases have `total_cost=NaN` in the summary so they are
+  distinguishable from valid zero-cost results.

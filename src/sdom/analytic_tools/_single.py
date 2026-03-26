@@ -327,7 +327,6 @@ def _make_vre_df(generation_df: pd.DataFrame) -> pd.DataFrame:
 def _plot_heatmaps(
     generation_df: pd.DataFrame,
     plots_dir: str,
-    start_date: str = "2025-01-01 00:00:00",
 ) -> None:
     """Save one heatmap PNG per dispatch column in *generation_df*."""
     if generation_df.empty:
@@ -338,6 +337,22 @@ def _plot_heatmaps(
     cmap = get_heatmap_cmap()
     n_periods = len(df)
 
+    # Heatmaps always have 24-hour rows; truncate to the largest multiple of 24.
+    n_usable = (n_periods // 24) * 24
+    if n_usable == 0:
+        logger.warning(
+            "_plot_heatmaps: fewer than 24 periods available (%d). Skipping all heatmaps.",
+            n_periods,
+        )
+        return
+    if n_usable < n_periods:
+        logger.warning(
+            "_plot_heatmaps: %d periods is not a multiple of 24; truncating to %d.",
+            n_periods,
+            n_usable,
+        )
+    n_days = n_usable // 24
+
     plot_cols = [c for c in df.columns if c not in _SKIP_GEN_COLS]
 
     for col_name in plot_cols:
@@ -345,30 +360,18 @@ def _plot_heatmaps(
         if series.abs().sum() == 0:
             continue  # skip all-zero columns
 
-        # Build datetime index for axis labelling
-        datetime_index = pd.date_range(start=start_date, periods=n_periods, freq="h")
-        day_of_year = datetime_index.dayofyear
-        n_days = len(np.unique(day_of_year))
+        reshaped = series.values[:n_usable].reshape(24, n_days, order="F")
 
-        try:
-            reshaped = series.values.reshape(24, n_days, order="F")
-        except ValueError:
-            logger.warning(
-                "_plot_heatmaps: cannot reshape %d periods into 24 × %d for column '%s'. Skipping.",
-                n_periods, n_days, col_name,
-            )
-            continue
-
-        last_day = day_of_year.max()
-        xgrid = np.arange(last_day + 1) + 1
-        ygrid = np.arange(25)
+        # x-grid: one edge per day boundary (n_days + 1 edges for n_days columns)
+        xgrid = np.arange(n_days + 1)
+        ygrid = np.arange(25)  # 25 edges for 24 hour rows
 
         fig, ax = plt.subplots(figsize=(12, 10))
         heatmap = ax.pcolormesh(xgrid, ygrid, reshaped, cmap=cmap)
         ax.xaxis.set_tick_params(labelsize=16)
         ax.yaxis.set_tick_params(labelsize=16)
         ax.set_frame_on(False)
-        plt.xlim(0, last_day)
+        plt.xlim(0, n_days)
         plt.ylim(0, 24)
 
         cbar = plt.colorbar(heatmap)

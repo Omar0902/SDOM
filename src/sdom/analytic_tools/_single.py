@@ -354,8 +354,8 @@ def _plot_heatmaps(
 
         fig, ax = plt.subplots(figsize=(12, 10))
         heatmap = ax.pcolormesh(xgrid, ygrid, reshaped, cmap=cmap)
-        ax.set_xticklabels(ax.get_xmajorticklabels(), fontsize=16)
-        ax.set_yticklabels(ax.get_ymajorticklabels(), fontsize=16)
+        ax.xaxis.set_tick_params(labelsize=16)
+        ax.yaxis.set_tick_params(labelsize=16)
         ax.set_frame_on(False)
         plt.xlim(0, last_day)
         plt.ylim(0, 24)

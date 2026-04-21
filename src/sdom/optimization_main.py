@@ -418,7 +418,6 @@ def get_default_solver_config_dict(
         "tee": True,
         "load_solutions": True,
         "report_timing": True,
-        "logfile": "solver_log.txt",
         "timelimit": time_limit,
         "keepfiles": True,
     }

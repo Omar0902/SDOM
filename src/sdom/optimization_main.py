@@ -1,4 +1,5 @@
 import logging
+import math
 #from pympler import muppy, summary
 #from pympler import muppy, summary
 from pyomo.opt import SolverFactory, SolverStatus, TerminationCondition, check_available_solvers
@@ -451,7 +452,9 @@ def get_default_solver_config_dict(
             "outputlog": 1,         # Enable solver output (0=off, 1=on)
         }
         if time_limit is not None:
-            xpress_options["maxtime"] = int(time_limit)  # Xpress expects integer seconds
+            if time_limit < 0:
+                raise ValueError(f"time_limit must be non-negative, got {time_limit}")
+            xpress_options["maxtime"] = math.ceil(time_limit)  # Xpress expects integer seconds
 
         solver_dict = {
             "solver_name": "xpress_direct",

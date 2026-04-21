@@ -419,7 +419,7 @@ def get_default_solver_config_dict(
         "load_solutions": True,
         "report_timing": True,
         "timelimit": time_limit,
-        "keepfiles": True,
+        "keepfiles": False,
     }
 
     # Solver-specific configurations

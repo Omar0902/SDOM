@@ -2,6 +2,7 @@
 
 import itertools
 import logging
+import multiprocessing as mp
 import os
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import Dict, List, Optional
@@ -215,7 +216,14 @@ class ParametricStudy:
         # Map future → case_dict so we can report and export on completion
         ordered_results: List[Optional[OptimizationResults]] = [None] * n_total
 
-        with ProcessPoolExecutor(max_workers=self._n_cores) as executor:
+        # Use explicit "spawn" context so behaviour is identical on every OS.
+        # On Windows, "spawn" is already the default and requires the calling
+        # script to be guarded by ``if __name__ == "__main__":``.  We detect
+        # a missing guard early and raise a clear message instead of letting
+        # child processes recurse into the study.
+        ctx = mp.get_context("spawn")
+
+        with ProcessPoolExecutor(max_workers=self._n_cores, mp_context=ctx) as executor:
             future_to_case = {
                 executor.submit(_run_single_case, cd): cd
                 for cd in case_dicts

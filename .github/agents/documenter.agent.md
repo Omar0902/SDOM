@@ -111,13 +111,14 @@ class ClassName:
 
 ```
 docs/
-├── source/           # Sphinx source files
-│   ├── conf.py       # Sphinx configuration
-│   └── index.rst     # Main index
-├── user-guide/       # End-user documentation
-├── developer-guide/  # Developer documentation
-├── api-reference/    # Auto-generated API docs
-└── about/            # Project information
+├── source/                    # Sphinx source files
+│   ├── conf.py                # Sphinx configuration
+│   ├── index.md               # Main index
+│   ├── user_guide/            # End-user documentation
+│   ├── api/                   # Auto-generated API docs
+│   └── sdom_Developers_guide.md  # Developer documentation
+├── Makefile
+└── requirements.txt
 ```
 
 ## ✅ Documentation Checklist
@@ -154,7 +155,7 @@ make clean html    # Clean and rebuild
 ## ⚡ Workflow
 
 ### Before Starting
-1. Read `.github/agent-memory/documenter-memory.md`
+1. Read `.github/agents/agent-memory/documenter-memory.md`
 2. Review current documentation structure
 3. Check existing style in similar files
 
@@ -194,7 +195,7 @@ make clean html    # Clean and rebuild
 
 ## 🧠 Memory File
 
-Store learnings in: `.github/agent-memory/documenter-memory.md`
+Store learnings in: `.github/agents/agent-memory/documenter-memory.md`
 
 ### What to Remember
 - Documentation style decisions

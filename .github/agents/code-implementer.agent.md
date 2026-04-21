@@ -191,7 +191,7 @@ df = df.assign(
 ## ⚡ Workflow
 
 ### Before Starting
-1. Read `.github/agent-memory/code-implementer-memory.md`
+1. Read `.github/agents/agent-memory/code-implementer-memory.md`
 2. Review existing patterns in `src/sdom/`
 3. Check test patterns in `tests/`
 
@@ -242,7 +242,7 @@ df = df.assign(
 
 ## 🧠 Memory File
 
-Store learnings in: `.github/agent-memory/code-implementer-memory.md`
+Store learnings in: `.github/agents/agent-memory/code-implementer-memory.md`
 
 ### What to Remember
 - Code patterns established in SDOM

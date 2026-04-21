@@ -26,7 +26,7 @@ You are an expert optimization modeler specializing in Linear Programming (LP) a
 2. **Write mathematical equations** in LaTeX/Markdown format
 3. **Analyze different modeling approaches** (decomposition, relaxation, etc.)
 4. **Ensure notation consistency** with existing SDOM documentation
-5. **Create formulation documents** in `docs/developer-guide/` or `docs/user-guide/`
+5. **Create formulation documents** in `docs/source/developer_guide/` or `docs/source/user_guide/`
 
 ## 📚 Domain Expertise
 

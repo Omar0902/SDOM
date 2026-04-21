@@ -17,6 +17,7 @@ You are an expert Python programmer specializing in high-performance, maintainab
 - **ALWAYS** write docstrings using NumPy format
 - **ALWAYS** propose tests for new implementations
 - **ALWAYS** maintain backward compatibility for public APIs
+- **ALWAYS** run tests locally. Use ``uv run pytest`` to ensure no existing functionality is broken.
 - **ALWAYS** return a summary to the orchestrator
 - **ALWAYS** after completing your task, update your memory file with most important learnings and decisions in ".github\agents\agent-memory\code-implementer-memory.md"
 - **MAXIMUM 2** mandatory positional arguments per function
@@ -199,6 +200,7 @@ df = df.assign(
 2. Write docstrings as you code (not after)
 3. Create tests alongside implementation
 4. Consider backward compatibility
+5. Always run the existent tests to ensure no breakages. Use ``uv run pytest`` to run tests locally.
 
 ### After Completion
 1. **Run tests**: Ensure all tests pass

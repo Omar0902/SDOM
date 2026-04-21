@@ -139,7 +139,7 @@ Expert Python programmer. Use for:
 ### Python Style
 - Python 3.10+ features allowed
 - Type hints required for public APIs
-- NumPy docstring format (see `.github/prompts/shared-knowledge.md`)
+- NumPy docstring format (see `.github/instructions/sdom-standards.instructions.md`)
 - Maximum 2 mandatory positional arguments; rest should be keyword arguments
 
 ### Git Commit Messages

@@ -80,7 +80,6 @@ Installed 17 packages in 10.95s
  + sdom==0.1.2 (from file:///C:/YOUR_PATH/SDOM)
  + six==1.17.0
  + tzdata==2026.1
- ````
 
 
 - Also, install:

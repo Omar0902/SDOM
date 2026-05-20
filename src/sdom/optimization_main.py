@@ -1,5 +1,6 @@
 import logging
 import math
+import os
 from datetime import datetime
 #from pympler import muppy, summary
 #from pympler import muppy, summary
@@ -149,8 +150,12 @@ def _initialize_model_copperplate(data, *, n_hours=8760, with_resilience_constra
         The fully-built Pyomo model (with ``model.profiler`` attached).
     """
 
-    # Initialize profiler (always enabled for time and memory measurement)
-    profiler = ModelInitProfiler(track_memory=True, enabled=True)
+    # Keep timing enabled by default, but make tracemalloc opt-in to avoid
+    # global allocator overhead during normal production runs.
+    profile_memory = os.getenv("SDOM_PROFILE_MEMORY", "0").strip().lower() in {
+        "1", "true", "yes", "on"
+    }
+    profiler = ModelInitProfiler(track_memory=profile_memory, enabled=True)
     profiler.start()
 
     logging.info("Instantiating SDOM Pyomo optimization model...")

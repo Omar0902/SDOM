@@ -40,6 +40,13 @@ def _timestamp_now() -> str:
     """Return wall-clock timestamp string for checkpoint logs."""
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+
+def _is_memory_profiling_enabled() -> bool:
+    """Return whether tracemalloc profiling is enabled via environment variable."""
+    return os.getenv("SDOM_PROFILE_MEMORY", "0").strip().lower() in {
+        "1", "true", "yes", "on"
+    }
+
 def initialize_model(data, n_hours=8760, with_resilience_constraints=False, model_name="SDOM_Model"):
     """Initialize a Pyomo SDOM optimization model (dispatcher).
 
@@ -152,9 +159,7 @@ def _initialize_model_copperplate(data, *, n_hours=8760, with_resilience_constra
 
     # Keep timing enabled by default, but make tracemalloc opt-in to avoid
     # global allocator overhead during normal production runs.
-    profile_memory = os.getenv("SDOM_PROFILE_MEMORY", "0").strip().lower() in {
-        "1", "true", "yes", "on"
-    }
+    profile_memory = _is_memory_profiling_enabled()
     profiler = ModelInitProfiler(track_memory=profile_memory, enabled=True)
     profiler.start()
 
@@ -656,7 +661,10 @@ def _initialize_model_zonal(
         len(data["lines"]),
     )
 
-    profiler = ModelInitProfiler(track_memory=True, enabled=True)
+    profiler = ModelInitProfiler(
+        track_memory=_is_memory_profiling_enabled(),
+        enabled=True,
+    )
     profiler.start()
 
     def _create_skeleton():

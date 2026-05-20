@@ -1,5 +1,4 @@
 from pyomo.core import Var, Constraint, Expression
-from pyomo.core import Var, Constraint, Expression
 from pyomo.environ import Param, NonNegativeReals, quicksum
 from ..constants import VRE_PROPERTIES_NAMES, MW_TO_KW
 from .models_utils import compute_annualization_factor, generic_fixed_om_cost_expr_rule, generic_capex_cost_expr_rule, sum_installed_capacity_by_plants_set_expr_rule, add_generic_fixed_costs, add_generation_variables

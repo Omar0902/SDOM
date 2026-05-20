@@ -868,50 +868,50 @@ def _collect_host_metrics(host, hours, *, case_name: str = "run") -> dict:
         count=n_hours,
     )
 
-    thermal_flat = np.fromiter(
-        (
-            _value_or_nan(host.thermal.generation[h, bu])
-            for h in hours
-            for bu in thermal_plants
-        ),
-        dtype=float,
-        count=n_hours * max(n_thermal, 1),
-    )
     if n_thermal > 0:
+        thermal_flat = np.fromiter(
+            (
+                _value_or_nan(host.thermal.generation[h, bu])
+                for h in hours
+                for bu in thermal_plants
+            ),
+            dtype=float,
+            count=n_hours * n_thermal,
+        )
         thermal_mat = thermal_flat.reshape(n_hours, n_thermal)
     else:
         thermal_mat = np.zeros((n_hours, 0), dtype=float)
     thermal_total_per_hour = np.nansum(thermal_mat, axis=1)
 
     n_storage = len(storage_tech_list)
-    storage_pc_flat = np.fromiter(
-        (
-            _value_or_nan(host.storage.PC[h, j])
-            for h in hours
-            for j in storage_tech_list
-        ),
-        dtype=float,
-        count=n_hours * max(n_storage, 1),
-    )
-    storage_pd_flat = np.fromiter(
-        (
-            _value_or_nan(host.storage.PD[h, j])
-            for h in hours
-            for j in storage_tech_list
-        ),
-        dtype=float,
-        count=n_hours * max(n_storage, 1),
-    )
-    storage_soc_flat = np.fromiter(
-        (
-            _value_or_nan(host.storage.SOC[h, j])
-            for h in hours
-            for j in storage_tech_list
-        ),
-        dtype=float,
-        count=n_hours * max(n_storage, 1),
-    )
     if n_storage > 0:
+        storage_pc_flat = np.fromiter(
+            (
+                _value_or_nan(host.storage.PC[h, j])
+                for h in hours
+                for j in storage_tech_list
+            ),
+            dtype=float,
+            count=n_hours * n_storage,
+        )
+        storage_pd_flat = np.fromiter(
+            (
+                _value_or_nan(host.storage.PD[h, j])
+                for h in hours
+                for j in storage_tech_list
+            ),
+            dtype=float,
+            count=n_hours * n_storage,
+        )
+        storage_soc_flat = np.fromiter(
+            (
+                _value_or_nan(host.storage.SOC[h, j])
+                for h in hours
+                for j in storage_tech_list
+            ),
+            dtype=float,
+            count=n_hours * n_storage,
+        )
         storage_pc_mat = storage_pc_flat.reshape(n_hours, n_storage)
         storage_pd_mat = storage_pd_flat.reshape(n_hours, n_storage)
         storage_soc_mat = storage_soc_flat.reshape(n_hours, n_storage)

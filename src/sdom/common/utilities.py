@@ -5,6 +5,7 @@ import logging
 
 _NO_VALUE = object()
 
+
 def safe_pyomo_value(var):
     """Safely extract the value from a Pyomo variable or expression.
     
@@ -35,6 +36,8 @@ def safe_pyomo_value(var):
         return value(var)
     except (ValueError, TypeError):
         return None
+    
+    
 def normalize_string(name:str) -> str:
     """Normalize a string for case-insensitive filename comparison.
     

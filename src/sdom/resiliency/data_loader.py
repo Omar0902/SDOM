@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import glob
 import logging
+import math
 import os
 from pathlib import Path
 
@@ -310,17 +311,17 @@ def _build_storage_caps(
             _warn_zero_capacity(tech, cap_e)
             continue
 
-        # StorageData parameters: ``Eff`` is round-trip-style efficiency in
-        # this project; we reuse it for both charge and discharge until a more
-        # detailed split is added.
+        # ``Eff`` in StorageData is round-trip efficiency (matches planning
+        # model in formulations_storage.py which uses sqrt(Eff) one-way).
         eff = float(storage_data.at["Eff", tech]) if "Eff" in storage_data.index else 1.0
         vom = float(storage_data.at["VOM", tech]) if "VOM" in storage_data.index else 0.0
+        eta_one_way = math.sqrt(max(eff, 0.0)) if eff > 0.0 else 1.0
         out[tech] = {
             "Cap_Pch": cap_pch,
             "Cap_Pdis": cap_pdis,
             "Cap_E": cap_e,
-            "eta_ch": eff,
-            "eta_dis": eff,
+            "eta_ch": eta_one_way,
+            "eta_dis": eta_one_way,
             "soc_min_frac": 0.0,
             "vom": vom,
         }

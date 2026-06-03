@@ -132,21 +132,18 @@ def _add_storage_block(
     block.Pdis = pyo.Var(block.S, model.h, domain=pyo.NonNegativeReals, bounds=_pdis_bounds, initialize=0.0)
     block.SOC = pyo.Var(block.S, model.h, domain=pyo.NonNegativeReals, bounds=_soc_bounds, initialize=0.0)
 
-    # SOC dynamics
+    # SOC dynamics — cyclic across the horizon (matches planning model
+    # ``formulations_storage.py``: SOC[1] = SOC[N] + eta*PC[1] - PD[1]/eta).
+    # Cyclic closure lets the baseline mirror the steady-state assumption that
+    # produced the designed capacities; fixing SOC[s,1] to an arbitrary value
+    # makes the full-year dispatch infeasible for tight designs.
+    n_h = len(model.h)
+
     def _soc_dynamics(b, s, t):
-        if t == 1:
-            return pyo.Constraint.Skip
-        return b.SOC[s, t] == b.SOC[s, t - 1] + b.eta_ch[s] * b.Pcha[s, t] - b.Pdis[s, t] / b.eta_dis[s]
+        prev = n_h if t == 1 else t - 1
+        return b.SOC[s, t] == b.SOC[s, prev] + b.eta_ch[s] * b.Pcha[s, t] - b.Pdis[s, t] / b.eta_dis[s]
 
     block.soc_dynamics = pyo.Constraint(block.S, model.h, rule=_soc_dynamics)
-
-    # Initial SOC: floor or 50% of Cap_E if no floor specified.
-    def _soc_initial(b, s):
-        floor = soc_min_frac_map.get(s, 0.0) * cap_e[s]
-        init = floor if floor > 0.0 else 0.5 * cap_e[s]
-        return b.SOC[s, 1] == init
-
-    block.soc_initial = pyo.Constraint(block.S, rule=_soc_initial)
 
     block.cost_expr = pyo.Expression(
         expr=sum(

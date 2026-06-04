@@ -4,6 +4,7 @@
 results_pyomo/*
 .vscode/*
 ___*
+res_runs_paper/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/*

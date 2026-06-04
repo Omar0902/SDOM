@@ -78,6 +78,12 @@ class DesignedSystem:
     formulation_map : dict
         Mapping ``{component: formulation_name}`` resolved from defaults
         plus user-provided overrides.
+    cem_data : dict, optional
+        CEM-shaped data dict (as returned by
+        :func:`sdom.io_manager.load_data`) used by the baseline dispatch
+        builder to reuse the planning-model formulations in
+        :mod:`sdom.models`. ``None`` when the previous-stage inputs were
+        not reloaded for that purpose.
     """
 
     storage_caps: dict[str, dict[str, float]] = field(default_factory=dict)
@@ -104,6 +110,12 @@ class DesignedSystem:
     scenario_id: int = 1
     year: int = 2030
     formulation_map: dict[str, str] = field(default_factory=dict)
+
+    # CEM-shaped data dict (as produced by ``sdom.io_manager.load_data``) used
+    # by the baseline dispatch builder to call the planning-model formulations
+    # in ``sdom.models`` with their native parameter layout. Populated by
+    # :func:`load_designed_system` when ``load_cem_data=True``.
+    cem_data: dict | None = None
 
 
 @dataclass

@@ -20,6 +20,8 @@ import glob
 import logging
 import math
 import os
+import shutil
+import tempfile
 from pathlib import Path
 
 import pandas as pd
@@ -365,6 +367,197 @@ def _build_thermal_caps(
 # Public API
 # ---------------------------------------------------------------------------
 
+# Default formulations.csv content used when an inputs directory shipped from a
+# legacy CEM run does not include a ``formulations.csv``. These values match
+# what the CEM uses for the resiliency-evaluation dispatch (linear LP, no
+# net-load coupling on imports/exports, run-of-river hydro).
+_DEFAULT_CEM_FORMULATIONS_ROWS = [
+    ("Thermal", "NoRampsDispatchFormulation", "Auto-injected by resiliency loader."),
+    ("Hydro", "RunOfRiverFormulation", "Auto-injected by resiliency loader."),
+    ("Imports", "CapacityPriceNetLoadFormulation", "Auto-injected by resiliency loader."),
+    ("Exports", "CapacityPriceNetLoadFormulation", "Auto-injected by resiliency loader."),
+]
+
+
+def load_cem_data(inputs_dir, *, formulations_overrides=None):
+    """Load the CEM-shaped data dict for the resiliency baseline dispatch.
+
+    Wraps :func:`sdom.io_manager.load_data` so it can consume the
+    previous-stage inputs directory used by the resiliency module. The
+    directory typically lacks ``formulations.csv``; when missing, a minimal
+    default is materialized in a temporary copy of ``inputs_dir`` (the
+    original directory is never modified).
+
+    Parameters
+    ----------
+    inputs_dir : str or pathlib.Path
+        Directory containing the original CEM input CSVs.
+    formulations_overrides : list of tuple, optional
+        Sequence of ``(component, formulation, description)`` rows used to
+        override / extend the default ``formulations.csv`` shim. Has no
+        effect when ``formulations.csv`` already exists in ``inputs_dir``.
+
+    Returns
+    -------
+    dict
+        Data dictionary as returned by :func:`sdom.io_manager.load_data`.
+
+    Raises
+    ------
+    FileNotFoundError
+        If ``inputs_dir`` does not exist or is missing CSVs required by
+        :func:`sdom.io_manager.load_data`.
+    """
+    from sdom.io_manager import load_data  # local import to avoid a cycle
+
+    inputs_dir = Path(inputs_dir)
+    if not inputs_dir.is_dir():
+        raise FileNotFoundError(f"CEM inputs directory does not exist: {inputs_dir}")
+
+    has_formulations = any(
+        inputs_dir.glob("[Ff]ormulations*.csv")
+    )
+    if has_formulations:
+        logger.debug("Found existing formulations.csv in %s; using as-is.", inputs_dir)
+        return load_data(str(inputs_dir))
+
+    # The CEM ``load_data`` requires a ``formulations.csv``. Materialize a
+    # temporary mirror of ``inputs_dir`` so we never touch the user's source
+    # tree, then write a default formulations.csv into the copy.
+    rows = list(_DEFAULT_CEM_FORMULATIONS_ROWS)
+    if formulations_overrides:
+        rows.extend(formulations_overrides)
+    tmp_root = Path(tempfile.mkdtemp(prefix="sdom_cem_inputs_"))
+    tmp_inputs = tmp_root / inputs_dir.name
+    logger.info(
+        "Mirroring CEM inputs to %s and injecting default formulations.csv "
+        "(original directory %s left untouched).",
+        tmp_inputs,
+        inputs_dir,
+    )
+    shutil.copytree(inputs_dir, tmp_inputs)
+    formulations_df = pd.DataFrame(rows, columns=["Component", "Formulation", "Description"])
+    formulations_df.to_csv(tmp_inputs / "formulations.csv", index=False)
+    _augment_storage_data(tmp_inputs)
+    _augment_scalars(tmp_inputs)
+    data = load_data(str(tmp_inputs))
+    _coerce_plant_id_to_string(data)
+    return data
+
+
+def _augment_storage_data(inputs_dir: Path) -> None:
+    """Inject required ``Coupled`` / ``MaxCycles`` rows into StorageData if absent.
+
+    Older CEM input folders ship a ``StorageData_*.csv`` that omits the
+    ``Coupled`` and ``MaxCycles`` rows required by the current
+    :mod:`sdom.models.formulations_storage`. We patch the temporary mirror
+    using ``Set_b(j)_CoupledStorageTech.csv`` (when present) for the coupled
+    flags and a permissive ``MaxCycles=100000`` default (effectively unbounded
+    for an annual dispatch).
+    """
+    storage_files = list(inputs_dir.glob("StorageData*.csv"))
+    if not storage_files:
+        return
+    storage_path = storage_files[0]
+    df = pd.read_csv(storage_path, index_col=0)
+    changed = False
+    if "Coupled" not in df.index:
+        coupled_techs: set[str] = set()
+        coupled_files = list(inputs_dir.glob("Set_b*Coupled*.csv"))
+        if coupled_files:
+            try:
+                coupled_techs = set(
+                    pd.read_csv(coupled_files[0], header=None)[0].astype(str).tolist()
+                )
+            except Exception:
+                coupled_techs = set()
+        df.loc["Coupled"] = [1 if str(c) in coupled_techs else 0 for c in df.columns]
+        changed = True
+        logger.info(
+            "Injected 'Coupled' row into StorageData (coupled techs: %s).",
+            sorted(coupled_techs) or "[]",
+        )
+    if "MaxCycles" not in df.index:
+        df.loc["MaxCycles"] = [100000.0] * len(df.columns)
+        changed = True
+        logger.info("Injected 'MaxCycles' row into StorageData (default=100000).")
+    if changed:
+        df.to_csv(storage_path)
+
+
+def _augment_scalars(inputs_dir: Path) -> None:
+    """Normalize ``Scalars.csv`` to the schema expected by :func:`load_data`.
+
+    Older inputs use ``ScalarInputs`` as the parameter column; the current
+    loader expects ``Parameter``. Also injects ``EUE_max=0`` when absent so
+    system constraints can build without modification.
+    """
+    candidates = list(inputs_dir.glob("[Ss]calars*.csv"))
+    if not candidates:
+        return
+    path = candidates[0]
+    df = pd.read_csv(path)
+    changed = False
+    if "Parameter" not in df.columns:
+        for alt in ("ScalarInputs", "Scalar", "scalar", "scalarinputs"):
+            if alt in df.columns:
+                df = df.rename(columns={alt: "Parameter"})
+                changed = True
+                logger.info("Renamed scalar column '%s' -> 'Parameter'.", alt)
+                break
+    if "Parameter" in df.columns and "EUE_max" not in set(df["Parameter"].astype(str)):
+        df = pd.concat(
+            [df, pd.DataFrame([{"Parameter": "EUE_max", "Value": 0.0}])],
+            ignore_index=True,
+        )
+        changed = True
+        logger.info("Injected scalar 'EUE_max=0'.")
+    if changed:
+        df.to_csv(path, index=False)
+
+
+def _augment_thermal_data(inputs_dir: Path) -> None:
+    """Force ``Plant_id`` to string in legacy ``Data_BalancingUnits*.csv`` files.
+
+    The CEM thermal parameter loader builds a Pyomo set from
+    ``Plant_id.astype(str)`` but then keys a stacked-dict lookup off the raw
+    column values. When ``Plant_id`` is integer-typed (as in older paper
+    datasets), the two key spaces disagree and parameter assembly raises
+    ``KeyError``. Casting the column to string in the temp mirror keeps the
+    legacy data compatible without touching the user's source folder.
+    """
+    candidates = list(inputs_dir.glob("Data_*[Bb]alancing*nits*.csv"))
+    if not candidates:
+        return
+    for path in candidates:
+        df = pd.read_csv(path)
+        if "Plant_id" not in df.columns:
+            continue
+        if df["Plant_id"].dtype == object:
+            continue
+        df["Plant_id"] = df["Plant_id"].astype(str)
+        df.to_csv(path, index=False)
+        logger.info("Cast Plant_id to string in %s.", path.name)
+
+
+def _coerce_plant_id_to_string(data: dict) -> None:
+    """Ensure ``data['thermal_data']['Plant_id']`` is string-typed.
+
+    The CEM thermal parameter loader (
+    :func:`sdom.models.formulations_thermal.add_thermal_parameters`) builds
+    its Pyomo set from ``Plant_id.astype(str)`` but indexes the stacked
+    parameter dict with the raw column values, so integer ``Plant_id``
+    columns (as in older paper datasets) raise ``KeyError`` during model
+    construction. This in-memory cast keeps the user's source folder
+    untouched while making legacy CSVs work.
+    """
+    td = data.get("thermal_data")
+    if td is None or "Plant_id" not in td.columns:
+        return
+    if td["Plant_id"].dtype != object:
+        td["Plant_id"] = td["Plant_id"].astype(str)
+
+
 def load_designed_system(
     snapshot_dir,
     *,
@@ -372,6 +565,7 @@ def load_designed_system(
     year=2030,
     scenario_id=1,
     formulation_overrides=None,
+    attach_cem_data=True,
 ):
     """Load a fixed-capacity designed system from SDOM output snapshots.
 
@@ -400,6 +594,13 @@ def load_designed_system(
     formulation_overrides : dict, optional
         Mapping ``{component: formulation_name}`` overlaid on the default
         formulation map.
+    attach_cem_data : bool, optional
+        When ``True`` (default), also load the CEM-shaped data dict via
+        :func:`load_cem_data` and attach it as
+        ``DesignedSystem.cem_data``. Required by
+        :func:`sdom.resiliency.build_baseline_dispatch`. Set to ``False`` to
+        skip this step in environments where the previous-stage inputs
+        directory is not a valid CEM inputs folder.
 
     Returns
     -------
@@ -471,6 +672,21 @@ def load_designed_system(
         len(wind_caps),
     )
 
+    cem_data = None
+    if attach_cem_data:
+        logger.debug("Loading CEM-shaped data dict from %s.", inputs_dir)
+        try:
+            cem_data = load_cem_data(inputs_dir)
+        except Exception as exc:
+            logger.error(
+                "Failed to load CEM data dict from %s: %s. "
+                "DesignedSystem.cem_data will be None; "
+                "build_baseline_dispatch will fail with an explicit error.",
+                inputs_dir,
+                exc,
+            )
+            raise
+
     return DesignedSystem(
         storage_caps=storage_caps,
         thermal_caps=thermal_caps,
@@ -492,4 +708,5 @@ def load_designed_system(
         scenario_id=resolved_id,
         year=year,
         formulation_map=formulation_map,
+        cem_data=cem_data,
     )

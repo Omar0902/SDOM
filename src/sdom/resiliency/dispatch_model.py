@@ -71,6 +71,47 @@ def _fix_var(var, value: float) -> None:
     var.fix(v)
 
 
+def _safe_value(expr) -> float:
+    """Return ``float(pyo.value(expr))`` or ``float(expr)`` for plain numbers."""
+    if isinstance(expr, (int, float)):
+        return float(expr)
+    return float(pyo.value(expr))
+
+
+def _extract_cost_breakdown(model) -> dict[str, float]:
+    """Return per-component USD totals for the solved baseline dispatch.
+
+    Reads the component Pyomo expressions stashed on the model by
+    :func:`_replace_objective_with_dispatch_objective`. The sum reconciles
+    to :attr:`model.dispatch_objective` (within floating-point tolerance):
+
+    ``thermal_var + storage_var + imports - exports + demand_charges + curtailment + fom == total``.
+
+    Returns
+    -------
+    dict
+        Keys: ``thermal_var_USD``, ``storage_var_USD``, ``imports_USD``,
+        ``exports_USD`` (positive; objective contribution is
+        ``-exports_USD``), ``demand_charges_USD``, ``curtailment_USD``,
+        ``fom_USD``, ``total_USD``. Empty dict when the model has no
+        component metadata (i.e. not produced by
+        :func:`build_baseline_dispatch`).
+    """
+    components = getattr(model, "_sdom_cost_components", None)
+    if not components:
+        return {}
+    return {
+        "thermal_var_USD": _safe_value(components.get("thermal_var", 0.0)),
+        "storage_var_USD": _safe_value(components.get("storage_var", 0.0)),
+        "imports_USD": _safe_value(components.get("imports", 0.0)),
+        "exports_USD": _safe_value(components.get("exports", 0.0)),
+        "demand_charges_USD": _safe_value(components.get("demand_charges", 0.0)),
+        "curtailment_USD": _safe_value(components.get("curtailment", 0.0)),
+        "fom_USD": _safe_value(components.get("fom", 0.0)),
+        "total_USD": float(pyo.value(model.dispatch_objective)),
+    }
+
+
 def _fix_designed_capacities(
     model: pyo.ConcreteModel, designed_system: DesignedSystem
 ) -> None:
@@ -197,15 +238,39 @@ def _replace_objective_with_dispatch_objective(
             curt = curt + model.wind.total_curtailment
         curt_cost = cp * curt
 
+    # FOM is reused from the CEM block expressions so the resiliency baseline's
+    # FOM accounting is guaranteed to match the CEM (problem (B) capacities are
+    # fixed, so this is a constant w.r.t. the dispatch decisions).
+    fom_cost = 0.0
+    if hasattr(model, "thermal") and hasattr(model.thermal, "fixed_om_cost_expr"):
+        fom_cost = fom_cost + model.thermal.fixed_om_cost_expr
+    if hasattr(model, "pv") and hasattr(model.pv, "fixed_om_cost_expr"):
+        fom_cost = fom_cost + model.pv.fixed_om_cost_expr
+    if hasattr(model, "wind") and hasattr(model.wind, "fixed_om_cost_expr"):
+        fom_cost = fom_cost + model.wind.fixed_om_cost_expr
+    if hasattr(model, "storage") and hasattr(model.storage, "total_fixed_om_cost"):
+        fom_cost = fom_cost + model.storage.total_fixed_om_cost
+
     model.dispatch_objective = pyo.Objective(
         expr=thermal_var_cost
         + storage_var_cost
         + imports_cost
         - exports_cost
         + dc_cost
-        + curt_cost,
+        + curt_cost
+        + fom_cost,
         sense=pyo.minimize,
     )
+
+    model._sdom_cost_components = {  # noqa: SLF001 (intentional internal stash)
+        "thermal_var": thermal_var_cost,
+        "storage_var": storage_var_cost,
+        "imports": imports_cost,
+        "exports": exports_cost,
+        "demand_charges": dc_cost,
+        "curtailment": curt_cost,
+        "fom": fom_cost,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -523,6 +588,8 @@ def run_baseline_dispatch(
         profiler, "Extract trajectories", _extract_trajectories
     )
 
+    cost_breakdown = _extract_cost_breakdown(model)
+
     if profiler is not None:
         profiler.stop()
         profiler.print_summary_table(
@@ -559,4 +626,5 @@ def run_baseline_dispatch(
             "designed_system": getattr(model, "_sdom_designed_system", None),
             "profiler": profiler,
         },
+        cost_breakdown=cost_breakdown,
     )

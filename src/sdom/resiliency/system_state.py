@@ -50,16 +50,29 @@ class DesignedSystem:
     ----------
     storage_caps : dict
         Mapping ``{tech: {"Cap_Pch", "Cap_Pdis", "Cap_E", "eta_ch",
-        "eta_dis", "soc_min_frac", "vom"}}`` for each storage technology with
-        non-zero capacity. Capacities are in MW / MWh.
+        "eta_dis", "soc_min_frac", "vom", "fom", "cost_ratio"}}`` for each
+        storage technology with non-zero capacity. Capacities are in MW / MWh.
+        ``fom`` is the fixed-O&M rate (USD/kW-yr) and ``cost_ratio`` is the
+        share of that rate billed against the charge-side power capacity
+        (the remainder is billed against the discharge-side power capacity),
+        matching the CEM accounting in
+        :func:`sdom.models.formulations_storage.storage_fixed_om_cost_expr_rule`.
     thermal_caps : dict
         Mapping ``{tech: {"capacity_MW", "heat_rate", "fuel_cost",
-        "vom", "var_cost"}}`` for each thermal technology with non-zero
-        capacity. ``var_cost = heat_rate * fuel_cost + vom``.
+        "vom", "var_cost", "fom"}}`` for each thermal technology with non-zero
+        capacity. ``var_cost = heat_rate * fuel_cost + vom``. ``fom`` is the
+        fixed-O&M rate (USD/kW-yr) aggregated across plants.
     solar_caps : dict
         Mapping ``{plant_id: capacity_MW}`` for selected solar plants.
     wind_caps : dict
         Mapping ``{plant_id: capacity_MW}`` for selected wind plants.
+    solar_fom, wind_fom : dict
+        Mapping ``{plant_id: fom_USD_per_kW_yr}`` for the selected solar /
+        wind plants. Values come from the ``FOM_M`` column of the
+        ``CapSolar_*.csv`` / ``CapWind_*.csv`` previous-stage inputs.
+        Carried for auditing and downstream reporting; the baseline-dispatch
+        objective itself sources FOM from the CEM block expressions so the
+        two paths cannot diverge.
     load, nuclear, hydro, other_renewables : pandas.Series
         Hourly time-series (length 8760) indexed by hour-of-year (1..8760).
     cf_solar, cf_wind : pandas.DataFrame
@@ -90,6 +103,8 @@ class DesignedSystem:
     thermal_caps: dict[str, dict[str, float]] = field(default_factory=dict)
     solar_caps: dict[str, float] = field(default_factory=dict)
     wind_caps: dict[str, float] = field(default_factory=dict)
+    solar_fom: dict[str, float] = field(default_factory=dict)
+    wind_fom: dict[str, float] = field(default_factory=dict)
 
     load: pd.Series | None = None
     cf_solar: pd.DataFrame | None = None
@@ -168,6 +183,13 @@ class BaselineDispatchResults:
         Solver termination condition (e.g. ``"optimal"``).
     metadata : dict, optional
         Free-form solver / run metadata.
+    cost_breakdown : dict, optional
+        Per-component USD totals reconciling to ``objective_value``. Keys:
+        ``thermal_var_USD``, ``storage_var_USD``, ``imports_USD``,
+        ``exports_USD`` (positive; objective contribution is
+        ``-exports_USD``), ``demand_charges_USD``, ``curtailment_USD``,
+        ``fom_USD``, ``total_USD``. Empty dict when the model carries no
+        component metadata.
     """
 
     soc_trajectory: pd.DataFrame | None = None
@@ -186,6 +208,7 @@ class BaselineDispatchResults:
     objective_value: float | None = None
     solver_status: str | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
+    cost_breakdown: dict[str, float] = field(default_factory=dict)
 
 
 @dataclass

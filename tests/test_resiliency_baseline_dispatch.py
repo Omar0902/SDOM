@@ -27,6 +27,34 @@ INPUTS_DIR_PGNE = (
     / "Paper_PGnE"
     / "Paper"
 )
+INPUTS_DIR_MEA = REPO_ROOT / "res_runs_paper" / "inputs" / "inputs_csv" / "Paper_MEA 1"
+SNAPSHOT_DIR_MEA = REPO_ROOT / "res_runs_paper" / "inputs" / "outputs_CEM" / "For_simulations_MEA"
+
+N_HOURS = 24
+YEAR = 2030
+SCENARIO_ID = 1  # = "0.5SOC"
+
+
+@pytest.fixture(scope="module")
+def designed_system_mea() -> DesignedSystem:
+    if not INPUTS_DIR_MEA.exists() or not SNAPSHOT_DIR_MEA.exists():
+        pytest.skip(f"Paper_MEA fixtures missing under {INPUTS_DIR_MEA.parent.parent}")
+    return load_designed_system(
+        SNAPSHOT_DIR_MEA,
+        inputs_dir=INPUTS_DIR_MEA,
+        year=YEAR,
+        scenario_id=SCENARIO_ID,
+    )
+
+
+@pytest.fixture(scope="module")
+def baseline_model_mea(designed_system_mea):
+    return build_baseline_dispatch(designed_system_mea, n_hours=N_HOURS)
+
+
+@pytest.fixture(scope="module")
+def baseline_results_mea(baseline_model_mea):
+    return run_baseline_dispatch(baseline_model_mea, solver="highs")
 
 
 # ---------------------------------------------------------------------------
@@ -221,3 +249,88 @@ def test_baseline_dispatch_real_pgne_24h():
     assert results.solver_status == "optimal"
     assert results.objective_value == pytest.approx(results.objective_value)
     assert abs(results.objective_value) < 1e15
+
+
+# ---------------------------------------------------------------------------
+# FOM accounting (Z^B_FOM)
+# ---------------------------------------------------------------------------
+@pytest.mark.integration
+def test_designed_system_carries_fom(designed_system_mea):
+    ds = designed_system_mea
+
+    # Storage: fom (USD/kW-yr) and cost_ratio match StorageData_2030.csv.
+    for tech, spec in ds.storage_caps.items():
+        assert "fom" in spec and isinstance(spec["fom"], float)
+        assert "cost_ratio" in spec and isinstance(spec["cost_ratio"], float)
+    if "Li-Ion" in ds.storage_caps:
+        assert ds.storage_caps["Li-Ion"]["fom"] == pytest.approx(7.9)
+        assert ds.storage_caps["Li-Ion"]["cost_ratio"] == pytest.approx(0.5)
+    if "H2" in ds.storage_caps:
+        assert ds.storage_caps["H2"]["fom"] == pytest.approx(46.0)
+        assert ds.storage_caps["H2"]["cost_ratio"] == pytest.approx(0.325)
+
+    # Thermal: fom present (0.0 in MEA inputs).
+    for bu, spec in ds.thermal_caps.items():
+        assert "fom" in spec and isinstance(spec["fom"], float)
+        assert spec["fom"] == pytest.approx(0.0)
+
+    # Solar / Wind: per-plant FOM_M dicts populated.
+    assert ds.solar_fom and ds.wind_fom
+    for pid in ds.solar_caps:
+        assert pid in ds.solar_fom
+        assert isinstance(ds.solar_fom[pid], float)
+        assert ds.solar_fom[pid] == pytest.approx(18.0)
+    for pid in ds.wind_caps:
+        assert pid in ds.wind_fom
+        assert isinstance(ds.wind_fom[pid], float)
+        assert ds.wind_fom[pid] == pytest.approx(29.3)
+
+
+@pytest.mark.integration
+def test_cost_breakdown_reconciles(baseline_results_mea):
+    cb = baseline_results_mea.cost_breakdown
+    assert isinstance(cb, dict) and cb
+    for key in (
+        "thermal_var_USD",
+        "storage_var_USD",
+        "imports_USD",
+        "exports_USD",
+        "demand_charges_USD",
+        "curtailment_USD",
+        "fom_USD",
+        "total_USD",
+    ):
+        assert key in cb
+        assert isinstance(cb[key], float)
+
+    # FOM > 0 in MEA (solar=18, wind=29.3, storage non-zero).
+    assert cb["fom_USD"] > 0.0
+
+    sum_components = (
+        cb["thermal_var_USD"]
+        + cb["storage_var_USD"]
+        + cb["imports_USD"]
+        - cb["exports_USD"]
+        + cb["demand_charges_USD"]
+        + cb["curtailment_USD"]
+        + cb["fom_USD"]
+    )
+    assert sum_components == pytest.approx(cb["total_USD"], rel=1e-6, abs=1.0)
+    assert cb["total_USD"] == pytest.approx(baseline_results_mea.objective_value)
+
+
+@pytest.mark.integration
+def test_fom_constant_independent_of_dispatch(designed_system_mea):
+    _highs()
+    tech = next(iter(designed_system_mea.storage_caps))
+    m_a = build_baseline_dispatch(designed_system_mea, n_hours=N_HOURS)
+    m_b = build_baseline_dispatch(
+        designed_system_mea,
+        n_hours=N_HOURS,
+        min_soc_per_tech={tech: 0.5},
+    )
+    r_a = run_baseline_dispatch(m_a)
+    r_b = run_baseline_dispatch(m_b)
+    assert r_a.cost_breakdown["fom_USD"] == pytest.approx(
+        r_b.cost_breakdown["fom_USD"], rel=1e-9
+    )

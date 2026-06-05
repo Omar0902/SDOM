@@ -217,6 +217,46 @@ def _load_summary_capacities(summary_path: Path, scenario_id: int):
     }
 
 
+def _load_vre_fom(
+    inputs_dir: Path,
+    year: int,
+    solar_plants: set[str],
+    wind_plants: set[str],
+) -> tuple[dict[str, float], dict[str, float]]:
+    """Read CapSolar / CapWind ``FOM_M`` (USD/kW-yr) for the given plants.
+
+    Returns
+    -------
+    tuple of (dict, dict)
+        ``(solar_fom, wind_fom)`` keyed by ``sc_gid`` cast to ``str``.
+        Plants not in ``solar_plants`` / ``wind_plants`` are skipped.
+        Missing values default to ``0.0`` and emit a debug-level log.
+    """
+
+    def _read(filename: str, wanted_ids: set[str]) -> dict[str, float]:
+        path = inputs_dir / filename
+        if not path.exists():
+            logger.warning(
+                "%s missing under %s; FOM defaults to 0 for all plants.",
+                filename,
+                inputs_dir,
+            )
+            return {pid: 0.0 for pid in wanted_ids}
+        df = pd.read_csv(path)
+        if "FOM_M" not in df.columns or "sc_gid" not in df.columns:
+            logger.warning(
+                "%s lacks FOM_M / sc_gid columns; FOM defaults to 0.",
+                filename,
+            )
+            return {pid: 0.0 for pid in wanted_ids}
+        idx = df.set_index(df["sc_gid"].astype(str))["FOM_M"].astype(float).to_dict()
+        return {pid: float(idx.get(pid, 0.0)) for pid in wanted_ids}
+
+    solar_fom = _read(f"CapSolar_{year}.csv", solar_plants)
+    wind_fom = _read(f"CapWind_{year}.csv", wind_plants)
+    return solar_fom, wind_fom
+
+
 def _load_vre_per_plant(snapshot_dir: Path, scenario_id: int, year: int):
     """Read OutputSelectedVRE and return per-plant capacity dicts."""
     path = _find_snapshot_file(snapshot_dir, "OutputSelectedVRE", year)
@@ -317,6 +357,15 @@ def _build_storage_caps(
         # model in formulations_storage.py which uses sqrt(Eff) one-way).
         eff = float(storage_data.at["Eff", tech]) if "Eff" in storage_data.index else 1.0
         vom = float(storage_data.at["VOM", tech]) if "VOM" in storage_data.index else 0.0
+        # FOM ($/kW-yr) split between charge and discharge sides by CostRatio,
+        # mirroring sdom.models.formulations_storage.storage_fixed_om_cost_expr_rule.
+        # CEM default cost_ratio = 0.5 when missing.
+        fom = float(storage_data.at["FOM", tech]) if "FOM" in storage_data.index else 0.0
+        cost_ratio = (
+            float(storage_data.at["CostRatio", tech])
+            if "CostRatio" in storage_data.index
+            else 0.5
+        )
         eta_one_way = math.sqrt(max(eff, 0.0)) if eff > 0.0 else 1.0
         out[tech] = {
             "Cap_Pch": cap_pch,
@@ -326,6 +375,8 @@ def _build_storage_caps(
             "eta_dis": eta_one_way,
             "soc_min_frac": 0.0,
             "vom": vom,
+            "fom": fom,
+            "cost_ratio": cost_ratio,
         }
     return out
 
@@ -342,11 +393,12 @@ def _build_thermal_caps(
     """
     out: dict[str, dict[str, float]] = {}
     if balancing_units.empty:
-        agg_heat = agg_fuel = agg_vom = 0.0
+        agg_heat = agg_fuel = agg_vom = agg_fom = 0.0
     else:
         agg_heat = float(balancing_units["HeatRate"].mean()) if "HeatRate" in balancing_units.columns else 0.0
         agg_fuel = float(balancing_units["FuelCost"].mean()) if "FuelCost" in balancing_units.columns else 0.0
         agg_vom = float(balancing_units["VOM"].mean()) if "VOM" in balancing_units.columns else 0.0
+        agg_fom = float(balancing_units["FOM"].mean()) if "FOM" in balancing_units.columns else 0.0
 
     for tech, capacity in thermal_caps_raw.items():
         if not capacity or float(capacity) <= 0.0:
@@ -359,6 +411,7 @@ def _build_thermal_caps(
             "fuel_cost": agg_fuel,
             "vom": agg_vom,
             "var_cost": var_cost,
+            "fom": agg_fom,
         }
     return out
 
@@ -647,6 +700,11 @@ def load_designed_system(
         "Per-plant VRE counts: solar=%d, wind=%d.", len(solar_caps), len(wind_caps)
     )
 
+    logger.debug("Loading VRE FOM_M from CapSolar/CapWind input CSVs.")
+    solar_fom, wind_fom = _load_vre_fom(
+        inputs_dir, year, set(solar_caps.keys()), set(wind_caps.keys())
+    )
+
     logger.debug("Loading previous-stage input CSVs from %s.", inputs_dir)
     inputs = _load_input_csvs(inputs_dir, year)
 
@@ -692,6 +750,8 @@ def load_designed_system(
         thermal_caps=thermal_caps,
         solar_caps=solar_caps,
         wind_caps=wind_caps,
+        solar_fom=solar_fom,
+        wind_fom=wind_fom,
         load=inputs["load"],
         cf_solar=inputs["cf_solar"],
         cf_wind=inputs["cf_wind"],

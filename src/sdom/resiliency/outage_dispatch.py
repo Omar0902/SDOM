@@ -64,6 +64,7 @@ def _add_storage_block_outage(
     designed_system: DesignedSystem,
     soc_min_frac_map: dict[str, float],
     start_hour: int,
+    delta_storage: dict[tuple[str, int], float] | None = None,
 ):
     block = pyo.Block()
     model.add_component("storage", block)
@@ -78,6 +79,8 @@ def _add_storage_block_outage(
     eta_dis = {s: float(designed_system.storage_caps[s].get("eta_dis", 1.0)) for s in techs}
     vom = {s: float(designed_system.storage_caps[s].get("vom", 0.0)) for s in techs}
 
+    delta_storage = delta_storage or {}
+
     block.Cap_Pch = pyo.Param(block.S, initialize=cap_pch)
     block.Cap_Pdis = pyo.Param(block.S, initialize=cap_pdis)
     block.Cap_E = pyo.Param(block.S, initialize=cap_e)
@@ -86,10 +89,10 @@ def _add_storage_block_outage(
     block.vom = pyo.Param(block.S, initialize=vom)
 
     def _pcha_bounds(b, s, t):
-        return (0.0, cap_pch[s])
+        return (0.0, delta_storage.get((s, t), 1.0) * cap_pch[s])
 
     def _pdis_bounds(b, s, t):
-        return (0.0, cap_pdis[s])
+        return (0.0, delta_storage.get((s, t), 1.0) * cap_pdis[s])
 
     def _soc_bounds(b, s, t):
         lb = soc_min_frac_map.get(s, 0.0) * cap_e[s]
@@ -383,6 +386,7 @@ def build_outage_dispatch(
         delta_thermal: dict[tuple[str, int], float] = {}
         delta_wind: dict[tuple[str, int], float] = {}
         delta_solar: dict[tuple[str, int], float] = {}
+        delta_storage: dict[tuple[str, int], float] = {}
         delta_imports: dict[int, float] = {}
         delta_nuc: dict[int, float] = {}
         delta_hydro: dict[int, float] = {}
@@ -401,6 +405,7 @@ def build_outage_dispatch(
         _populate("balancing_units", designed_system.thermal_caps.keys(), delta_thermal)
         _populate("wind", designed_system.wind_caps.keys(), delta_wind)
         _populate("solar", designed_system.solar_caps.keys(), delta_solar)
+        _populate("storage", designed_system.storage_caps.keys(), delta_storage)
 
         rho_imp = outage_spec.resolve_derating("imports", "grid")
         if rho_imp != 1.0:
@@ -426,6 +431,7 @@ def build_outage_dispatch(
             delta_thermal,
             delta_wind,
             delta_solar,
+            delta_storage,
             delta_imports,
             delta_nuc,
             delta_hydro,
@@ -437,6 +443,7 @@ def build_outage_dispatch(
         delta_thermal,
         delta_wind,
         delta_solar,
+        delta_storage,
         delta_imports,
         delta_nuc,
         delta_hydro,
@@ -472,6 +479,7 @@ def build_outage_dispatch(
         designed_system,
         soc_min_frac_map,
         start_hour,
+        delta_storage,
     )
     thermal_block = _run_step(
         profiler,
@@ -669,6 +677,7 @@ def build_outage_dispatch(
         "delta_thermal": delta_thermal,
         "delta_wind": delta_wind,
         "delta_solar": delta_solar,
+        "delta_storage": delta_storage,
         "delta_imports": delta_imports,
         "delta_nuclear": delta_nuc,
         "delta_hydro": delta_hydro,

@@ -2,6 +2,7 @@
 *.pyo
 *.pyd
 results_pyomo/*
+results/
 .vscode/*
 ___*
 res_runs_paper/

@@ -283,9 +283,9 @@ agg = results.metrics(level="aggregate")
 #   "mean_EUE":
 #   "max_EUE":
 #   "EUE_p50", "EUE_p95", "EUE_p99":
-#   "EUE_expected":      # sum_h P(h) * EUE(h)        (issue #69)
-#   "USE_hours_expected":# sum_h P(h) * USE_hours(h)  (issue #69)
-#   "n_hours_evaluated": # excludes errored worker rows
+#   "EUE_expected":       # sum_h P(h) * EUE(h)        (issue #69)
+#   "USE_hours_expected": # sum_h P(h) * USE_hours(h)  (issue #69)
+#   "n_hours_evaluated":  # excludes errored worker rows
 #   "n_errors":
 # }
 ```

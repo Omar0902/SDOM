@@ -274,8 +274,8 @@ class ResiliencyResults:
         -----
         Probability-weighted expected metrics use the renormalize convention
         (issue #69, Q1): each evaluated anchor hour carries weight
-        ``P(h) = 1 / len(hours)`` over the evaluated (non-errored) set
-        ``\\mathcal{H}``. Consequently ``EUE_expected`` collapses to
+        ``P(h) = 1 / len(hours)`` over the evaluated (non-errored) anchor
+        set. Consequently ``EUE_expected`` collapses to
         ``mean_EUE`` and ``USE_hours_expected`` collapses to ``LOLE`` when
         the per-hour probabilities are uniform; this is by design, not a
         bug. The keys are persisted so future severity-weighted schemes

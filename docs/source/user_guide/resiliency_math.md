@@ -90,6 +90,7 @@ Defined for both problems unless noted. All non-negative.
 | $p^{imp}_{t}, p^{exp}_{t}$ | Imports / exports (MW). |
 | $D^{fix}_{m}, D^{var}_{m}$ | Monthly demand-charge cost (USD), one per month. Defined as the maximum tariff-weighted import in month $m$ via section 5.4. Problem (B) only by default. |
 | $u_{t}$ | Unserved-energy slack (MWh). **Problem (O) only.** |
+| $\sigma^{rec}_{s}$ | SOC recovery-target slack (MWh). Non-negative relaxation of the per-tech end-of-recovery target (section 5.5). **Problem (O) only.** |
 
 ---
 
@@ -144,7 +145,7 @@ multipliers therefore do not appear in (B).
 Minimize the operational cost over the outage horizon
 
 $$
-Z^{O}(h) = Z^{O}_{thermal}(h) + Z^{O}_{storage}(h) + Z^{O}_{imp}(h) + Z^{O}_{exp}(h) + Z^{O}_{slack}(h) + Z^{O}_{curt}(h).
+Z^{O}(h) = Z^{O}_{thermal}(h) + Z^{O}_{storage}(h) + Z^{O}_{imp}(h) + Z^{O}_{exp}(h) + Z^{O}_{slack}(h) + Z^{O}_{soc\_slack}(h) + Z^{O}_{curt}(h).
 $$
 
 with components

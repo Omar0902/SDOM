@@ -385,6 +385,37 @@ $$
 EUE_{\max} = \max_{h \in \mathcal{H}} EUE(h).
 $$
 
+### 7.3 Probability-weighted expected metrics
+
+Each evaluated anchor hour $h \in \mathcal{H}$ is assigned an outage-start
+probability $P(h)$ and the *expected* metrics are reported alongside the
+unweighted statistics in section 7.2:
+
+$$
+EUE^{\text{exp}} = \sum_{h \in \mathcal{H}} P(h) \cdot EUE(h), \qquad
+H_{USE}^{\text{exp}} = \sum_{h \in \mathcal{H}} P(h) \cdot H_{USE}(h).
+$$
+
+**Partial-evaluation convention (renormalize).** When only a subset
+$\mathcal{H} \subsetneq \mathcal{T}$ of anchor hours is evaluated (e.g. an
+explicit ``hours=`` list passed to ``evaluate_resiliency``), probabilities
+are renormalized over the evaluated set so they sum to 1:
+
+$$
+P(h) = \frac{1}{\lvert \mathcal{H} \rvert}, \qquad
+\sum_{h \in \mathcal{H}} P(h) = 1.
+$$
+
+Hours with ``solver_status == "error"`` are excluded from $\mathcal{H}$
+before renormalize, mirroring the unweighted statistics in section 7.2.
+
+With uniform $P(h) = 1 / N_{H}$ the identities
+$EUE^{\text{exp}} \equiv \overline{EUE}$ and
+$H_{USE}^{\text{exp}} \equiv LOLE$ hold by construction. The keys are
+surfaced separately so future severity- or arrival-rate-weighted schemes
+can replace the uniform weight without changing the persisted schema or
+breaking the existing unweighted metric names.
+
 The empirical distribution $\lbrace EUE(h) \rbrace_{h \in \mathcal{H}}$ is
 exposed via {class}`~sdom.resiliency.ResiliencyResults` and underlies the
 histogram / ECDF / exceedance plots described in {doc}`resiliency`.

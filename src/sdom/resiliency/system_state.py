@@ -268,7 +268,19 @@ class ResiliencyResults:
         return df
 
     def _aggregate_metrics(self) -> dict:
-        """Compute the aggregate-metrics dict (Phase 6 spec)."""
+        """Compute the aggregate-metrics dict (Phase 6 + #69).
+
+        Notes
+        -----
+        Probability-weighted expected metrics use the renormalize convention
+        (issue #69, Q1): each evaluated anchor hour carries weight
+        ``P(h) = 1 / len(hours)`` over the evaluated (non-errored) anchor
+        set. Consequently ``EUE_expected`` collapses to
+        ``mean_EUE`` and ``USE_hours_expected`` collapses to ``LOLE`` when
+        the per-hour probabilities are uniform; this is by design, not a
+        bug. The keys are persisted so future severity-weighted schemes
+        can replace the uniform weight without changing the schema.
+        """
         df = self._evaluated_frame()
         n_eval = int(len(df))
         if "solver_status" in self.per_hour.columns:
@@ -285,6 +297,8 @@ class ResiliencyResults:
                 "EUE_p50": float("nan"),
                 "EUE_p95": float("nan"),
                 "EUE_p99": float("nan"),
+                "EUE_expected": float("nan"),
+                "USE_hours_expected": float("nan"),
                 "n_hours_evaluated": 0,
                 "n_errors": n_err,
             }
@@ -295,6 +309,9 @@ class ResiliencyResults:
         else:
             use_hours = np.zeros(n_eval)
 
+        # Q1=renormalize: P(h) = 1 / len(hours) over the evaluated anchor set.
+        prob = 1.0 / n_eval
+
         return {
             "LOLP": float(np.mean(eue > 0.0)),
             "LOLE": float(np.mean(use_hours)),
@@ -303,6 +320,8 @@ class ResiliencyResults:
             "EUE_p50": float(np.percentile(eue, 50, method="linear")),
             "EUE_p95": float(np.percentile(eue, 95, method="linear")),
             "EUE_p99": float(np.percentile(eue, 99, method="linear")),
+            "EUE_expected": float(np.sum(prob * eue)),
+            "USE_hours_expected": float(np.sum(prob * use_hours)),
             "n_hours_evaluated": n_eval,
             "n_errors": n_err,
         }

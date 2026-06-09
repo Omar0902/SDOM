@@ -61,6 +61,7 @@ narrative usage guide is in {doc}`resiliency`.
 | $c^{vom}_{s}$ | Storage VOM (USD/MWh). | `StorageData_*.csv` |
 | $\pi^{slack}$ | Penalty on unserved energy (USD/MWh). Default $10^{4}$. | User (`OutageSpec` / kwarg) |
 | $\pi^{curt}$ | Penalty on curtailed VRE energy (USD/MWh). Default $0$ (free curtailment). | User (kwarg) |
+| $\pi^{soc}$ | Penalty on SOC recovery-target slack (USD/MWh). Default $10^{3}$. Applies to Problem (O) only. | User (kwarg) |
 
 ### 2.4 Outage / operational
 
@@ -89,6 +90,7 @@ Defined for both problems unless noted. All non-negative.
 | $p^{imp}_{t}, p^{exp}_{t}$ | Imports / exports (MW). |
 | $D^{fix}_{m}, D^{var}_{m}$ | Monthly demand-charge cost (USD), one per month. Defined as the maximum tariff-weighted import in month $m$ via section 5.4. Problem (B) only by default. |
 | $u_{t}$ | Unserved-energy slack (MWh). **Problem (O) only.** |
+| $\sigma^{rec}_{s}$ | SOC recovery-target slack (MWh). Non-negative relaxation of the per-tech end-of-recovery target (section 5.5). **Problem (O) only.** |
 
 ---
 
@@ -143,7 +145,7 @@ multipliers therefore do not appear in (B).
 Minimize the operational cost over the outage horizon
 
 $$
-Z^{O}(h) = Z^{O}_{thermal}(h) + Z^{O}_{storage}(h) + Z^{O}_{imp}(h) + Z^{O}_{exp}(h) + Z^{O}_{slack}(h) + Z^{O}_{curt}(h).
+Z^{O}(h) = Z^{O}_{thermal}(h) + Z^{O}_{storage}(h) + Z^{O}_{imp}(h) + Z^{O}_{exp}(h) + Z^{O}_{slack}(h) + Z^{O}_{soc\_slack}(h) + Z^{O}_{curt}(h).
 $$
 
 with components
@@ -167,6 +169,15 @@ $$
 $$
 Z^{O}_{slack}(h) = \sum_{t \in \mathcal{T}^{out}_h} \pi^{slack} \, u_{t}.
 $$
+
+$$
+Z^{O}_{soc\_slack}(h) = \pi^{soc} \sum_{s \in \mathcal{S}} \sigma^{rec}_{s},
+$$
+
+where $\sigma^{rec}_{s} \ge 0$ is a non-negative slack variable on the
+SOC recovery target (see section 5.5). The operational SOC floor in
+section 5.3 remains a hard bound; only the end-of-recovery target is
+softened.
 
 $$
 Z^{O}_{curt}(h) = \pi^{curt} \sum_{t \in \mathcal{T}^{out}_h} \left[ \sum_{w \in \mathcal{W}} (\delta_{w,t} \, A^{W}_{w,t} \, Cap^{W}_{w} - p^{W}_{w,t}) + \sum_{k \in \mathcal{K}} (\delta_{k,t} \, A^{K}_{k,t} \, Cap^{K}_{k} - p^{K}_{k,t}) \right].
@@ -270,10 +281,14 @@ $$
 SOC_{s,h} = SOC^{base}_{s,h}, \quad \forall s \in \mathcal{S}.
 $$
 
-Recovery target at the end of the recovery window:
+Recovery target at the end of the recovery window (Problem (O) only). In
+Problem (O), the target is **softened by a non-negative slack variable**
+$\sigma^{rec}_{s} \ge 0$ priced at $\pi^{soc}$ in the objective (see section
+4) so the LP remains feasible when storage cannot fully recharge by the
+end of its recovery window. In Problem (B), $\sigma^{rec}_{s} \equiv 0$:
 
 $$
-SOC_{s, h + \Delta^{out} + \Delta^{rec}_{s}} \ge SOC^{rec}_{s} \cdot Cap^{E}_{s},
+SOC_{s, h + \Delta^{out} + \Delta^{rec}_{s}} + \sigma^{rec}_{s} \ge SOC^{rec}_{s} \cdot Cap^{E}_{s},
 \quad \forall s \in \mathcal{S}.
 $$
 

@@ -330,6 +330,124 @@ def test_outage_demand_charges_excluded_by_default():
     assert not hasattr(model.imports, "D_var")
 
 
+# ---------------------------------------------------------------------------
+# SOC recovery-target slack (#68)
+# ---------------------------------------------------------------------------
+def test_outage_recovery_soc_slack_default_value_and_metadata():
+    n = 24
+    ds = _make_designed_system(n=n)
+    br = _make_baseline_results(ds, soc_value=20.0)
+    spec = OutageSpec(
+        duration_hours=4,
+        recovery_hours=4,
+        outaged_assets={"balancing_units": "all"},
+    )
+    model = build_outage_dispatch(
+        br,
+        start_hour=1,
+        outage_spec=spec,
+        designed_system=ds,
+        n_hours=n,
+    )
+    assert model._sdom_outage_meta["soc_slack_penalty"] == pytest.approx(1_000.0)
+    assert hasattr(model, "recovery_soc_slack")
+    slack = model.recovery_soc_slack
+    assert isinstance(slack, pyo.Var)
+    assert slack["Li-Ion"].domain is pyo.NonNegativeReals
+
+
+def test_outage_recovery_soc_slack_penalty_override():
+    n = 24
+    ds = _make_designed_system(n=n)
+    br = _make_baseline_results(ds, soc_value=20.0)
+    spec = OutageSpec(
+        duration_hours=4,
+        recovery_hours=4,
+        outaged_assets={"balancing_units": "all"},
+    )
+    model = build_outage_dispatch(
+        br,
+        start_hour=1,
+        outage_spec=spec,
+        designed_system=ds,
+        n_hours=n,
+        soc_slack_penalty=2_500.0,
+    )
+    assert model._sdom_outage_meta["soc_slack_penalty"] == pytest.approx(2_500.0)
+
+
+def test_outage_recovery_soc_slack_penalty_negative_rejected():
+    n = 24
+    ds = _make_designed_system(n=n)
+    br = _make_baseline_results(ds, soc_value=20.0)
+    spec = OutageSpec(
+        duration_hours=4,
+        recovery_hours=4,
+        outaged_assets={"balancing_units": "all"},
+    )
+    with pytest.raises(ValueError, match="soc_slack_penalty must be non-negative"):
+        build_outage_dispatch(
+            br,
+            start_hour=1,
+            outage_spec=spec,
+            designed_system=ds,
+            n_hours=n,
+            soc_slack_penalty=-1.0,
+        )
+
+
+def test_outage_recovery_target_constraint_includes_slack():
+    n = 24
+    ds = _make_designed_system(n=n)
+    br = _make_baseline_results(ds, soc_value=0.0)
+    spec = OutageSpec(
+        duration_hours=4,
+        recovery_hours=4,
+        outaged_assets={"balancing_units": "all"},
+        min_soc_recovery={"Li-Ion": 0.7},
+    )
+    model = build_outage_dispatch(
+        br,
+        start_hour=1,
+        outage_spec=spec,
+        designed_system=ds,
+        n_hours=n,
+    )
+    # The recovery_target constraint for Li-Ion must mention the new slack var.
+    con = model.recovery_target["Li-Ion"]
+    body_str = str(con.expr)
+    assert "recovery_soc_slack[Li-Ion]" in body_str
+
+
+def test_outage_recovery_soc_slack_resolves_unreachable_target():
+    solver = _highs()
+    n = 24
+    ds = _make_designed_system(n=n)
+    br = _make_baseline_results(ds, soc_value=0.0)
+    # Recovery window for start_hour=1, duration=4, recovery=2 ends at hour 6.
+    # With both balancing_units and storage outaged, storage can only charge
+    # during recovery hours 5..6 (Cap_Pch=10 -> max 20 MWh), so a 40 MWh
+    # recovery target is unreachable and slack must absorb ~20 MWh.
+    spec = OutageSpec(
+        duration_hours=4,
+        recovery_hours=2,
+        outaged_assets={"balancing_units": "all", "storage": "all"},
+        min_soc_recovery={"Li-Ion": 1.0},
+    )
+    model = build_outage_dispatch(
+        br,
+        start_hour=1,
+        outage_spec=spec,
+        designed_system=ds,
+        n_hours=n,
+        soc_slack_penalty=1_000.0,
+    )
+    result = solver.solve(model)
+    assert str(result.solver.termination_condition).lower() == "optimal"
+    slack_value = pyo.value(model.recovery_soc_slack["Li-Ion"])
+    assert slack_value > 10.0  # ~20 MWh expected; well above numerical noise
+
+
 def test_outage_solves_feasible_zero_outage_equivalence():
     solver = _highs()
     n = 24

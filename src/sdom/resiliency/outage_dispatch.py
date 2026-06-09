@@ -267,6 +267,7 @@ def build_outage_dispatch(
     designed_system=None,
     slack_penalty=10_000.0,
     curtailment_penalty=0.0,
+    soc_slack_penalty=1_000.0,
     min_soc_per_tech=None,
     n_hours=8760,
     model_name="SDOM_OutageDispatch",
@@ -294,6 +295,12 @@ def build_outage_dispatch(
         Default ``10_000.0``.
     curtailment_penalty : float, optional
         Penalty on curtailed VRE energy (USD/MWh). Default ``0.0``.
+    soc_slack_penalty : float, optional
+        Penalty :math:`\\pi^{soc}` (USD/MWh) on the per-storage-tech
+        slack variable that relaxes the SOC recovery-target constraint
+        (see notes). Default ``1_000.0``. The operational SOC floor
+        remains a hard bound; only the end-of-recovery target is
+        relaxed.
     min_soc_per_tech : dict, optional
         Operational SOC floor per storage tech (fraction of ``Cap_E``).
         Same semantics as :func:`build_baseline_dispatch`.
@@ -631,11 +638,23 @@ def build_outage_dispatch(
                 float(recovery_target_frac_local.get(s, 0.0)) * cap_e
             )
 
+        # Recovery-target SOC slack (#68): non-negative per-tech relaxation
+        # of the end-of-recovery target. The operational SOC floor stays
+        # a hard bound; only this end-of-recovery target is softened.
+        model.recovery_soc_slack = pyo.Var(
+            storage_block.S,
+            domain=pyo.NonNegativeReals,
+            initialize=0.0,
+        )
+
         def _recovery_target_rule(m, s):
             t_end = recovery_end_hour[s]
             if t_end < start_hour or t_end > end_hour:
                 return pyo.Constraint.Skip
-            return storage_block.SOC[s, t_end] >= recovery_target_MWh_local[s]
+            return (
+                storage_block.SOC[s, t_end] + model.recovery_soc_slack[s]
+                >= recovery_target_MWh_local[s]
+            )
 
         model.recovery_target = pyo.Constraint(
             storage_block.S, rule=_recovery_target_rule
@@ -649,6 +668,13 @@ def build_outage_dispatch(
     # Objective
     slack_pen = float(slack_penalty)
     curt_pen = float(curtailment_penalty)
+    soc_slack_pen = float(soc_slack_penalty)
+    if slack_pen < 0:
+        raise ValueError("slack_penalty must be non-negative.")
+    if curt_pen < 0:
+        raise ValueError("curtailment_penalty must be non-negative.")
+    if soc_slack_pen < 0:
+        raise ValueError("soc_slack_penalty must be non-negative.")
 
     def _add_objective():
         obj_expr = (
@@ -657,6 +683,8 @@ def build_outage_dispatch(
             + imports_block.total_cost_expr
             - exports_block.revenue_expr
             + slack_pen * sum(model.u[t] for t in model.h)
+            + soc_slack_pen
+            * sum(model.recovery_soc_slack[s] for s in storage_techs)
             + curt_pen
             * (
                 solar_block.potential_minus_dispatch
@@ -684,6 +712,7 @@ def build_outage_dispatch(
         "delta_other_renewables": delta_other,
         "slack_penalty": slack_pen,
         "curtailment_penalty": curt_pen,
+        "soc_slack_penalty": soc_slack_pen,
         "designed_system": designed_system,
     }
     if profiler is not None:

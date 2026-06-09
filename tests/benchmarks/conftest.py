@@ -26,9 +26,10 @@ def zonal_data_path() -> Path:
 def resiliency_snapshot_dir() -> Path:
     return (
         REPO_ROOT
-        / "Data"
-        / "resiliency_eval"
-        / "3MW_critical_load_24hrs_outage_24hrs_recovery"
+        / "res_runs_paper"
+        / "inputs"
+        / "outputs_CEM"
+        / "For_simulations_MEA"
     )
 
 
@@ -36,11 +37,10 @@ def resiliency_snapshot_dir() -> Path:
 def resiliency_inputs_dir() -> Path:
     return (
         REPO_ROOT
-        / "Data"
-        / "resiliency_eval"
-        / "inputs_previous_stage"
-        / "Paper_PGnE"
-        / "Paper"
+        / "res_runs_paper"
+        / "inputs"
+        / "inputs_csv"
+        / "Paper_MEA 1"
     )
 
 

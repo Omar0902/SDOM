@@ -665,10 +665,11 @@ def build_outage_dispatch(
         profiler, "Add recovery target constraint", _build_recovery_target
     )
 
-    # Objective
-    slack_pen = float(slack_penalty)
-    curt_pen = float(curtailment_penalty)
-    soc_slack_pen = float(soc_slack_penalty)
+slack_pen = float(slack_penalty)
+curt_pen = float(curtailment_penalty)
+soc_slack_pen = float(soc_slack_penalty)
+if soc_slack_pen < 0:
+    raise ValueError("soc_slack_penalty must be non-negative.")
 
     def _add_objective():
         obj_expr = (

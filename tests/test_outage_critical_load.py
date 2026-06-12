@@ -1,7 +1,7 @@
 """Tests for the ``critical_load_MW`` override on outage dispatch (#73).
 
-Covers the new keyword argument added to ``build_outage_dispatch`` and
-its forwarding through ``run_resiliency_evaluation``.
+Covers the new keyword argument added to ``build_outage_dispatch`` and its
+forwarding through ``run_resiliency_evaluation`` and ``evaluate_resiliency``.
 """
 
 from __future__ import annotations
@@ -14,6 +14,7 @@ import pytest
 from sdom.resiliency import (
     OutageSpec,
     build_outage_dispatch,
+    evaluate_resiliency,
     run_resiliency_evaluation,
 )
 
@@ -140,3 +141,51 @@ def test_runner_forwards_critical_load():
     assert len(captured_kwargs) == 2
     for kw in captured_kwargs:
         assert kw["critical_load_MW"] == pytest.approx(42.0)
+
+
+def test_evaluate_resiliency_forwards_critical_load(monkeypatch):
+    """``evaluate_resiliency`` must pass ``critical_load_MW`` to the runner."""
+    from sdom.resiliency import evaluate as evaluate_module
+
+    captured: dict = {}
+
+    def _fake_runner(baseline_results, **kwargs):
+        captured.update(kwargs)
+
+        class _FakeResults:
+            per_hour = pd.DataFrame()
+            metadata: dict = {}
+
+        return _FakeResults()
+
+    def _fake_load(*_args, **_kwargs):
+        return _make_designed_system(n=4, load_value=10.0)
+
+    def _fake_build(_designed_system, **_kwargs):
+        class _Model:
+            pass
+
+        return _Model()
+
+    def _fake_run_baseline(_model, **_kwargs):
+        ds = _make_designed_system(n=4, load_value=10.0)
+        return _make_baseline_results(ds, soc_value=5.0)
+
+    monkeypatch.setattr(evaluate_module, "load_designed_system", _fake_load)
+    monkeypatch.setattr(evaluate_module, "build_baseline_dispatch", _fake_build)
+    monkeypatch.setattr(evaluate_module, "run_baseline_dispatch", _fake_run_baseline)
+    monkeypatch.setattr(evaluate_module, "run_resiliency_evaluation", _fake_runner)
+
+    spec = OutageSpec(
+        duration_hours=2,
+        recovery_hours=1,
+        outaged_assets={"balancing_units": "all"},
+    )
+    evaluate_resiliency(
+        "snapshot/",
+        inputs_dir="inputs/",
+        outage_spec=spec,
+        n_hours=4,
+        critical_load_MW=99.0,
+    )
+    assert captured["critical_load_MW"] == pytest.approx(99.0)

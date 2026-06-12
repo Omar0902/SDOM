@@ -129,7 +129,7 @@ class DesignedSystem:
     # CEM-shaped data dict (as produced by ``sdom.io_manager.load_data``) used
     # by the baseline dispatch builder to call the planning-model formulations
     # in ``sdom.models`` with their native parameter layout. Populated by
-    # :func:`load_designed_system` when ``load_cem_data=True``.
+    # :func:`load_designed_system` when ``attach_cem_data=True`` (the default).
     cem_data: dict | None = None
 
 

@@ -10,17 +10,23 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
-from reportlab.platypus import (
-    Paragraph,
-    SimpleDocTemplate,
-    Spacer,
-    Table,
-    TableStyle,
-)
+try:
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import inch
+    from reportlab.platypus import (
+        Paragraph,
+        SimpleDocTemplate,
+        Spacer,
+        Table,
+        TableStyle,
+    )
+except ImportError as exc:  # pragma: no cover - import-time guard
+    raise SystemExit(
+        "This script requires the optional 'reportlab' dependency. "
+        "Install it with:  pip install reportlab"
+    ) from exc
 
 
 # ---------------------------------------------------------------------------

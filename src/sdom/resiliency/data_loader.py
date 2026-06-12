@@ -476,24 +476,29 @@ def load_cem_data(inputs_dir, *, formulations_overrides=None):
 
     # The CEM ``load_data`` requires a ``formulations.csv``. Materialize a
     # temporary mirror of ``inputs_dir`` so we never touch the user's source
-    # tree, then write a default formulations.csv into the copy.
+    # tree, then write a default formulations.csv into the copy. The mirror is
+    # only needed while ``load_data`` runs; clean it up afterwards so repeated
+    # calls (e.g. in test suites) don't leak temp directories.
     rows = list(_DEFAULT_CEM_FORMULATIONS_ROWS)
     if formulations_overrides:
         rows.extend(formulations_overrides)
-    tmp_root = Path(tempfile.mkdtemp(prefix="sdom_cem_inputs_"))
-    tmp_inputs = tmp_root / inputs_dir.name
-    logger.info(
-        "Mirroring CEM inputs to %s and injecting default formulations.csv "
-        "(original directory %s left untouched).",
-        tmp_inputs,
-        inputs_dir,
-    )
-    shutil.copytree(inputs_dir, tmp_inputs)
-    formulations_df = pd.DataFrame(rows, columns=["Component", "Formulation", "Description"])
-    formulations_df.to_csv(tmp_inputs / "formulations.csv", index=False)
-    _augment_storage_data(tmp_inputs)
-    _augment_scalars(tmp_inputs)
-    data = load_data(str(tmp_inputs))
+    with tempfile.TemporaryDirectory(prefix="sdom_cem_inputs_") as tmp_root_str:
+        tmp_root = Path(tmp_root_str)
+        tmp_inputs = tmp_root / inputs_dir.name
+        logger.info(
+            "Mirroring CEM inputs to %s and injecting default formulations.csv "
+            "(original directory %s left untouched).",
+            tmp_inputs,
+            inputs_dir,
+        )
+        shutil.copytree(inputs_dir, tmp_inputs)
+        formulations_df = pd.DataFrame(
+            rows, columns=["Component", "Formulation", "Description"]
+        )
+        formulations_df.to_csv(tmp_inputs / "formulations.csv", index=False)
+        _augment_storage_data(tmp_inputs)
+        _augment_scalars(tmp_inputs)
+        data = load_data(str(tmp_inputs))
     _coerce_plant_id_to_string(data)
     return data
 
@@ -738,8 +743,10 @@ def load_designed_system(
         except Exception as exc:
             logger.error(
                 "Failed to load CEM data dict from %s: %s. "
-                "DesignedSystem.cem_data will be None; "
-                "build_baseline_dispatch will fail with an explicit error.",
+                "Re-raising; build_baseline_dispatch requires cem_data and "
+                "would otherwise fail with an unhelpful error downstream. "
+                "Pass attach_cem_data=False to skip this step when the "
+                "inputs directory is not a valid CEM inputs folder.",
                 inputs_dir,
                 exc,
             )

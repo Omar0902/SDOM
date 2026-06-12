@@ -18,7 +18,7 @@ from sdom.resiliency import (
     run_resiliency_evaluation,
 )
 
-from tests.test_resiliency_outage_dispatch import (
+from test_resiliency_outage_dispatch import (
     _make_baseline_results,
     _make_designed_system,
 )

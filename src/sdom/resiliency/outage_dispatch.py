@@ -318,6 +318,7 @@ def build_outage_dispatch(
     soc_slack_penalty=1_000.0,
     min_soc_per_tech=None,
     n_hours=8760,
+    critical_load_MW=None,
     model_name="SDOM_OutageDispatch",
     profile=False,
 ):
@@ -355,6 +356,14 @@ def build_outage_dispatch(
     n_hours : int, optional
         Length of the baseline horizon used for end-of-year clipping.
         Default ``8760``.
+    critical_load_MW : float, optional
+        Constant critical load (MW) used in place of
+        ``designed_system.load[t]`` for every hour ``t`` in the outage
+        sub-horizon ``[start_hour, start_hour + duration_hours - 1]``
+        (clipped to the LP end hour). Recovery-window hours continue to
+        use the original ``D_t``. ``None`` (default) preserves the
+        original behaviour: the hourly load series is used everywhere.
+        Must be non-negative.
     model_name : str, optional
         Pyomo model name. Default ``"SDOM_OutageDispatch"``.
     profile : bool, optional
@@ -401,6 +410,13 @@ def build_outage_dispatch(
     equation at the anchor; under that formulation ``Pcha[s, start_hour]``
     and ``Pdis[s, start_hour]`` for surviving (non-outaged) storage techs
     were unconstrained by any SOC balance.
+
+    When ``critical_load_MW`` is provided, the load parameter is overridden
+    only over the outage sub-horizon
+    :math:`\\mathcal{T}^{out}_h = \\{h, \\ldots, h + \\Delta^{out} - 1\\}`;
+    hours in the recovery sub-horizon retain the original ``D_t`` so that
+    storage replenishment toward the end-of-recovery target reflects
+    realistic post-outage operations.
     """
     if designed_system is None:
         designed_system = (baseline_results.metadata or {}).get("designed_system")
@@ -413,6 +429,10 @@ def build_outage_dispatch(
         raise TypeError("designed_system must be a DesignedSystem instance.")
     if not isinstance(baseline_results, BaselineDispatchResults):
         raise TypeError("baseline_results must be a BaselineDispatchResults instance.")
+    if critical_load_MW is not None and float(critical_load_MW) < 0:
+        raise ValueError(
+            f"critical_load_MW must be non-negative; got {critical_load_MW}."
+        )
 
     profiler = None
     if profile:
@@ -613,7 +633,17 @@ def build_outage_dispatch(
             t: _series_value(designed_system.other_renewables, t) * delta_other.get(t, 1.0)
             for t in horizon
         }
-        load_param = {t: _series_value(designed_system.load, t) for t in horizon}
+        if critical_load_MW is None:
+            load_param = {t: _series_value(designed_system.load, t) for t in horizon}
+        else:
+            crit = float(critical_load_MW)
+            outage_end = min(start_hour + duration - 1, end_hour)
+            load_param = {
+                t: crit
+                if start_hour <= t <= outage_end
+                else _series_value(designed_system.load, t)
+                for t in horizon
+            }
 
         model.nuclear_eff_param = pyo.Param(model.h, initialize=nuclear_eff, mutable=False)
         model.hydro_eff_param = pyo.Param(model.h, initialize=hydro_eff, mutable=False)
@@ -782,6 +812,7 @@ def build_outage_dispatch(
         "soc_slack_penalty": soc_slack_pen,
         "horizon_hours": horizon_hours,
         "fom_cost_USD": float(fom_cost_USD),
+        "critical_load_MW": None if critical_load_MW is None else float(critical_load_MW),
         "designed_system": designed_system,
     }
     if profiler is not None:

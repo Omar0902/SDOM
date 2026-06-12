@@ -1,11 +1,12 @@
 """Tests for the ``critical_load_MW`` override on outage dispatch (#73).
 
-Covers the new keyword argument added to ``build_outage_dispatch``.
-Runner and ``evaluate_resiliency`` forwarding tests are added by the
-follow-up commits in this branch.
+Covers the new keyword argument added to ``build_outage_dispatch`` and
+its forwarding through ``run_resiliency_evaluation``.
 """
 
 from __future__ import annotations
+
+from unittest.mock import patch
 
 import pandas as pd
 import pytest
@@ -13,6 +14,7 @@ import pytest
 from sdom.resiliency import (
     OutageSpec,
     build_outage_dispatch,
+    run_resiliency_evaluation,
 )
 
 from tests.test_resiliency_outage_dispatch import (
@@ -103,3 +105,38 @@ def test_critical_load_negative_raises():
 def test_critical_load_metadata_round_trip():
     model, _, _, _, _ = _build(critical_load_MW=77.0)
     assert model._sdom_outage_meta["critical_load_MW"] == pytest.approx(77.0)
+
+
+# ---------------------------------------------------------------------------
+# Forwarding through the runner
+# ---------------------------------------------------------------------------
+def test_runner_forwards_critical_load():
+    ds = _make_designed_system(n=24, load_value=50.0)
+    br = _make_baseline_results(ds, soc_value=20.0)
+    spec = OutageSpec(
+        duration_hours=2,
+        recovery_hours=2,
+        outaged_assets={"balancing_units": "all"},
+    )
+
+    captured_kwargs: list[dict] = []
+
+    def _fake_build(baseline_results, **kwargs):
+        captured_kwargs.append(kwargs)
+        return build_outage_dispatch(baseline_results, **kwargs)
+
+    with patch("sdom.resiliency.runner._build_outage_dispatch", side_effect=_fake_build):
+        run_resiliency_evaluation(
+            br,
+            outage_spec=spec,
+            designed_system=ds,
+            hours=[1, 5],
+            n_hours=24,
+            n_workers=1,
+            critical_load_MW=42.0,
+            solver_options={},
+        )
+
+    assert len(captured_kwargs) == 2
+    for kw in captured_kwargs:
+        assert kw["critical_load_MW"] == pytest.approx(42.0)

@@ -62,8 +62,10 @@ Three things change relative to (B):
    Z^{O}(h) = Z^{O}_{thermal} + Z^{O}_{storage} + Z^{O}_{imp} + Z^{O}_{exp} + \pi^{slack} \!\sum_{t} u_t + \pi^{soc} \!\sum_{s} \sigma^{rec}_s + Z^{O}_{curt} + Z^{O}_{FOM}(h).
    $$
 
-Initial SOC is seeded from problem (B):
-$SOC_{s,h} = SOC^{base}_{s,h}$. A recovery target
+Initial SOC is seeded from problem (B) via the boundary parameter
+$SOC^{init}_{s} = SOC^{base}_{s,h}$, which feeds the storage dynamics
+equation at the anchor hour as the prior state (see
+{doc}`resiliency_math` §5.3, §5.5). A recovery target
 $SOC_{s,\, h + \Delta^{out} + \Delta^{rec}_s} + \sigma^{rec}_s \ge SOC^{rec}_s \cdot Cap^E_s$
 is enforced at the end of each storage device's recovery window as a **soft
 constraint** with non-negative slack $\sigma^{rec}_s$ priced at $\pi^{soc}$

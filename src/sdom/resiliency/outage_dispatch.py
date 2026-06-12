@@ -153,12 +153,15 @@ def _add_storage_block_outage(
         block.S, model.h, domain=pyo.NonNegativeReals, bounds=_soc_bounds, initialize=0.0
     )
 
+    # Prior-state boundary: SOC at the start of ``start_hour`` (= SOC at the
+    # end of ``start_hour - 1``). Seeded later by ``_seed_initial_soc``.
+    block.SOC_init = pyo.Param(block.S, mutable=True, initialize=0.0)
+
     def _soc_dynamics(b, s, t):
-        if t == start_hour:
-            return pyo.Constraint.Skip
+        prev = b.SOC_init[s] if t == start_hour else b.SOC[s, t - 1]
         return (
             b.SOC[s, t]
-            == b.SOC[s, t - 1] + b.eta_ch[s] * b.Pcha[s, t] - b.Pdis[s, t] / b.eta_dis[s]
+            == prev + b.eta_ch[s] * b.Pcha[s, t] - b.Pdis[s, t] / b.eta_dis[s]
         )
 
     block.soc_dynamics = pyo.Constraint(block.S, model.h, rule=_soc_dynamics)
@@ -385,9 +388,19 @@ def build_outage_dispatch(
 
     Notes
     -----
-    Initial SOC is seeded with :py:meth:`pyomo.environ.Var.fix` rather than
-    via an equality constraint, which keeps the LP tighter and avoids one
-    extra row per storage technology.
+    Initial SOC is seeded by setting the mutable parameter
+    ``model.storage.SOC_init[s]`` from ``baseline_results.soc_trajectory``
+    at ``start_hour``. ``SOC_init`` represents the SOC at the *start* of
+    the outage horizon (i.e., the boundary value :math:`SOC_{s,h-1}` that
+    the dynamics equation at :math:`t = h` reads as its prior state). The
+    SOC dynamics constraint therefore covers every hour in
+    :math:`\\mathcal{T}^{out}_h`, including the anchor hour ``start_hour``,
+    so that the charge and discharge variables at the anchor hour appear
+    in a balance equation. Earlier versions fixed ``SOC[s, start_hour]``
+    via :py:meth:`pyomo.environ.Var.fix` and skipped the dynamics
+    equation at the anchor; under that formulation ``Pcha[s, start_hour]``
+    and ``Pdis[s, start_hour]`` for surviving (non-outaged) storage techs
+    were unconstrained by any SOC balance.
     """
     if designed_system is None:
         designed_system = (baseline_results.metadata or {}).get("designed_system")
@@ -667,7 +680,7 @@ def build_outage_dispatch(
             cap_e = float(designed_system.storage_caps[s]["Cap_E"])
             lb = soc_min_frac_map.get(s, 0.0) * cap_e
             init_value = min(max(init_value, lb), cap_e)
-            storage_block.SOC[s, start_hour].fix(init_value)
+            storage_block.SOC_init[s] = init_value
 
     _run_step(profiler, "Seed initial SOC", _seed_initial_soc)
 

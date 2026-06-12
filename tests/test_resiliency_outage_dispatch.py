@@ -262,8 +262,58 @@ def test_outage_initial_soc_seeded_from_baseline():
         designed_system=ds,
         n_hours=n,
     )
-    assert model.storage.SOC["Li-Ion", 5].is_fixed()
-    assert pyo.value(model.storage.SOC["Li-Ion", 5]) == pytest.approx(30.0)
+    # The baseline value is now seeded into the ``SOC_init`` boundary
+    # parameter (representing SOC at the start of ``start_hour``), not
+    # into a fixed ``SOC`` variable. The SOC dynamics constraint covers
+    # ``start_hour`` and links Pcha[start_hour]/Pdis[start_hour] to
+    # SOC[start_hour], so ``SOC[s, start_hour]`` is a free variable.
+    assert not model.storage.SOC["Li-Ion", 5].is_fixed()
+    assert pyo.value(model.storage.SOC_init["Li-Ion"]) == pytest.approx(30.0)
+    # SOC dynamics now covers the anchor hour as well.
+    assert ("Li-Ion", 5) in model.storage.soc_dynamics
+
+
+def test_outage_soc_dynamics_links_anchor_hour_charge_discharge():
+    """Regression: previously ``Pcha[s, h]`` / ``Pdis[s, h]`` had no SOC
+    equation for non-outaged storage because ``_soc_dynamics`` skipped
+    ``t == start_hour`` while ``SOC[s, h]`` was fixed via ``Var.fix``.
+
+    Now the constraint is generated for every hour, including
+    ``start_hour``, with ``SOC_init[s]`` as the prior state.
+    """
+    n = 24
+    ds = _make_designed_system(n=n)
+    br = _make_baseline_results(ds, soc_value=20.0)
+    spec = OutageSpec(
+        duration_hours=4,
+        recovery_hours=4,
+        # Outage the *thermal* assets; storage is not outaged, so
+        # delta_storage[s, t] == 1 everywhere and Pcha/Pdis at the
+        # anchor hour are *not* clamped to zero by capacity bounds.
+        outaged_assets={"balancing_units": "all"},
+    )
+    start = 3
+    model = build_outage_dispatch(
+        br,
+        start_hour=start,
+        outage_spec=spec,
+        designed_system=ds,
+        n_hours=n,
+    )
+    # The SOC dynamics constraint must exist for the anchor hour.
+    assert ("Li-Ion", start) in model.storage.soc_dynamics
+    # Solve and check that the anchor-hour SOC equation actually holds.
+    solver = _highs()
+    res = solver.solve(model)
+    assert str(res.solver.termination_condition) == "optimal"
+    soc_init = pyo.value(model.storage.SOC_init["Li-Ion"])
+    soc_h = pyo.value(model.storage.SOC["Li-Ion", start])
+    pcha_h = pyo.value(model.storage.Pcha["Li-Ion", start])
+    pdis_h = pyo.value(model.storage.Pdis["Li-Ion", start])
+    eta_ch = pyo.value(model.storage.eta_ch["Li-Ion"])
+    eta_dis = pyo.value(model.storage.eta_dis["Li-Ion"])
+    expected = soc_init + eta_ch * pcha_h - pdis_h / eta_dis
+    assert soc_h == pytest.approx(expected, abs=1e-6)
 
 
 def test_outage_recovery_target_default_baseline():

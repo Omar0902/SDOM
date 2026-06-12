@@ -81,7 +81,8 @@ narrative usage guide is in {doc}`resiliency`.
 | $\delta^{nuc}_{t}, \delta^{otre}_{t}, \delta^{hydro}_{t} \in [0,1]$ | Same outage / de-rating mechanism applied to the **must-run time-series sources** (nuclear, other renewables, hydro). The user-supplied factor multiplies the input time series during the outage window; equals $1$ outside the outage window. |
 | $SOC^{min}_{s}$ | Operational SOC floor (fraction of $Cap^{E}_{s}$). |
 | $SOC^{rec}_{s}$ | Required SOC at end of recovery window (fraction of $Cap^{E}_{s}$). |
-| $SOC^{base}_{s,h}$ | Baseline SOC trajectory used as initial state. |
+| $SOC^{base}_{s,h}$ | Baseline SOC trajectory value used as the *prior-state* boundary $SOC^{init}_{s}$ at the start of the outage horizon. Sourced from `baseline_results.soc_trajectory.loc[h, s]`. |
+| $SOC^{init}_{s}$ | Initial SOC boundary value at the start of $\mathcal{T}^{out}_h$, conceptually equal to $SOC_{s,h-1}$. Used by the storage dynamics equation at $t = h$. |
 
 ---
 
@@ -290,9 +291,30 @@ $$
 ### 5.3 Storage dynamics, charge / discharge bounds
 
 $$
-SOC_{s,t} = SOC_{s,t-1} + \eta^{ch}_{s} \cdot p^{ch}_{s,t} - \frac{1}{\eta^{dis}_{s}} \cdot p^{dis}_{s,t},
-\quad \forall s, \; t > t_{0}.
+SOC_{s,t} = SOC^{prev}_{s,t} + \eta^{ch}_{s} \cdot p^{ch}_{s,t} - \frac{1}{\eta^{dis}_{s}} \cdot p^{dis}_{s,t},
+\quad \forall s, \; t \in \mathcal{T}^{out}_h,
 $$
+
+where the prior-state term is
+
+$$
+SOC^{prev}_{s,t} =
+\begin{cases}
+SOC^{init}_{s} & \text{if } t = h \quad \text{(Problem (O); boundary parameter)} \\
+SOC_{s,t-1}    & \text{if } t > h.
+\end{cases}
+$$
+
+In Problem (B), $SOC_{s,0}$ is set by the cyclic baseline boundary
+(see `formulations_storage.soc_balance_rule`); in Problem (O), the
+boundary parameter $SOC^{init}_{s}$ is seeded from the baseline
+trajectory (section 5.5). Writing the dynamics equation for every
+$t \in \mathcal{T}^{out}_h$ — including the anchor hour $t = h$ — is
+required so that $p^{ch}_{s,h}$ and $p^{dis}_{s,h}$ appear in a SOC
+balance equation; otherwise the LP would leave the anchor-hour
+charge / discharge variables unconstrained by any energy balance,
+letting the solver charge or discharge "for free" at $t = h$ for any
+non-outaged storage tech.
 
 $$
 0 \le p^{ch}_{s,t} \le \delta_{s,t} \cdot Cap^{Pch}_{s}, \quad \forall s, t.
@@ -337,11 +359,23 @@ time-of-use peak.
 
 ### 5.5 Outage problem coupling (Problem (O), starting at $h$)
 
-Initial state from the baseline trajectory:
+Initial state from the baseline trajectory. The boundary parameter
+$SOC^{init}_{s}$ is set to the baseline SOC value at hour $h$ and is
+used by the dynamics equation at $t = h$ (section 5.3) as the prior
+state $SOC^{prev}_{s,h}$:
 
 $$
-SOC_{s,h} = SOC^{base}_{s,h}, \quad \forall s \in \mathcal{S}.
+SOC^{init}_{s} = SOC^{base}_{s,h}, \quad \forall s \in \mathcal{S}.
 $$
+
+$SOC^{init}_{s}$ is implemented as a mutable Pyomo `Param` rather than
+as a fixed `SOC[s, h]` variable. Earlier versions used
+`SOC[s, h].fix(value)` and skipped the dynamics equation at $t = h$;
+under that formulation the charge and discharge variables
+$p^{ch}_{s,h}, p^{dis}_{s,h}$ for non-outaged storage technologies did
+not appear in any SOC balance equation, allowing the solver to
+dispatch them without an energy-conservation constraint at the anchor
+hour. The present formulation closes that gap.
 
 Recovery target at the end of the recovery window (Problem (O) only). In
 Problem (O), the target is **softened by a non-negative slack variable**

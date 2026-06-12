@@ -1,9 +1,10 @@
 """Phase 1 TDD tests for the resiliency data loader (MEA case).
 
-Migrated from the legacy 3MW PGnE fixture to the MEA snapshot/inputs in
-``res_runs_paper/inputs/`` because the post-CEM-reuse builder is infeasible
-on PGnE and several numeric assertions were stale (efficiency convention
-changed to ``sqrt(round_trip)`` per ``formulations_storage.py``).
+Migrated from the legacy 3MW PGnE fixture to the tracked MEA snapshot /
+inputs under ``Data/resiliency_eval/`` (see ``tests/_resiliency_fixtures.py``)
+because the post-CEM-reuse builder is infeasible on PGnE and several numeric
+assertions were stale (efficiency convention changed to ``sqrt(round_trip)``
+per ``formulations_storage.py``).
 """
 
 from __future__ import annotations

@@ -24,24 +24,16 @@ def zonal_data_path() -> Path:
 
 @pytest.fixture(scope="session")
 def resiliency_snapshot_dir() -> Path:
-    return (
-        REPO_ROOT
-        / "res_runs_paper"
-        / "inputs"
-        / "outputs_CEM"
-        / "For_simulations_MEA"
-    )
+    from _resiliency_fixtures import SNAPSHOT_DIR_MEA
+
+    return SNAPSHOT_DIR_MEA
 
 
 @pytest.fixture(scope="session")
 def resiliency_inputs_dir() -> Path:
-    return (
-        REPO_ROOT
-        / "res_runs_paper"
-        / "inputs"
-        / "inputs_csv"
-        / "Paper_MEA 1"
-    )
+    from _resiliency_fixtures import INPUTS_DIR_MEA
+
+    return INPUTS_DIR_MEA
 
 
 @pytest.fixture(scope="session")

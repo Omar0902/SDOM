@@ -24,21 +24,10 @@ from sdom.resiliency import (  # noqa: E402
     plot_metric_distribution,
 )
 
-
-REPO_ROOT = Path(__file__).resolve().parents[1]
-SNAPSHOT_DIR = (
-    REPO_ROOT
-    / "res_runs_paper"
-    / "inputs"
-    / "outputs_CEM"
-    / "For_simulations_MEA"
-)
-INPUTS_DIR = (
-    REPO_ROOT
-    / "res_runs_paper"
-    / "inputs"
-    / "inputs_csv"
-    / "Paper_MEA 1"
+from _resiliency_fixtures import (  # noqa: E402
+    INPUTS_DIR_MEA as INPUTS_DIR,
+    REPO_ROOT,
+    SNAPSHOT_DIR_MEA as SNAPSHOT_DIR,
 )
 
 

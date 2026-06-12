@@ -25,20 +25,21 @@ from sdom.utils_performance_meassure import ModelInitProfiler
 
 def _designed_system():
     """Standalone loader to avoid pulling pytest fixtures across modules."""
-    from pathlib import Path
-
     from sdom.resiliency import load_designed_system
 
-    repo_root = Path(__file__).resolve().parents[1]
-    snap = (
-        repo_root / "res_runs_paper" / "inputs"
-        / "outputs_CEM" / "For_simulations_MEA"
+    from _resiliency_fixtures import (
+        INPUTS_DIR_MEA,
+        SCENARIO_ID,
+        SNAPSHOT_DIR_MEA,
+        YEAR,
     )
-    inputs = (
-        repo_root / "res_runs_paper" / "inputs"
-        / "inputs_csv" / "Paper_MEA 1"
+
+    return load_designed_system(
+        SNAPSHOT_DIR_MEA,
+        inputs_dir=INPUTS_DIR_MEA,
+        year=YEAR,
+        scenario_id=SCENARIO_ID,
     )
-    return load_designed_system(snap, inputs_dir=inputs, year=2030, scenario_id=1)
 
 
 def test_baseline_build_no_profiler_by_default(caplog):

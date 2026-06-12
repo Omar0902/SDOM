@@ -16,14 +16,15 @@ from sdom.resiliency import (
     run_baseline_dispatch,
 )
 
-
-REPO_ROOT = Path(__file__).resolve().parents[1]
-INPUTS_DIR_MEA = REPO_ROOT / "res_runs_paper" / "inputs" / "inputs_csv" / "Paper_MEA 1"
-SNAPSHOT_DIR_MEA = REPO_ROOT / "res_runs_paper" / "inputs" / "outputs_CEM" / "For_simulations_MEA"
+from _resiliency_fixtures import (
+    INPUTS_DIR_MEA,
+    REPO_ROOT,
+    SCENARIO_ID,
+    SNAPSHOT_DIR_MEA,
+    YEAR,
+)
 
 N_HOURS = 24
-YEAR = 2030
-SCENARIO_ID = 1  # = "0.5SOC"
 
 
 @pytest.fixture(scope="module")

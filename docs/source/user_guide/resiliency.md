@@ -59,13 +59,21 @@ Three things change relative to (B):
    penalised at $\pi^{slack}$ (default $10^4$ USD/MWh):
 
    $$
-   Z^{O}(h) = Z^{O}_{thermal} + Z^{O}_{storage} + Z^{O}_{imp} + Z^{O}_{exp} + \pi^{slack} \!\sum_{t} u_t + Z^{O}_{curt}.
+   Z^{O}(h) = Z^{O}_{thermal} + Z^{O}_{storage} + Z^{O}_{imp} + Z^{O}_{exp} + \pi^{slack} \!\sum_{t} u_t + \pi^{soc} \!\sum_{s} \sigma^{rec}_s + Z^{O}_{curt} + Z^{O}_{FOM}(h).
    $$
 
 Initial SOC is seeded from problem (B):
 $SOC_{s,h} = SOC^{base}_{s,h}$. A recovery target
-$SOC_{s,\, h + \Delta^{out} + \Delta^{rec}_s} \ge SOC^{rec}_s \cdot Cap^E_s$ is
-enforced at the end of each storage device's recovery window.
+$SOC_{s,\, h + \Delta^{out} + \Delta^{rec}_s} + \sigma^{rec}_s \ge SOC^{rec}_s \cdot Cap^E_s$
+is enforced at the end of each storage device's recovery window as a **soft
+constraint** with non-negative slack $\sigma^{rec}_s$ priced at $\pi^{soc}$
+(default $10^{3}$, below $\pi^{slack}$).
+
+A prorated fixed O&M constant
+$Z^{O}_{FOM}(h) = (H^{out}(h)/8760) \cdot Z^{B}_{FOM}$ is added to the
+objective so that the reported `objective_value` reflects annualized fixed
+costs for the assets carried through the outage horizon (capacities are
+fixed in (O), so this term does not affect the optimal dispatch).
 
 Demand-charge variables are excluded from (O) because the outage horizon is
 sub-monthly.

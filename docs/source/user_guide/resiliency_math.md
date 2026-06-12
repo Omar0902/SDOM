@@ -25,7 +25,7 @@ narrative usage guide is in {doc}`resiliency`.
 | $\mathcal{K}$ | Solar PV plants. |
 | $\mathcal{B}$ | Balancing (thermal) units, indexed by `Plant_id`. |
 | $\mathcal{N}, \mathcal{O}, \mathcal{R}$ | Must-run sources: nuclear, other renewables, hydro (each treated as a single aggregate stream driven by a time series). |
-| $\mathcal{B}^{out}, \mathcal{W}^{out}, \mathcal{K}^{out}, \mathcal{I}^{out}, \mathcal{N}^{out}, \mathcal{O}^{out}, \mathcal{R}^{out}$ | Subsets selected for outage / de-rating in a given `OutageSpec`. |
+| $\mathcal{B}^{out}, \mathcal{W}^{out}, \mathcal{K}^{out}, \mathcal{S}^{out}, \mathcal{I}^{out}, \mathcal{N}^{out}, \mathcal{O}^{out}, \mathcal{R}^{out}$ | Subsets selected for outage / de-rating in a given `OutageSpec`. Storage technologies can be outaged like any other capacity-bounded asset; the multiplier $\delta_{s,t}$ applies to both charge and discharge bounds (section 5.3). |
 
 ---
 
@@ -59,6 +59,13 @@ narrative usage guide is in {doc}`resiliency`.
 | $\phi^{var}_{t}$ | Hourly variable demand-charge tariff (USD/MW). Hourly-varying. | `var_dem_charges.csv` |
 | $\phi^{fix}_{t}$ | Hourly fixed demand-charge tariff (USD/MW). Constant within each month. | `fixed_dem_charges.csv` |
 | $c^{vom}_{s}$ | Storage VOM (USD/MWh). | `StorageData_*.csv` |
+| $f^{B}_{b}$ | Fixed O&M of balancing unit $b$ (USD/kW-yr). | `Data_Balancing_units_*.csv` column `FOM` |
+| $f^{W}_{w}$ | Fixed O&M of wind plant $w$ (USD/kW-yr). | `CapWind_*.csv` column `FOM_M` |
+| $f^{K}_{k}$ | Fixed O&M of solar plant $k$ (USD/kW-yr). | `CapSolar_*.csv` column `FOM_M` |
+| $f^{S}_{s}$ | Fixed O&M of storage technology $s$ (USD/kW-yr), applied to power capacity. | `StorageData_*.csv` row `FOM` |
+| $\alpha_{s} \in [0,1]$ | Cost-ratio split of storage FOM between charge and discharge sides. | `StorageData_*.csv` row `CostRatio` |
+| $M_{kW} = 10^{3}$ | Unit conversion (MW $\to$ kW), since FOM parameters are in USD/kW-yr while capacities are in MW. | constant |
+| $H^{yr} = 8760$ | Hours per year. Used to prorate annual FOM to the outage horizon length in (O). | constant |
 | $\pi^{slack}$ | Penalty on unserved energy (USD/MWh). Default $10^{4}$. | User (`OutageSpec` / kwarg) |
 | $\pi^{curt}$ | Penalty on curtailed VRE energy (USD/MWh). Default $0$ (free curtailment). | User (kwarg) |
 | $\pi^{soc}$ | Penalty on SOC recovery-target slack (USD/MWh). Default $10^{3}$. Applies to Problem (O) only. | User (kwarg) |
@@ -69,7 +76,8 @@ narrative usage guide is in {doc}`resiliency`.
 | --- | --- |
 | $\Delta^{out}$ | Outage duration (hours), or per-asset $\Delta^{out}_{a}$. |
 | $\Delta^{rec}$ | Recovery window (hours), single value or per-storage $\Delta^{rec}_{s}$. |
-| $\delta_{a,t} \in [0,1]$ | Time-varying capacity multiplier from outage. Equals the user-defined derating value (default $0$) inside the outage window $[h, h + \Delta^{out}_a - 1]$, and equals $1$ everywhere else, including the entire recovery window $[h + \Delta^{out}, h + \Delta^{out} + \Delta^{rec} - 1]$. |
+| $H^{out}(h)$ | Length of the outage horizon $\mathcal{T}^{out}_h$ in hours, after end-of-year clipping: $H^{out}(h) = |\mathcal{T}^{out}_h|$. |
+| $\delta_{a,t} \in [0,1]$ | Time-varying capacity multiplier from outage. Equals the user-defined derating value (default $0$) inside the outage window $[h, h + \Delta^{out}_a - 1]$, and equals $1$ everywhere else, including the entire recovery window $[h + \Delta^{out}, h + \Delta^{out} + \Delta^{rec} - 1]$. Defined for all capacity-bounded assets, including storage charge / discharge bounds. |
 | $\delta^{nuc}_{t}, \delta^{otre}_{t}, \delta^{hydro}_{t} \in [0,1]$ | Same outage / de-rating mechanism applied to the **must-run time-series sources** (nuclear, other renewables, hydro). The user-supplied factor multiplies the input time series during the outage window; equals $1$ outside the outage window. |
 | $SOC^{min}_{s}$ | Operational SOC floor (fraction of $Cap^{E}_{s}$). |
 | $SOC^{rec}_{s}$ | Required SOC at end of recovery window (fraction of $Cap^{E}_{s}$). |
@@ -101,7 +109,7 @@ Defined for both problems unless noted. All non-negative.
 Minimize the total operational cost
 
 $$
-Z^{B} = Z^{B}_{thermal} + Z^{B}_{storage} + Z^{B}_{imp} + Z^{B}_{exp} + Z^{B}_{dem} + Z^{B}_{curt}.
+Z^{B} = Z^{B}_{thermal} + Z^{B}_{storage} + Z^{B}_{imp} + Z^{B}_{exp} + Z^{B}_{dem} + Z^{B}_{curt} + Z^{B}_{FOM}.
 $$
 
 with components
@@ -135,8 +143,33 @@ $$
 Z^{B}_{curt} = \pi^{curt} \sum_{t \in \mathcal{T}} \left[ \sum_{w \in \mathcal{W}} (A^{W}_{w,t} \, Cap^{W}_{w} - p^{W}_{w,t}) + \sum_{k \in \mathcal{K}} (A^{K}_{k,t} \, Cap^{K}_{k} - p^{K}_{k,t}) \right].
 $$
 
-No CAPEX or fixed-O&M terms (capacities are fixed parameters). Problem (B)
-does not include outages, so $\delta_{a,t} \equiv 1$ and
+$$
+\begin{aligned}
+Z^{B}_{FOM} = \; & M_{kW} \left[
+    \sum_{b \in \mathcal{B}} f^{B}_{b} \, Cap^{B}_{b}
+    + \sum_{w \in \mathcal{W}} f^{W}_{w} \, Cap^{W}_{w}
+    + \sum_{k \in \mathcal{K}} f^{K}_{k} \, Cap^{K}_{k} \right.\\
+    & \left. + \sum_{s \in \mathcal{S}} f^{S}_{s} \left( \alpha_{s} \, Cap^{Pch}_{s} + (1 - \alpha_{s}) \, Cap^{Pdis}_{s} \right)
+\right].
+\end{aligned}
+$$
+
+Because capacities are fixed parameters in (B), $Z^{B}_{FOM}$ is a constant
+added to the reported objective. It does not influence the optimal
+dispatch decisions but is required for an apples-to-apples comparison
+with the CEM total system cost. Storage FOM is applied **only to the
+power components** ($Cap^{Pch}_{s}$, $Cap^{Pdis}_{s}$), split by the
+per-technology cost ratio $\alpha_{s}$; there is no energy-side
+($Cap^{E}_{s}$) FOM term, mirroring
+`src/sdom/models/formulations_storage.py::storage_fixed_om_cost_expr_rule`.
+The factor $M_{kW}=10^{3}$ converts the FOM parameters (USD/kW-yr) to
+USD/MW-yr to match the capacity units (MW).
+
+CAPEX is intentionally excluded from $Z^{B}$ (capacities are fixed
+planning outputs from the CEM, so CAPEX is sunk relative to (B));
+$Z^{B}_{FOM}$ is included because annual fixed O&M is incurred whether or
+not the asset operates and is part of the annual operating cost
+comparison. Problem (B) does not include outages, so $\delta_{a,t} \equiv 1$ and
 $\delta^{m}_{t} \equiv 1$ for every asset and must-run source; the outage
 multipliers therefore do not appear in (B).
 
@@ -145,7 +178,7 @@ multipliers therefore do not appear in (B).
 Minimize the operational cost over the outage horizon
 
 $$
-Z^{O}(h) = Z^{O}_{thermal}(h) + Z^{O}_{storage}(h) + Z^{O}_{imp}(h) + Z^{O}_{exp}(h) + Z^{O}_{slack}(h) + Z^{O}_{soc\_slack}(h) + Z^{O}_{curt}(h).
+Z^{O}(h) = Z^{O}_{thermal}(h) + Z^{O}_{storage}(h) + Z^{O}_{imp}(h) + Z^{O}_{exp}(h) + Z^{O}_{slack}(h) + Z^{O}_{soc\_slack}(h) + Z^{O}_{curt}(h) + Z^{O}_{FOM}(h).
 $$
 
 with components
@@ -182,6 +215,27 @@ softened.
 $$
 Z^{O}_{curt}(h) = \pi^{curt} \sum_{t \in \mathcal{T}^{out}_h} \left[ \sum_{w \in \mathcal{W}} (\delta_{w,t} \, A^{W}_{w,t} \, Cap^{W}_{w} - p^{W}_{w,t}) + \sum_{k \in \mathcal{K}} (\delta_{k,t} \, A^{K}_{k,t} \, Cap^{K}_{k} - p^{K}_{k,t}) \right].
 $$
+
+$$
+Z^{O}_{FOM}(h) = \frac{H^{out}(h)}{H^{yr}} \cdot Z^{B}_{FOM}.
+$$
+
+The annual fixed-O&M aggregate $Z^{B}_{FOM}$ (section 4.1) is prorated by
+the outage-horizon fraction $H^{out}(h) / H^{yr}$ with $H^{yr} = 8760$.
+The same per-asset structure is reused (thermal, wind, solar, storage with
+CostRatio split); imports and exports carry no FOM. Because every
+capacity in (O) is a fixed parameter, $Z^{O}_{FOM}(h)$ is a **constant**
+added to the objective; it does not influence the optimal dispatch, only
+the reported $Z^{O}(h)$ level. End-of-year clipping is honored:
+$H^{out}(h) = |\mathcal{T}^{out}_h|$ may be shorter than
+$\Delta^{out} + \Delta^{rec}$ when $h$ is near the end of the year, in
+which case the prorated FOM scales accordingly.
+
+The default $\pi^{soc} = 10^{3}$ is intentionally below
+$\pi^{slack} = 10^{4}$, so a feasible LP without unserved load is always
+preferred to one that violates the recovery target. Users can raise
+$\pi^{soc} \ge \pi^{slack}$ to invert that preference (the model will
+then leave load unserved rather than violate the recovery target).
 
 Demand charges and the monthly variables $D^{fix}_m, D^{var}_m$ are omitted
 from (O) by default (peak charges are billing-period concepts, not relevant
@@ -241,16 +295,24 @@ SOC_{s,t} = SOC_{s,t-1} + \eta^{ch}_{s} \cdot p^{ch}_{s,t} - \frac{1}{\eta^{dis}
 $$
 
 $$
-0 \le p^{ch}_{s,t} \le Cap^{Pch}_{s}, \quad \forall s, t.
+0 \le p^{ch}_{s,t} \le \delta_{s,t} \cdot Cap^{Pch}_{s}, \quad \forall s, t.
 $$
 
 $$
-0 \le p^{dis}_{s,t} \le Cap^{Pdis}_{s}, \quad \forall s, t.
+0 \le p^{dis}_{s,t} \le \delta_{s,t} \cdot Cap^{Pdis}_{s}, \quad \forall s, t.
 $$
 
 $$
 SOC^{min}_{s} \cdot Cap^{E}_{s} \le SOC_{s,t} \le Cap^{E}_{s}, \quad \forall s, t.
 $$
+
+In (B) and for any storage tech not selected for outage,
+$\delta_{s,t} \equiv 1$ and the bounds reduce to nominal $Cap^{Pch}_{s},
+Cap^{Pdis}_{s}$. In (O), storage may be outaged like any other
+capacity-bounded asset (section 6.1); during its outage window
+$\delta_{s,t} = \rho_{s} \in [0,1]$ (default $0$) zeros out both charge
+and discharge. The SOC dynamics still apply, so SOC remains constant when
+$p^{ch}_{s,t} = p^{dis}_{s,t} = 0$.
 
 ### 5.4 Demand-charge linking (Problem (B))
 
@@ -298,7 +360,7 @@ $$
 
 ### 6.1 Capacity-bounded assets
 
-For each asset $a$ in $\mathcal{B}^{out} \cup \mathcal{W}^{out} \cup \mathcal{K}^{out} \cup \mathcal{I}^{out}$:
+For each asset $a$ in $\mathcal{B}^{out} \cup \mathcal{W}^{out} \cup \mathcal{K}^{out} \cup \mathcal{S}^{out} \cup \mathcal{I}^{out}$:
 
 $$
 \delta_{a,t} =

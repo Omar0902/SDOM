@@ -22,6 +22,7 @@ sections 1, 4.2, 5.1, 5.2, 5.3, 5.5, 6.
 from __future__ import annotations
 
 import logging
+import math
 from typing import Any
 
 import pandas as pd
@@ -429,10 +430,17 @@ def build_outage_dispatch(
         raise TypeError("designed_system must be a DesignedSystem instance.")
     if not isinstance(baseline_results, BaselineDispatchResults):
         raise TypeError("baseline_results must be a BaselineDispatchResults instance.")
-    if critical_load_MW is not None and float(critical_load_MW) < 0:
-        raise ValueError(
-            f"critical_load_MW must be non-negative; got {critical_load_MW}."
-        )
+    if critical_load_MW is not None:
+        crit_val = float(critical_load_MW)
+        if not math.isfinite(crit_val):
+            raise ValueError(
+                f"critical_load_MW must be a finite number; got {critical_load_MW}."
+            )
+        if crit_val < 0:
+            raise ValueError(
+                f"critical_load_MW must be non-negative; got {critical_load_MW}."
+            )
+        critical_load_MW = crit_val
 
     profiler = None
     if profile:
@@ -636,10 +644,9 @@ def build_outage_dispatch(
         if critical_load_MW is None:
             load_param = {t: _series_value(designed_system.load, t) for t in horizon}
         else:
-            crit = float(critical_load_MW)
             outage_end = min(start_hour + duration - 1, end_hour)
             load_param = {
-                t: crit
+                t: critical_load_MW
                 if start_hour <= t <= outage_end
                 else _series_value(designed_system.load, t)
                 for t in horizon

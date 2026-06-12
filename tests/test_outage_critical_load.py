@@ -103,6 +103,16 @@ def test_critical_load_negative_raises():
         _build(critical_load_MW=-1.0)
 
 
+def test_critical_load_nan_raises():
+    with pytest.raises(ValueError, match="critical_load_MW must be a finite number"):
+        _build(critical_load_MW=float("nan"))
+
+
+def test_critical_load_inf_raises():
+    with pytest.raises(ValueError, match="critical_load_MW must be a finite number"):
+        _build(critical_load_MW=float("inf"))
+
+
 def test_critical_load_metadata_round_trip():
     model, _, _, _, _ = _build(critical_load_MW=77.0)
     assert model._sdom_outage_meta["critical_load_MW"] == pytest.approx(77.0)
@@ -141,6 +151,40 @@ def test_runner_forwards_critical_load():
     assert len(captured_kwargs) == 2
     for kw in captured_kwargs:
         assert kw["critical_load_MW"] == pytest.approx(42.0)
+
+
+@pytest.mark.parametrize(
+    "bad_value, match",
+    [
+        (-1.0, "non-negative"),
+        (float("nan"), "finite number"),
+        (float("inf"), "finite number"),
+    ],
+)
+def test_runner_validates_critical_load_before_workers(bad_value, match):
+    """Invalid ``critical_load_MW`` must raise in the parent process before
+    any payload is built, instead of being swallowed by the per-hour
+    error-isolation wrapper in ``_solve_one_hour``."""
+    ds = _make_designed_system(n=4, load_value=10.0)
+    br = _make_baseline_results(ds, soc_value=2.0)
+    spec = OutageSpec(
+        duration_hours=1,
+        recovery_hours=1,
+        outaged_assets={"balancing_units": "all"},
+    )
+
+    with patch("sdom.resiliency.runner._build_outage_dispatch") as fake_build:
+        with pytest.raises(ValueError, match=match):
+            run_resiliency_evaluation(
+                br,
+                outage_spec=spec,
+                designed_system=ds,
+                hours=[1],
+                n_hours=4,
+                n_workers=1,
+                critical_load_MW=bad_value,
+            )
+        fake_build.assert_not_called()
 
 
 def test_evaluate_resiliency_forwards_critical_load(monkeypatch):

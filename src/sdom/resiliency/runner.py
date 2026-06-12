@@ -18,6 +18,7 @@ section 7 (per-hour metrics: EUE, USE_hours, max unserved MW).
 from __future__ import annotations
 
 import logging
+import math
 import os
 import time
 import traceback
@@ -343,6 +344,18 @@ def run_resiliency_evaluation(
     n_hours = int(n_hours)
     if n_hours <= 0:
         raise ValueError("n_hours must be a positive integer.")
+
+    if critical_load_MW is not None:
+        crit_val = float(critical_load_MW)
+        if not math.isfinite(crit_val):
+            raise ValueError(
+                f"critical_load_MW must be a finite number; got {critical_load_MW}."
+            )
+        if crit_val < 0:
+            raise ValueError(
+                f"critical_load_MW must be non-negative; got {critical_load_MW}."
+            )
+        critical_load_MW = crit_val
 
     if hours is None:
         hour_list = list(range(1, n_hours + 1))

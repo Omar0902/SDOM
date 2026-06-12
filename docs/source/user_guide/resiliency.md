@@ -266,8 +266,12 @@ outage_model = build_outage_dispatch(
 ```
 
 `critical_load_MW=None` (default) preserves the original behaviour: the
-hourly load series is used everywhere. Negative values raise
-`ValueError`. The value used (or `None`) is recorded on the built model as
+hourly load series is used everywhere. Negative or non-finite values
+(NaN, ±inf) raise `ValueError`; the runner-level entry points
+(`run_resiliency_evaluation`, `evaluate_resiliency`) validate the value
+once in the parent process so a bad input fails fast instead of being
+swallowed by the per-hour error-isolation wrapper. The value used (or
+`None`) is recorded on the built model as
 `model._sdom_outage_meta["critical_load_MW"]`.
 
 ### 4. Optional profiling

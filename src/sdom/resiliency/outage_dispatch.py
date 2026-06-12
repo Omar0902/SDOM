@@ -27,6 +27,7 @@ from typing import Any
 import pandas as pd
 import pyomo.environ as pyo
 
+from sdom.constants import MW_TO_KW
 from sdom.resiliency.system_state import BaselineDispatchResults, DesignedSystem
 from sdom.utils_performance_meassure import ModelInitProfiler
 
@@ -54,6 +55,50 @@ def _series_value(series: pd.Series | None, hour: int) -> float:
         return float(series.loc[hour])
     except KeyError:
         return float(series.iloc[hour - 1])
+
+
+def _compute_prorated_fom_USD(
+    designed_system: DesignedSystem,
+    *,
+    horizon_hours: int,
+    year_hours: int = 8760,
+) -> float:
+    """Total fixed-O&M cost (USD) prorated to ``horizon_hours / year_hours``.
+
+    Storage FOM splits by ``CostRatio`` between charge / discharge sides,
+    mirroring
+    :func:`sdom.models.formulations_storage.storage_fixed_om_cost_expr_rule`.
+    Thermal / solar / wind FOM are USD/kW-yr, multiplied by capacity (MW)
+    and :data:`sdom.constants.MW_TO_KW` to give USD/yr, then scaled by the
+    horizon fraction. FOM is independent of dispatch, so this enters the
+    outage LP as a constant.
+    """
+    if horizon_hours <= 0 or year_hours <= 0:
+        return 0.0
+    frac = float(horizon_hours) / float(year_hours)
+
+    fom_annual_USD = 0.0
+    for spec in designed_system.storage_caps.values():
+        fom = float(spec.get("fom", 0.0))
+        cr = float(spec.get("cost_ratio", 0.5))
+        cap_pch = float(spec.get("Cap_Pch", 0.0))
+        cap_pdis = float(spec.get("Cap_Pdis", 0.0))
+        fom_annual_USD += MW_TO_KW * fom * (cr * cap_pch + (1.0 - cr) * cap_pdis)
+
+    for spec in designed_system.thermal_caps.values():
+        fom = float(spec.get("fom", 0.0))
+        cap = float(spec.get("capacity_MW", 0.0))
+        fom_annual_USD += MW_TO_KW * fom * cap
+
+    for k, cap in designed_system.solar_caps.items():
+        fom = float(designed_system.solar_fom.get(k, 0.0))
+        fom_annual_USD += MW_TO_KW * fom * float(cap)
+
+    for k, cap in designed_system.wind_caps.items():
+        fom = float(designed_system.wind_fom.get(k, 0.0))
+        fom_annual_USD += MW_TO_KW * fom * float(cap)
+
+    return fom_annual_USD * frac
 
 
 # ---------------------------------------------------------------------------
@@ -324,8 +369,10 @@ def build_outage_dispatch(
         A Pyomo LP exposing ``model.h`` (hour set), ``model.u`` (slack,
         ``NonNegativeReals``), the standard dispatch sub-blocks
         (``storage``, ``thermal``, ``solar``, ``wind``, ``imports``,
-        ``exports``) without demand-charge variables, and an objective that
-        minimises operational cost plus slack and curtailment penalties.
+        ``exports``) without demand-charge variables, ``model.fom_cost_expr``
+        (constant fixed-O&M cost prorated to the outage horizon), and an
+        objective that minimises operational cost plus slack and
+        curtailment penalties plus the prorated FOM constant.
 
     Raises
     ------
@@ -676,6 +723,12 @@ def build_outage_dispatch(
     if soc_slack_pen < 0:
         raise ValueError("soc_slack_penalty must be non-negative.")
 
+    horizon_hours = end_hour - start_hour + 1
+    fom_cost_USD = _compute_prorated_fom_USD(
+        designed_system, horizon_hours=horizon_hours, year_hours=8760
+    )
+    model.fom_cost_expr = pyo.Expression(expr=float(fom_cost_USD))
+
     def _add_objective():
         obj_expr = (
             thermal_block.cost_expr
@@ -690,6 +743,7 @@ def build_outage_dispatch(
                 solar_block.potential_minus_dispatch
                 + wind_block.potential_minus_dispatch
             )
+            + model.fom_cost_expr
         )
         model.objective = pyo.Objective(expr=obj_expr, sense=pyo.minimize)
 
@@ -713,6 +767,8 @@ def build_outage_dispatch(
         "slack_penalty": slack_pen,
         "curtailment_penalty": curt_pen,
         "soc_slack_penalty": soc_slack_pen,
+        "horizon_hours": horizon_hours,
+        "fom_cost_USD": float(fom_cost_USD),
         "designed_system": designed_system,
     }
     if profiler is not None:

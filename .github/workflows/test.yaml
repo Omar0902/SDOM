@@ -46,7 +46,7 @@ jobs:
             pip install . pytest pytest-cov
 
       - name: 📚 Install docs dependencies
-        if: ${{ github.ref == 'refs/heads/main' || github.event.pull_request.base.ref == 'main' }}
+        if: ${{ github.ref == 'refs/heads/master' || github.event.pull_request.base.ref == 'master' }}
         run: |
             pip install -r docs/requirements.txt
 

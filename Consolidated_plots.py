@@ -1,1153 +1,1196 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Aug 27 23:15:21 2025
+SDOM Plots — Two-Use-Case 2×2 Dashboard + Annualized System Cost (split by use cases)
 
-@author: amyers
+• Regular summary files define scenarios (capacity stacks and duration).
+• Phase1 summary files are supplementary: they provide transparent dashed-outline outage bars
+  layered on top of their matching regular scenarios (a/c capacity panels), paired by filename tag.
+
+Automatic file discovery scans common roots and optional env vars:
+  SDOM_BASE_DIR, SDOM_DATA_DIR
+Optional explicit override:
+  SDOM_SUMMARY_FILES  (semicolon-separated absolute file paths)
+
+Created: Apr 28, 2026
+Author: M. Koleva & Copilot
+
+Dependencies:
+    - pandas
+    - numpy
+    - plotly (and kaleido to export PNGs)
 """
 
-import pandas as pd
-import seaborn as sns
-import plotly.io as pio    
+import os
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
 
+import numpy as np
+import pandas as pd
+import plotly.io as pio
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-import numpy as np
-import kaleido
 
-import matplotlib.pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap
+# ---------------------------------------------------------------------------
+# Helper functions (simple names; defined at top to avoid NameError issues)
+# ---------------------------------------------------------------------------
+def infer_tag_from_filename(path_str: str):
+    #-> Optional"""Return a simple tag for pairing (e.g., 'PGnE', 'MEA') based on the filename."""
+    if not isinstance(path_str, str):
+        return None
+    name = Path(path_str).name.lower()
+    # Remove non-alphanumeric to capture PG&E/PGE/PGnE variants robustly
+    norm = "".join(ch for ch in name if ch.isalnum())
+    if "pgne" in norm or "pge" in norm:
+        return "PGnE"
+    if "mea" in norm:
+        return "MEA"
+    return None
 
-import matplotlib.colors as mc 
-from matplotlib.cm import ScalarMappable
+
+def is_phase1_file(path_str: str) -> bool:
+    """Return True if the path contains 'Phase1' (case-insensitive)."""
+    if not isinstance(path_str, str):
+        return False
+    return "phase1" in path_str.lower()
 
 
+# ---------------------------------------------------------------------------
+# Discovery utilities (NO WILDCARDS; exact filename matching)
+# ---------------------------------------------------------------------------
+def candidate_roots() -> List[Path]:
+    """
+    Buildlausible search roots:
+      • env SDOM_BASE_DIR, SDOM_DATA_DIR
+      • current working directory
+      • script directory (if running from file)
+      • user home
+      • ~/Documents, ~/Downloads
+    """
+    roots: List[Path] = []
+    for var in ("SDOM_BASE_DIR", "SDOM_DATA_DIR"):
+        val = os.environ.get(var)
+        if val:
+            try:
+                roots.append(Path(val).expanduser().resolve())
+            except Exception:
+                pass
 
-class SDOMPlots:
+    # Current working directory
+    roots.append(Path.cwd().resolve())
 
-    
-    def __init__(self, csv_summary_files, csv_storage_files, renderer='browser'):
-      
-        pio.renderers.default = renderer
-        
-        # Load and combine all data
-        self.df_all = self._load_summary_data(csv_summary_files)
-        self.df_storage_all = self._load_storage_data(csv_storage_files)
+    # Script folder (if __file__ exists)
+    try:
+        script_dir = Path(__file__).resolve().parent
+        roots.append(script_dir)
+    except Exception:
+        pass
 
-# =============================================================================
-# CONFIGURATION SECTION - EDIT TITLES HERE
-# =============================================================================
+    # User home and common subfolders
+    home = Path.home().resolve()
+    roots.append(home)
+    for sub in ("Documents", "Downloads"):
+        p = home / sub
+        if p.exists():
+            roots.append(p.resolve())
 
-        # Configuration dictionaries
-        self.scenario_titles = {
-#            '1': '2030 75% Target',
-#            '2': '2030 90% Target',  
-            '1': 'Location 3, Renewable Generation Mix = 0',
-            '2': 'Location 3, Renewable Generation Mix = 1',
-#            '3': '2035 100% Target',
-#            '4': '2040 100% Target'
-        }
-        
-        self.cost_breakdown_titles = {
-            '1': 'Cost Analysis - Conservative Scenario',
-            '2': 'Cost Analysis - Aggressive Renewable Push',
-            '3': 'Cost Analysis - Full Decarbonization by 2035',
-            '4': 'Cost Analysis - Extended Timeline Scenario'
-        }
-        
-        # Color mapping for technologies
-        self.color_map = {
-            'Li-Ion': '#FF4A88',
-            'CAES': '#FF4741', 
-            'PHS': '#CC0079',
-            'H2': '#FF7FBB',
-            'GasCC': '#5E1688',
-            'Solar PV': '#FFC903',  # Updated to match document 2       
-            'Wind': '#00B6EF',      # Updated to match document 2             
-            'Other renewables': '#32CD32',  
-            'Hydro': '#187F94',            
-            'Nuclear': '#820000',          
-        }
-        
-        # Marker symbols for duration plot
-        self.marker_symbols = {
-            'Li-Ion': 'diamond',
-            'LiIon': 'diamond',
-            'CAES': 'circle',
-            'PHS': 'square', 
-            'H2': 'triangle-up',
-            'GasCC': 'star',
-            'VRB': 'hexagon'
-        }
-        
-        # Storage technologies for cost analysis
-        self.storage_technologies = ['LiIon', 'Li-Ion', 'CAES', 'PHS', 'H2']
-        
-        # Plot configuration
-        self.plot_config = {
-            'displayModeBar': False,
-            'staticPlot': True,
-            'doubleClick': False,
-            'showTips': False,
-            'showAxisDragHandles': False,
-            'showAxisRangeEntryBoxes': False,
-        }
-        
-    def _load_summary_data(self, summary_files):
-        """Load and combine CSV files with scenario identifiers"""
-        dfs = []
-        for i, file in enumerate(summary_files, 1):
-            df = pd.read_csv(file)
-            df['File_Scenario'] = i
-            df['Optimal Value'] = pd.to_numeric(df['Optimal Value'], errors='coerce')
-            dfs.append(df)
-        
-        combined_df = pd.concat(dfs, ignore_index=True)
-        print(f"Loaded {len(summary_files)} files with {len(combined_df)} total records")
-        return combined_df
-    
-    def _load_storage_data(self, storage_files):
-        """Load and combine CSV files with scenario identifiers"""
-        dfs = []
-        for i, file in enumerate(storage_files, 1):
-            df = pd.read_csv(file)
-            df['File_Scenario'] = i
-            df['State of charge (MWh)'] = pd.to_numeric(df['State of charge (MWh)'], errors='coerce')
-            dfs.append(df)
-        
-        combined_df = pd.concat(dfs, ignore_index=True)
-        print(f"Loaded {len(storage_files)} files with {len(combined_df)} total records")
-        return combined_df
-    
-# =============================================================================
-# HELPER FUNCTIONS FOR FORMATTING
-# =============================================================================
-    def _convert_units_and_get_label(self, values, base_unit="MWh"):
-        """Convert units based on maximum value and return appropriate label"""
-        if not values:
-            return values, base_unit
-            
-        max_val = max([abs(v) for v in values if v != 0])
-        
-        if base_unit == "MWh":
-            if max_val > 10_000_000:
-                return [v/1_000_000 for v in values], "TWh"
-            elif max_val > 10_000:
-                return [v/1_000 for v in values], "GWh"
-            else:
-                return values, "MWh"
-        elif base_unit == "MW":
-            if max_val > 10_000_000:
-                return [v/1_000_000 for v in values], "TW"
-            elif max_val > 10_000:
-                return [v/1_000 for v in values], "GW"
-            else:
-                return values, "MW"
+    # De-duplicate while preserving order and only keep existing
+    seen = set()
+    uniq: List[Path] = []
+    for r in roots:
+        if r not in seen and r.exists():
+            uniq.append(r)
+            seen.add(r)
+    return uniq
+
+
+def discover_exact_filenames(
+    filenames: List[str],
+    roots: Optional[List[Path]] = None,
+) -> Tuple[List[Path], List[str]]:
+    """
+    Discover files by exact basename match (NO wildcards).
+    Walk each root recursively with os.walk and match Path(name).name == target filename.
+
+    Returns: (resolved_paths_in_order, unmatched_absolute_hints)
+      - Order is preserved based on the order of input 'filenames'.
+      - unmatched_absolute_hints shows the first plausible absolute path for user guidance.
+    """
+    if roots is None:
+        roots = candidate_roots()
+
+    resolved_in_order: List[Path] = []
+    unmatched: List[str] = []
+
+    for fname in filenames:
+        target = fname.strip()
+        found_path: Optional[Path] = None
+
+        for root in roots:
+            # Walk recursively without using any glob/wildcard
+            for dirpath, _dirnames, filenames_in_dir in os.walk(root):
+                # Exact basename comparison
+                if target in filenames_in_dir:
+                    found_path = Path(dirpath) / target
+                    break
+            if found_path:
+                break
+
+        if found_path:
+            resolved_in_order.append(found_path.resolve())
         else:
-            return values, base_unit
+            hint_root = roots[0] if roots else Path.cwd()
+            unmatched.append(str((hint_root / target).resolve()))
+
+    # De-duplicate while preserving first occurrence
+    seen = set()
+    uniq: List[Path] = []
+    for p in resolved_in_order:
+        if p not in seen:
+            uniq.append(p)
+            seen.add(p)
+
+    return uniq, unmatched
+
+
+# ---------------------------------------------------------------------------
+# Main plotting class
+# ---------------------------------------------------------------------------
+class SDOMPlots:
+    """
+    SDOM plotting utilities:
+      • 2×2 dashboard:
+          (a) UC1 Capacity  |  (b) UC1 Duration
+          (c) UC2 Capacity  |  (d) UC2 Duration
+        with transparent Phase1 outage “minimum” bars (black dashed outline) per technology in (a/c),
+        paired by filename tag (e.g., PGnE → PGnE).
+      • Annualized system cost stacked bars split by use case (left/right).
+    """
+
+    def __init__(
+        self,
+        csv_summary_paths: List[Path],               # resolved paths (regular + Phase1)
+        csv_storage_paths: Optional[List[Path]] = None,
+        renderer: str = "browser",
+        use_cases: Optional[Dict[str, List[str]]] = None,
+        outage_requirement_metric_name: str = "Discharge power capacity",
+        outage_requirement_techs: Optional[List[str]] = None,   # e.g., ["H2"] or ["H2","Vanadium"]
+        outage_source_keyword: str = "Phase1",                  # phase1 marker in filenames
+        scenario_labels_map: Optional[Dict[str, str]] = None,   # e.g., {"1": "PGnE — 3 MW, 24 h outage", "2": "MEA — land constrained"}
+    ):
+        pio.renderers.default = renderer
+
+        # Load data (robust)
+        self.df_all, self.loaded_summary, self.missing_summary, self.summary_registry = \
+            self._load_summary_data(csv_summary_paths)
+
+        self.df_storage_all, self.loaded_storage, self.missing_storage = \
+            self._load_storage_data(csv_storage_paths or [])
+
+        if self.df_all.empty:
+            raise ValueError(
+                "[Summary] No summary data loaded.\n"
+                f"Tried {len(csv_summary_paths)} inputs, found {len(self.loaded_summary)}.\n"
+                f"Missing or unreadable: {self.missing_summary}\n"
+                "Please verify file paths."
+            )
+
+        # Scenario titles from regular (non-Phase1) records.
+        # Allow custom overrides via scenario_labels_map.
+        regular_scenarios = sorted(
+            map(str, self.df_all.loc[self.df_all["__is_phase1__"] == False, "File_Scenario"].unique()),
+            key=lambda s: int(s)
+        )
+        default_titles = {s: f"Scenario {s}" for s in regular_scenarios}
+        self.scenario_titles = default_titles if scenario_labels_map is None else {**default_titles, **scenario_labels_map}
+
+        # Colors and markers
+        self.color_map = {
+            "Li-Ion": "navy",
+            "Vanadium": "gold",
+            "PHS": "#CC0079",
+            "H2": "deepskyblue",
+            "GasCC": "#5E1688",
+            "Solar PV": "#FFC903",
+            "Wind": "#00B6EF",
+            "Other renewables": "#32CD32",
+            "Hydro": "#187F94",
+            "Nuclear": "#820000",
+            "Grid": "#9ECE42",
+            "Diesel": "darkorange",
+        }
+        self.marker_symbols = {
+            "Li-Ion": "circle",
+            "LiIon": "circle",
+            "Vanadium": "diamond",
+            "PHS": "square",
+            "H2": "triangle-up",
+            "GasCC": "star",
+            "VRB": "hexagon",
+            "Diesel": "star",
+        }
+        self.storage_technologies = ["LiIon", "Li-Ion", "Vanadium", "PHS", "H2"]
+
+        self.plot_config = {
+            "displayModeBar": False,
+            "staticPlot": True,
+            "doubleClick": False,
+            "showTips": False,
+            "showAxisDragHandles": False,
+            "showAxisRangeEntryBoxes": False,
+        }
+
+        # Use cases
+        self.use_cases = use_cases if use_cases is not None else self._build_default_use_cases()
+
+        # Outage sources
+        self.outage_req_metric = outage_requirement_metric_name
+        self.outage_requirement_techs = outage_requirement_techs or ["H2","Li-Ion","Vanadium"]
+        self.outage_source_keyword = outage_source_keyword
+
+        # Map: each regular scenario → tag (e.g., 1 → PGnE, 2 → MEA)
+        self.scenario_to_tag: Dict[str, Optional[str]] = self._build_scenario_to_tag_map()
+
+    # ----------------------- Loaders -----------------------
+    def _safe_read_csv(self, path_obj: Path) -> Optional[pd.DataFrame]:
+        try:
+            df = pd.read_csv(path_obj, encoding="utf-8", on_bad_lines="skip")
+            df["__source_file__"] = str(path_obj)
+            df["__tag__"] = infer_tag_from_filename(str(path_obj))
+            df["__is_phase1__"] = is_phase1_file(str(path_obj))
+            return df
+        except Exception as e:
+            print(f"[ReadCSV] Skipped '{path_obj}': {e}")
+            return None
+
+    def _load_summary_data(self, summary_paths: List[Path]) -> Tuple[pd.DataFrame, List[str], List[str], List[Dict]]:
+        dfs, loaded, missing, registry = [], [], [], []
+        regular_counter = 0
+
+        print("[Summary] Resolved paths:")
+        for p in summary_paths:
+            print("  →", p)
+
+        for p in summary_paths:
+            df = self._safe_read_csv(p)
+            if df is None:
+                missing.append(str(p))
+                continue
+
+            is_phase1 = bool(df["__is_phase1__"].iloc[0]) if "__is_phase1__" in df.columns else False
+            tag = df["__tag__"].iloc[0] if "__tag__" in df.columns else None
+
+            if not is_phase1:
+                regular_counter += 1
+                df["File_Scenario"] = regular_counter
+                registry.append({"file": str(p), "scenario": str(regular_counter), "tag": tag, "is_phase1": False})
+            else:
+                df["File_Scenario"] = -1  # sentinel; Phase1 rows excluded from plots but used for overlays
+                registry.append({"file": str(p), "scenario": None, "tag": tag, "is_phase1": True})
+
+            if "Optimal Value" in df.columns:
+                df["Optimal Value"] = pd.to_numeric(df.get("Optimal Value"), errors="coerce")
+
+            loaded.append(str(p))
+            dfs.append(df)
+
+        if not dfs:
+            return pd.DataFrame(), loaded, summary_paths, registry
+
+        combined_df = pd.concat(dfs, ignore_index=True)
+        print(f"[Load] Summary: wanted {len(summary_paths)} inputs, loaded {len(loaded)}, missing {len(missing)}")
+        return combined_df, loaded, missing, registry
+
+    def _load_storage_data(self, storage_paths: List[Path]) -> Tuple[pd.DataFrame, List[str], List[str]]:
+        if not storage_paths:
+            return pd.DataFrame(), [], []
+
+        dfs, loaded, missing = [], [], []
+        print("[Storage] Resolved paths:")
+        for p in storage_paths:
+            print("  →", p)
+
+        for i, p in enumerate(storage_paths, start=1):
+            try:
+                df = pd.read_csv(p, encoding="utf-8", on_bad_lines="skip")
+                df["File_Scenario"] = i
+                if "State of charge (MWh)" in df.columns:
+                    df["State of charge (MWh)"] = pd.to_numeric(df["State of charge (MWh)"], errors="coerce")
+                loaded.append(str(p))
+                dfs.append(df)
+            except Exception as e:
+                print(f"[ReadCSV] Skipped '{p}': {e}")
+                missing.append(str(p))
+
+        if not dfs:
+            return pd.DataFrame(), loaded, storage_paths
+
+        combined_df = pd.concat(dfs, ignore_index=True)
+        print(f"[Load] Storage: wanted {len(storage_paths)} inputs, loaded {len(loaded)}, missing {len(missing)}")
+        return combined_df, loaded, missing
     
-    def _get_standard_layout(self):
-        """Return standard layout settings for all plots"""
+    
+    def _text_color_for_bg(self, hex_color):
+        """Return black or white text depending on brightness of bar fill color."""
+        c = hex_color.lstrip('#')
+        r, g, b = int(c[0:2], 16), int(c[2:4], 16), int(c[4:6], 16)
+        brightness = (0.299 * r + 0.587 * g + 0.114 * b)
+        return "white" if brightness < 150 else "black"
+
+    def _text_color_for_bg(self, hex_color: str) -> str:
+        """Return black or white depending on perceived brightness of the bar color."""
+        hex_color = hex_color.lstrip("#")
+        r = int(hex_color[0:2], 16)
+        g = int(hex_color[2:4], 16)
+        b = int(hex_color[4:6], 16)
+        brightness = 0.299*r + 0.587*g + 0.114*b
+        return "white" if brightness < 150 else "black"
+
+    # ----------------------- Defaults & helpers -----------------------
+    def _build_default_use_cases(self) -> Dict[str, List[str]]:
+        scenarios = sorted(
+            map(str, self.df_all.loc[self.df_all["__is_phase1__"] == False, "File_Scenario"].unique()),
+            key=lambda s: int(s)
+        )
+        if len(scenarios) <= 2:
+            uc_map = {"Off-grid": [scenarios[0]] if scenarios else [],
+                      "Grid": [scenarios[1]] if len(scenarios) > 1 else []}
+        else:
+            uc_map = {"Off-grid": [s for s in scenarios if int(s) % 2 == 1],
+                      "Grid": [s for s in scenarios if int(s) % 2 == 0]}
+        print(f"[UseCases] Auto: {uc_map}")
+        return uc_map
+
+    def _build_scenario_to_tag_map(self) -> Dict[str, Optional[str]]:
+        """Map each regular scenario ID → tag (e.g., 1 → PGnE, 2 → MEA)."""
+        mapping: Dict[str, Optional[str]] = {}
+        df_regular = self.df_all[self.df_all["__is_phase1__"] == False]
+        for scen in df_regular["File_Scenario"].unique():
+            tag = df_regular[df_regular["File_Scenario"] == scen]["__tag__"].dropna().astype(str)
+            mapping[str(int(scen))] = tag.iloc[0] if not tag.empty else None
+        return mapping
+
+    def _convert_units_and_get_label(self, values, base_unit: str = "MWh"):
+        try:
+            vals = [float(v) for v in values if pd.notna(v)]
+        except Exception:
+            vals = []
+        if not vals:
+            return values, base_unit
+        mx = max(abs(v) for v in vals)
+        if base_unit == "MWh":
+            if mx >= 10_000_000:
+                return [v / 1_000_000 for v in vals], "TWh"
+            elif mx >= 10_000:
+                return [v / 1_000 for v in vals], "GWh"
+            else:
+                return vals, "MWh"
+        elif base_unit == "MW":
+            if mx >= 10_000_000:
+                return [v / 1_000_000 for v in vals], "TW"
+            elif mx >= 10_000:
+                return [v / 1_000 for v in vals], "GW"
+            else:
+                return vals, "MW"
+        else:
+            return vals, base_unit
+
+    def _get_standard_layout(self) -> dict:
         return dict(
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor="rgba(0,0,0,0)",
             xaxis=dict(showgrid=False, zeroline=False),
             yaxis=dict(
                 showgrid=True,
-                gridcolor='rgba(128,128,128,0.3)',
+                gridcolor="rgba(128,128,128,0.3)",
                 zeroline=True,
-                zerolinecolor='rgba(128,128,128,0.5)',
-                zerolinewidth=1
-            ),
-            title=dict(x=0.5, xanchor='center', font=dict(size=16)),
-            margin=dict(t=80)
-        )
-    
-    def _filter_data_by_metric(self, metric, exclude_all=True, positive_only=False):
-        """Filter data by metric with common preprocessing"""
-        df_filtered = self.df_all[self.df_all['Metric'] == metric].copy()
-        
-        if exclude_all:
-            df_filtered = df_filtered[df_filtered['Technology'] != 'All']
-        
-        df_filtered['Scenario'] = df_filtered['File_Scenario'].astype(str)
-        df_filtered['Optimal Value'] = pd.to_numeric(df_filtered['Optimal Value'], errors='coerce').fillna(0)
-        
-        if positive_only:
-            df_filtered = df_filtered[df_filtered['Optimal Value'] > 0]
-        else:
-            df_filtered = df_filtered[df_filtered['Optimal Value'] != 0]
-            
-        return df_filtered
-
-    # =========================================================================
-    # CAPACITY PER TECHNOLOGY
-    # =========================================================================
-
-    def create_matplotlib_doughnut_chart(self, scenario='1', figsize=(10, 10)):
-        """Create matplotlib doughnut chart for capacity per technology"""
-        
-        # Filter data for the specified scenario
-        scenario_data = self.df_all[self.df_all['File_Scenario'] == int(scenario)]
-        
-        # Get generation capacity data (exclude 'All')
-        gen_capacity_data = scenario_data.loc[
-            (scenario_data["Metric"] == "Capacity") & 
-            (scenario_data["Technology"] != "All"), 
-            ["Technology", "Optimal Value"]
-        ]
-        
-        # Get storage capacity data (exclude 'All')
-        sto_capacity_data = scenario_data.loc[
-            (scenario_data["Metric"] == "Average power capacity") & 
-            (scenario_data["Technology"] != "All"), 
-            ["Technology", "Optimal Value"]
-        ]
-        
-        # Combine capacity data
-        capacity_n_labels = pd.concat([gen_capacity_data, sto_capacity_data], ignore_index=True)
-        
-        # Convert to numeric and filter out zero/negative values
-        capacity_n_labels['Optimal Value'] = pd.to_numeric(capacity_n_labels['Optimal Value'], errors='coerce')
-        capacity_filtered = capacity_n_labels[capacity_n_labels['Optimal Value'] > 0]
-        
-        # Calculate total capacity
-        total_capacity = round(capacity_filtered['Optimal Value'].sum()/1000)  # Convert to GW
-        
-        if capacity_filtered.empty:
-            print(f"No capacity data found for scenario {scenario}")
-            return None
-        
-        # Get colors for technologies
-        colors = [self.color_map.get(label, '#000000') for label in capacity_filtered['Technology']]
-        
-        # Create the doughnut chart
-        fig, ax = plt.subplots(figsize=figsize)
-        wedges, texts, autotexts = ax.pie(
-            capacity_filtered['Optimal Value'], 
-            startangle=90, 
-            colors=colors, 
-            autopct='%1.1f%%', 
-            pctdistance=0.8,  
-            textprops={'fontsize': 20, 'fontweight': 'bold', 'color': 'black'}
-        )
-        
-        # Draw a circle at the center to create the donut effect
-        centre_circle = plt.Circle((0, 0), 0.60, fc='white')
-        fig.gca().add_artist(centre_circle)
-        
-        # Ensure the circle is a circle
-        ax.axis('equal')
-        
-        # Add title and legend
-        plt.title('Capacity per technology (MW)', y=0.95, fontsize=28)
-        legend = plt.legend(
-            capacity_filtered['Technology'], 
-            bbox_to_anchor=(1.15, 0.9), 
-            loc="upper right", 
-            frameon=False, 
-            fontsize=20, 
-            labelcolor='black'
-        )
-        
-        # Add center text
-        centre_text = f'{total_capacity}GW'
-        centre_text_line_2 = f'Total Capacity'
-        ax.text(0, 0.1, centre_text, 
-                horizontalalignment='center', 
-                verticalalignment='center', 
-                fontsize=32, fontweight='bold',
-                color='black')
-        ax.text(0, -0.1, centre_text_line_2, 
-                horizontalalignment='center', 
-                verticalalignment='center', 
-                fontsize=30, fontweight='bold',
-                color='black')
-        
-        plt.tight_layout()
-        
-        # Save the plot
-        filename = f'Capacity_per_tech_scenario_{scenario}.png'
-        plt.savefig(filename, dpi=1000, bbox_inches='tight')
-        plt.show()
-        
-        print(f"Doughnut chart saved as {filename}")
-        return fig
-# =============================================================================
-# HEAT MAP PLOTS
-# =============================================================================
-
-    def create_storage_heatmap(self, scenario='1', technology='H2', figsize=(12, 10)):
-        """Create heatmap for storage state of charge (from document 2)"""
-        
-        # Filter data for the specified scenario and technology
-        scenario_data = self.df_storage_all[self.df_storage_all['File_Scenario'] == int(scenario)]
-        
-        # Get state of charge data for the specified technology
-#        scenario_data = pd.read_csv("OutputStorage_SDOM_SDOM_pyomo_cbc_122324_Nuclear_1_Target_1.00_.csv")
-        soc_data = scenario_data.loc[
-            scenario_data["Technology"] == technology, 
-            "State of charge (MWh)"
-        ]
-        
-        if soc_data.empty:
-            print(f"No state of charge data found for {technology} in scenario {scenario}")
-            return None
-        
-        # Create hours array (assuming 8760 hours in a year)
-        hours = np.arange(1, 8761)
-        
-        # Create DataFrame with hours
-        df = pd.DataFrame(data=hours, columns=["Hour of the Year"])
-        
-        # Create datetime index
-        start_date = '2023-01-01 00:00:00'
-        datetime_index = pd.date_range(start=start_date, periods=8760, freq='H')
-        df['timestamp'] = datetime_index
-        
-        # Extract day of year and hour of day
-        df['day_of_year'] = df['timestamp'].dt.dayofyear
-        df['hour_of_day'] = df['timestamp'].dt.hour
-        
-        # Reshape SOC values for heatmap (24 hours x 365 days)
-        try:
-            SOC = soc_data.values.reshape(24, len(df['day_of_year'].unique()), order="F")
-            norm_SOC = SOC * 100 / np.max(SOC)  # Normalize to percentage
-        except ValueError:
-            print(f"Error reshaping SOC data for {technology}. Data length: {len(soc_data)}")
-            return None
-        
-        # Create grids for plotting
-        xgrid = np.arange(df['day_of_year'].max() + 1) + 1
-        ygrid = np.arange(25)
-        
-        # Create the heatmap
-        fig, ax = plt.subplots(figsize=figsize)
-        
-        # Custom colormap (from document 2)
-        CB_color_cycle = [
-            '#00296b', '#003f88', '#00509d', '#1F449C', 
-            '#ffd500', '#fdc500', '#F05039'                             
-        ]
-        custom_cmap = LinearSegmentedColormap.from_list("my_cmap", CB_color_cycle)
-        
-        # Create heatmap
-        heatmap = ax.pcolormesh(xgrid, ygrid, norm_SOC, cmap=custom_cmap)
-        
-        # Formatting
-        ax.set_xticklabels(ax.get_xmajorticklabels(), fontsize=16) 
-        ax.set_yticklabels(ax.get_ymajorticklabels(), fontsize=16)
-        ax.set_frame_on(False)  # Remove all spines
-        
-        # Set limits and add colorbar
-        plt.xlim(0, 365)  
-        plt.ylim(0, 24)
-        plt.colorbar(heatmap, label='State of Charge (%)')
-        
-        # Labels and title
-        plt.xlabel("Day of the year", fontsize=20)
-        plt.ylabel("Hour of the day", fontsize=20)
-        plt.title(f"Annual Hourly {technology} Storage State of Charge (%)", 
-                 y=1.05, fontsize=20)
-        
-        # Save the plot
-        filename = f'SOC_{technology}_scenario_{scenario}.png'
-        plt.savefig(filename, dpi=1000, bbox_inches='tight')
-        plt.show()
-        
-        print(f"Heatmap saved as {filename}")
-        return fig
-
-    # =========================================================================
-    # STORAGE CAPACITY PER TECHNOLOGY PER SCENARIO 
-    # =========================================================================
-
-    def create_storage_capacity_plot(self, 
-                                   title="Storage Capacity Per Technology vs Scenario",
-                                   title_y_position=0.90,
-                                   x_axis_font_size=16,
-                                   y_axis_font_size=16,
-                                   legend_font_size=14,
-                                   height=800,
-                                   width=750,
-                                   filename="storage_plot_overlay.html"):
-        """Create storage capacity overlay plot"""
-        
-        # Get storage capacity data
-        df_metric = self._filter_data_by_metric("Average power capacity")
-        scenarios = sorted(df_metric['Scenario'].unique())
-        technologies = df_metric['Technology'].unique()
-        
-        # Collect values for unit conversion
-        all_values = []
-        for tech in technologies:
-            tech_data = df_metric[df_metric['Technology'] == tech]
-            all_values.extend(tech_data['Optimal Value'].tolist())
-        
-        # Convert units
-        converted_values, unit_label = self._convert_units_and_get_label(all_values, "MW")
-        conversion_factor = converted_values[0] / all_values[0] if all_values and all_values[0] != 0 else 1
-        
-        # Sort technologies by maximum value
-        tech_max_values = {tech: df_metric[df_metric['Technology'] == tech]['Optimal Value'].max() 
-                          for tech in technologies}
-        technologies_sorted = sorted(technologies, key=lambda x: tech_max_values[x], reverse=True)
-        
-        # Create figure
-        fig = go.Figure()
-        
-        # Add traces for each technology
-        use_transparency = len(technologies_sorted) > 1
-        opacity_value = 0.8 if use_transparency else 1.0
-        
-        for tech in technologies_sorted:
-            tech_data = df_metric[df_metric['Technology'] == tech]
-            
-            x_vals = []
-            y_vals = []
-            
-            for scenario in scenarios:
-                scenario_tech_data = tech_data[tech_data['Scenario'] == scenario]
-                x_vals.append(self.scenario_titles.get(scenario, f"Scenario {scenario}"))
-                
-                if not scenario_tech_data.empty:
-                    original_val = scenario_tech_data['Optimal Value'].iloc[0]
-                    y_vals.append(original_val * conversion_factor)
-                else:
-                    y_vals.append(0)
-            
-            fig.add_trace(
-                go.Bar(
-                    x=x_vals,
-                    y=y_vals,
-                    name=tech,
-                    marker_color=self.color_map.get(tech, '#000000'),
-                    opacity=opacity_value,
-                    text=[f"{v:.1f}" if v != 0 else "" for v in y_vals],
-                    textposition='inside',
-                    textfont=dict(color='black', size=1, family='Arial Black'),
-                    hovertemplate='<extra></extra>',
-                    showlegend=True
-                )
-            )
-        
-        # Update layout
-        layout_settings = self._get_standard_layout()
-        layout_settings.update({
-            'title': {
-                'text': title,
-                'x': 0.5,
-                'xanchor': 'center',
-                'y': title_y_position,
-                'yanchor': 'top',
-                'font': dict(size=18, color='black')
-            },
-            'xaxis': {
-                'title': 'Scenario',
-                'showgrid': False,
-                'zeroline': False,
-                'tickfont': dict(size=12, color='black'),
-                'title_standoff': 15,
-                'title_font': dict(color='black', size=x_axis_font_size),
-            },
-            'yaxis': {
-                'title': f'Average storage Power Capacity ({unit_label})',
-                'showgrid': True,
-                'gridcolor': 'rgba(128,128,128,0.3)',
-                'zeroline': True,
-                'zerolinecolor': 'rgba(128,128,128,0.5)',
-                'zerolinewidth': 1,
-                'tickfont': dict(color='black'),
-                'title_font': dict(color='black', size=y_axis_font_size)
-            },
-            'barmode': 'overlay',
-            'height': height,
-            'width': width,
-            'legend': {
-                'traceorder': 'normal',
-                'font': dict(color='black', size=legend_font_size),
-                'itemwidth': 40,
-                'bordercolor': 'rgba(255,255,255,0)',
-                'borderwidth': 0,
-                'bgcolor': 'rgba(255,255,255,0)',
-            },
-            'margin': dict(t=80, b=100)
-        })
-        
-        fig.update_layout(**layout_settings)
-        fig.write_html(filename, auto_open=True, config=self.plot_config)
-        filename = f'Storage_Power_Capacity_{scenario}.png'
-        plt.savefig(filename, dpi=1000, bbox_inches='tight')
-        plt.show()
-        print(f"Created storage capacity plot: {filename}")
-        
-        return fig
-    
-    # =========================================================================
-    # STORAGE DURATION PER TECHNOLOGY VS SCENARIO 
-    # =========================================================================
-
-    def create_storage_duration_plot(self, 
-                                   title="Duration Per Technology vs Scenario",
-                                   title_y_position=0.92,
-                                   main_title_size=18,
-                                   axis_title_size=16,
-                                   legend_title_size=12,
-                                   legend_text_size=12,
-                                   height=600,
-                                   width=700,
-                                   filename="duration_plot_markers.html"):
-        """Create storage duration scatter plot with markers"""
-        
-        # Get duration data
-        df_duration = self._filter_data_by_metric("Discharge duration", exclude_all=True, positive_only=False)
-        
-        if df_duration.empty:
-            print("No duration data found")
-            return None
-        
-        # Get unique technologies and scenarios for duration
-        technologies_duration = df_duration['Technology'].unique()
-        scenarios_duration = sorted(df_duration['Scenario'].unique())
-        
-        # Sort technologies by maximum duration value
-        tech_max_duration = {}
-        for tech in technologies_duration:
-            tech_data = df_duration[df_duration['Technology'] == tech]
-            max_val = tech_data['Optimal Value'].max()
-            tech_max_duration[tech] = max_val
-        
-        technologies_duration_sorted = sorted(technologies_duration, key=lambda x: tech_max_duration[x], reverse=True)
-        
-        # Create figure
-        fig = go.Figure()
-        
-        # Add a trace for each technology (largest first)
-        for tech in technologies_duration_sorted:
-            tech_data = df_duration[df_duration['Technology'] == tech]
-            
-            x_vals = []
-            y_vals = []
-            text_vals = []
-            
-            for scenario in scenarios_duration:
-                scenario_tech_data = tech_data[tech_data['Scenario'] == scenario]
-                if not scenario_tech_data.empty:
-                    x_vals.append(self.scenario_titles.get(scenario, f"Scenario {scenario}"))
-                    y_vals.append(scenario_tech_data['Optimal Value'].iloc[0])
-                    text_vals.append(str(round(scenario_tech_data['Optimal Value'].iloc[0], 1)))
-            
-            # Only add trace if there's data to plot
-            if x_vals and y_vals:
-                fig.add_trace(
-                    go.Scatter(
-                        x=x_vals,
-                        y=y_vals,
-                        mode='markers+text',
-                        name=tech,
-                        marker=dict(
-                            color=self.color_map.get(tech, '#000000'),
-                            size=12,
-                            symbol=self.marker_symbols.get(tech, 'circle'),
-                            line=dict(width=1, color='black')  # Add black outline to markers
-                        ),
-                        text=text_vals,
-                        textposition='top center',
-                        textfont=dict(color='black', size=12, family='Arial Black'),
-                        hovertemplate='<extra></extra>'  # Remove hover info
-                    )
-                )
-        
-        # Update layout for scatter plot
-        layout_settings = self._get_standard_layout()
-        layout_settings.update({
-            'title': {
-                'text': title,
-                'x': 0.5,
-                'xanchor': 'center',
-                'y': title_y_position,
-                'yanchor': 'top',
-                'font': dict(color='black', size=main_title_size)
-            },
-            'xaxis': dict(
-                title='Scenario',
-                showgrid=False,
-                linecolor='black',
-                linewidth=1,
-                mirror=True,
-                title_font=dict(color='black', size=axis_title_size),
-                tickfont=dict(color='black')
-            ),
-            'yaxis': dict(
-                title='Duration (h)',
-                range=[0, max(df_duration['Optimal Value']) * 1.1] if not df_duration.empty else [0, 10],
-                showgrid=False,
-                linecolor='black',
-                linewidth=1,
-                mirror=True,
-                title_font=dict(color='black', size=axis_title_size),
-                tickfont=dict(color='black')
-            ),
-            'height': height,
-            'width': width,
-            'plot_bgcolor': 'white',
-            'paper_bgcolor': 'white',
-            'showlegend': True,
-            'legend': dict(
-                font=dict(color='black', size=legend_text_size),
-                title=dict(font=dict(color='black', size=legend_title_size))
-            ),
-            'font': dict(color='black')
-        })
-        
-        fig.update_layout(**layout_settings)
-        fig.write_html(filename, auto_open=True, config=self.plot_config)
-        filename = f'Duration_per_technology_{scenario}.png'
-        plt.savefig(filename, dpi=1000, bbox_inches='tight')
-        plt.show()
-        print(f"Created duration plot: {filename}")
-        
-        return fig
-    
-    # =========================================================================
-    # TOTAL GENERATION BREAKDOWN AND DEMAND
-    # =========================================================================
-    
-    def create_scenario_donut_plots(self, height=1000, width=950):
-        """Create individual donut chart plots for each scenario"""
-        
-        # Get data for all three metrics
-        df_generation = self._filter_data_by_metric("Total generation", positive_only=True)
-        df_charging = self._filter_data_by_metric("Storage energy charging", positive_only=True)
-        df_demand = self._filter_data_by_metric("Total demand", exclude_all=False)
-        
-        # Convert units for consistency
-        all_values = (df_generation['Optimal Value'].tolist() + 
-                     df_demand['Optimal Value'].tolist() + 
-                     df_charging['Optimal Value'].tolist())
-        
-        _, gen_unit = self._convert_units_and_get_label(all_values, "MWh")
-        if gen_unit == "TWh":
-            conversion_factor = 1/1_000_000
-        elif gen_unit == "GWh":
-            conversion_factor = 1/1_000
-        else:
-            conversion_factor = 1
-        
-        scenarios = sorted(df_generation['Scenario'].unique())
-        
-        # Create plot for each scenario
-        for scenario in scenarios:
-            scenario_title = self.scenario_titles.get(scenario, f"Scenario {scenario}")
-            
-            # Create subplot figure with increased vertical spacing
-            fig = make_subplots(
-                rows=2, cols=1,
-                row_heights=[0.45, 0.55],
-                specs=[[{"type": "pie"}], [{"type": "xy"}]],
-                subplot_titles=["<b>Generation Technology Mix</b>", "<b>Generation vs Demand</b>"],  # Change 2: Bold text
-                vertical_spacing=0.18  # Change 1: Increased space between donut chart and title
-            )
-            
-            # Get scenario-specific data
-            scenario_gen_data = df_generation[df_generation['Scenario'] == scenario]
-            scenario_demand_data = df_demand[df_demand['Scenario'] == scenario]
-            scenario_charging_data = df_charging[df_charging['Scenario'] == scenario]
-            
-            # Calculate totals
-            total_generation = scenario_gen_data['Optimal Value'].sum() * conversion_factor
-            total_charging = scenario_charging_data['Optimal Value'].sum() * conversion_factor
-            demand_val = (scenario_demand_data['Optimal Value'].iloc[0] * conversion_factor 
-                         if not scenario_demand_data.empty else 0)
-            
-            # Add donut chart
-            if not scenario_gen_data.empty:
-                labels = scenario_gen_data['Technology'].tolist()
-                values = (scenario_gen_data['Optimal Value'] * conversion_factor).tolist()
-                colors = [self.color_map.get(tech, '#000000') for tech in labels]
-                
-                fig.add_trace(
-                    go.Pie(
-                        labels=labels,
-                        values=values,
-                        hole=0.5,
-                        marker=dict(colors=colors, line=dict(color='white', width=2)),
-                        textinfo='percent',
-                        texttemplate='%{percent:.1%}',
-                        textposition='auto',
-                        textfont=dict(size=12, color='white', family='Arial Black'),
-                        outsidetextfont=dict(size=12, color='black', family='Arial Black'),
-                        insidetextorientation='radial',
-                        showlegend=True,
-                        legendgroup="pie",
-                        hoverinfo='none',
-                    ),
-                    row=1, col=1
-                )
-                
-                # Add center text
-                fig.add_annotation(
-                    text=f"<b>{total_generation:.0f}{gen_unit}</b><br><span style='font-size:12px; color:black'>Total Generation</span>",
-                    x=0.5, y=0.845,
-                    xref="paper", yref="paper",
-                    showarrow=False,
-                    font=dict(size=16, color="black", family="Arial Black"),
-                    align="center"
-                )
-            
-            # Add proportional bar chart
-            bar_width = 0.4
-            max_value = max(total_generation, demand_val) * 2.5
-            
-           
-            fig.add_trace(
-                go.Bar(
-                    x=['Energy Balance'],  
-                    y=[total_generation],
-                    name='Gross Generation',
-                    marker_color='steelblue',
-                    text=[f"{total_generation:.1f}"],
-                    textposition='inside',
-                    textfont=dict(size=14, color='white', family='Arial Black'),
-                    hoverinfo='none',
-                    showlegend=True,
-                    legendgroup="bar",
-                    width=bar_width,
-                    offset=-0.25  # Move left to create space from demand bar
-                ),
-                row=2, col=1
-            )
-            
-            # Storage charging bar (if applicable)
-            if total_charging > 0:
-                fig.add_trace(
-                    go.Bar(
-                        x=['Energy Balance'],
-                        y=[-total_charging],
-                        name='Storage Charging',
-                        marker_color='orange',
-                        text=[f"-{total_charging:.1f}"],
-                        textposition='inside',
-                        textfont=dict(size=14, color='white', family='Arial Black'),
-                        hoverinfo='none',
-                        showlegend=True,
-                        legendgroup="bar",
-                        width=bar_width,
-                        offset=-0.25  # Keep same position as gross generation
-                    ),
-                    row=2, col=1
-                )
-            
-       
-            fig.add_trace(
-                go.Bar(
-                    x=['Demand'],
-                    y=[demand_val],
-                    name='Demand',
-                    marker_color='red',
-                    text=[f"{demand_val:.1f}"],
-                    textposition='inside',
-                    textfont=dict(size=14, color='white', family='Arial Black'),
-                    hoverinfo='none',
-                    showlegend=True,
-                    legendgroup="bar",
-                    width=bar_width,
-                    offset=-0.5  # Move closer to energy balance bars
-                ),
-                row=2, col=1
-            )
-            
-            # Update layout
-            fig.update_layout(
-                title=dict(
-                    text=scenario_title,
-                    x=0.5,
-                    xanchor='center',
-                    font=dict(size=18, color='black')
-                ),
-                height=height,
-                width=width,
-                plot_bgcolor='rgba(0,0,0,0)',
-                paper_bgcolor='white',
-                margin=dict(t=120, b=100, l=120, r=100),
-                font=dict(family='Arial, sans-serif', size=12, color='black'),
-                barmode='relative',
-                # Change 3: Move Technologies legend closer to donut chart center
-                legend=dict(
-                    itemsizing='constant',
-                    itemwidth=40,
-                    font=dict(size=11, color='black'),
-                    bordercolor='rgba(0,0,0,0)',
-                    borderwidth=0,
-                    x=0.75,  # Moved more center from 0.98
-                    y=0.75,  # Moved closer to donut chart from 0.85
-                    title=dict(text="Technologies", font=dict(size=12, color='black'))
-                ),
-                # Energy Balance Legend
-                legend2=dict(
-                    itemsizing='constant',
-                    itemwidth=40,
-                    font=dict(size=11, color='black'),
-                    bordercolor='rgba(0,0,0,0)',
-                    borderwidth=0,
-                    x=1.05,  
-                    y=0.25,  # Adjusted vertical position
-                    title=dict(text="Energy Balance", font=dict(size=12, color='black'))
-                )
-            )
-            
-            # Assign bar chart traces to second legend
-            for trace in fig.data:
-                if hasattr(trace, 'legendgroup') and trace.legendgroup == "bar":
-                    trace.update(legend="legend2")
-            
-            # Update axes
-            fig.update_yaxes(
-                title_text=f"Energy ({gen_unit})",
-                showgrid=True,
-                gridcolor='rgba(128,128,128,0.3)',
-                title_font=dict(size=14, color='black'),
-                tickfont=dict(size=12, color='black'),
-                range=[-max_value*0.2, max_value],
-                zeroline=True,
-                zerolinecolor='black',
+                zerolinecolor="rgba(128,128,128,0.5)",
                 zerolinewidth=1,
-                row=2, col=1
-            )
-            
-            fig.update_xaxes(
-                title_text="",
-                tickfont=dict(size=14, color='black'),
-                showgrid=False,
-                zeroline=False,
-                row=2, col=1
-            )
-            
-            # Save plot
-            filename = f"scenario_{scenario}_donut_proportional_bars.html"
-            fig.write_html(filename, auto_open=True, config=self.plot_config, include_plotlyjs='cdn')
-            print(f"Created donut plot for {scenario_title}: {filename}")
+            ),
+            title=dict(x=0.5, xanchor="center", font=dict(size=16)),
+            margin=dict(t=80),
+        )
 
-    # =========================================================================
-    # CAPEX AND OPEX PER TECHNOLOGY
-    # =========================================================================
+    def _filter_data_by_metric(self, metric: str, exclude_all: bool = True,
+                           positive_only: bool = False, keep_zero: bool = False):
 
-    def create_storage_cost_breakdown_plots(self, 
-                                          bar_width=0.3,
-                                          title_y_position=0.90,
-                                          title_size=18,
-                                          axis_title_size=16,
-                                          tick_label_size=14,
-                                          legend_title_size=14,
-                                          legend_text_size=14,
-                                          height=600,
-                                          width=700):
-        """Create CAPEX/OPEX cost breakdown plots for storage technologies"""
-        
-        # Filter for cost metrics
-        df_total_capex = self._filter_data_by_metric("Total CAPEX", exclude_all=False, positive_only=False)
-        df_opex = self._filter_data_by_metric("OPEX", exclude_all=False, positive_only=False)
-        df_capex = self._filter_data_by_metric("CAPEX", exclude_all=False, positive_only=False)
-        
-        # Filter for storage technologies only
-        df_total_capex = df_total_capex[df_total_capex['Technology'].isin(self.storage_technologies)]
-        df_opex = df_opex[df_opex['Technology'].isin(self.storage_technologies)]
-        df_capex = df_capex[df_capex['Technology'].isin(self.storage_technologies)]
-        
-        # Get scenarios with cost data
-        scenarios_cost = sorted(set(df_total_capex['Scenario'].unique()) | 
-                               set(df_opex['Scenario'].unique()) | 
-                               set(df_capex['Scenario'].unique()))
-        
-        print(f"Scenarios with storage technology cost data: {scenarios_cost}")
-        
-        # Colors for different cost types
-        capex_color = '#000080'  # Blue
-        opex_color = '#FF8C00'   # Orange
-        
-        # Create separate plots for each scenario
-        for scenario in scenarios_cost:
-            df_total_capex_scenario = df_total_capex[df_total_capex['Scenario'] == scenario]
-            df_opex_scenario = df_opex[df_opex['Scenario'] == scenario]
-            df_capex_scenario = df_capex[df_capex['Scenario'] == scenario]
-            
-            # Get storage technologies that have any cost data in this scenario
-            technologies_scenario = (set(df_total_capex_scenario['Technology'].unique()) | 
-                                   set(df_opex_scenario['Technology'].unique()) |
-                                   set(df_capex_scenario['Technology'].unique()))
-            
-            # Filter to only include our defined storage technologies
-            technologies_scenario = technologies_scenario.intersection(set(self.storage_technologies))
-            
-            if not technologies_scenario:
-                print(f"No storage technology cost data found for Scenario {scenario}")
-                continue
-            
-            # Create figure for this scenario
-            fig_cost = go.Figure()
-            
-            # Track which technologies have data to plot
-            techs_with_data = []
-            
-            # Collect data for all technologies in this scenario
-            cost_data = []
-            
-            # Add traces for each storage technology
-            for tech in sorted(technologies_scenario):
-                # Get Total CAPEX value for this technology
-                total_capex_data = df_total_capex_scenario[df_total_capex_scenario['Technology'] == tech]
-                if not total_capex_data.empty:
-                    total_capex_raw = total_capex_data['Optimal Value'].iloc[0]
-                    if pd.isna(total_capex_raw) or str(total_capex_raw).strip() == '-':
-                        total_capex_value = 0.0
-                    else:
-                        total_capex_value = float(total_capex_raw)
-                else:
-                    total_capex_value = 0.0
-                
-                # Get OPEX value for this technology  
-                opex_data = df_opex_scenario[df_opex_scenario['Technology'] == tech]
-                if not opex_data.empty:
-                    opex_raw = opex_data['Optimal Value'].iloc[0]
-                    if pd.isna(opex_raw) or str(opex_raw).strip() == '-':
-                        opex_value = 0.0
-                    else:
-                        opex_value = float(opex_raw)
-                else:
-                    opex_value = 0.0
-                
-                # Get CAPEX value for this technology
-                capex_data = df_capex_scenario[df_capex_scenario['Technology'] == tech]
-                if not capex_data.empty:
-                    capex_raw = capex_data['Optimal Value'].iloc[0]
-                    if pd.isna(capex_raw) or str(capex_raw).strip() == '-':
-                        capex_value = 0.0
-                    else:
-                        capex_value = float(capex_raw)
-                else:
-                    capex_value = 0.0
-                
-                # Use Total CAPEX if available, otherwise use CAPEX
-                capex_to_plot = total_capex_value if total_capex_value > 0 else capex_value
-                
-                # Only collect data if there's something to plot
-                if capex_to_plot > 0 or opex_value > 0:
-                    techs_with_data.append(tech)
-                    cost_data.append({
-                        'Technology': tech,
-                        'CAPEX': capex_to_plot,
-                        'OPEX': opex_value
-                    })
-            
-            if not cost_data:
-                print(f"No cost data to plot for Scenario {scenario}")
-                continue
-            
-            # Create overlaid bars showing larger value in background, smaller on top
-            technologies = [item['Technology'] for item in cost_data]
-            capex_values = [item['CAPEX'] for item in cost_data]
-            opex_values = [item['OPEX'] for item in cost_data]
-            
-            # Calculate larger and smaller values for overlay effect
-            larger_values = []
-            smaller_values = []
-            larger_colors = []
-            smaller_colors = []
-            
-            for i, tech in enumerate(technologies):
-                capex = capex_values[i]
-                opex = opex_values[i]
-                
-                if capex >= opex:
-                    larger_values.append(capex)
-                    smaller_values.append(opex)
-                    larger_colors.append(capex_color)
-                    smaller_colors.append(opex_color)
-                else:
-                    larger_values.append(opex)
-                    smaller_values.append(capex)
-                    larger_colors.append(opex_color)
-                    smaller_colors.append(capex_color)
-            
-            # Add larger values trace (background)
-            if any(val > 0 for val in larger_values):
-                fig_cost.add_trace(
-                    go.Bar(
-                        x=technologies,
-                        y=larger_values,
-                        name='Larger Values',
-                        marker_color=larger_colors,
-                        showlegend=False,
-                        width=bar_width
-                    )
-                )
-            
-            # Add smaller values trace (foreground)
-            if any(val > 0 for val in smaller_values):
-                fig_cost.add_trace(
-                    go.Bar(
-                        x=technologies,
-                        y=smaller_values,
-                        name='Smaller Values',
-                        marker_color=smaller_colors,
-                        showlegend=False,
-                        width=bar_width
-                    )
-                )
-            
-            # Add proper legend traces
-            fig_cost.add_trace(
-                go.Bar(
-                    x=[None], y=[None], name='CAPEX', marker_color=capex_color, 
-                    showlegend=True, width=bar_width
-                )
-            )
-            fig_cost.add_trace(
-                go.Bar(
-                    x=[None], y=[None], name='OPEX', marker_color=opex_color, 
-                    showlegend=True, width=bar_width
-                )
-            )
-            
+    #-> pd.DataFrame:
+        """Filter df_all by metric for regular scenarios only; exclude Phase1 rows."""
+        df = self.df_all[
+            (self.df_all["Metric"].astype(str).str.strip().str.lower() == metric.lower())
+            & (self.df_all["__is_phase1__"] == False)
+        ].copy()
+
+        if exclude_all and "Technology" in df.columns:
+            agg = {"all", "all technologies", "all generation", "all storage"}
+            df = df[~df["Technology"].astype(str).str.strip().str.lower().isin(agg)]
+
+        df["Scenario"] = df["File_Scenario"].astype(str)
+        df["Optimal Value"] = pd.to_numeric(df["Optimal Value"], errors="coerce").fillna(0.0)
+
+        if positive_only:
+            df = df[df["Optimal Value"] > 0]
+       # else:
+           # df = df[df["Optimal Value"] != 0]
            
-            scenario_title = self.cost_breakdown_titles.get(scenario, f'Storage Technologies Cost Breakdown - Scenario {scenario}')
+        
+        if not keep_zero:
+            df = df[df["Optimal Value"] != 0]
+
+
+        return df
+
+    def _cost_unit_and_factor(self, values_usd):
+        vals = [float(v) for v in values_usd if pd.notna(v)]
+        if not vals:
+            return "US$", 1.0
+        mx = max(abs(v) for v in vals)
+        if mx >= 1_000_000_000:
+            return "US$B", 1e-9
+        elif mx >= 1_000_000:
+            return "US$M", 1e-6
+        else:
+            return "US$", 1.0
+
+    # ----------------------- Legend helper for overlay -----------------------
+    def _add_outage_legend_item(self, fig, row: int, col: int, axis_index: int,
+                                label: str, line_color: str, line_width: int, line_dash: str):
+        """
+        Add an invisible scatter line so the overlay gets a legend entry.
+        Shapes (rectangles) don't appear in the legend, so we add a dummy trace with showlegend=True.
+        """
+        xaxis = f"x{axis_index}" if axis_index > 1 else "x"
+        yaxis = f"y{axis_index}" if axis_index > 1 else "y"
+
+        fig.add_trace(
+            go.Scatter(
+                x=[0, 0], y=[0, 0],
+                mode="lines",
+                name=label,
+                showlegend=True,
+                line=dict(color=line_color, width=line_width, dash=line_dash),
+                opacity=1.0,        # invisible on plot; just for legend
+                hoverinfo="skip",
+            ),
+            row=row, col=col
+        )
+        # Bind the dummy trace to the target axes (keeps legend aligned with the panel)
+        fig.update_traces(xaxis=xaxis, yaxis=yaxis, selector=dict(name=label))
+
+    # -------------------------------------------------------------------------
+    # 2×2 Dashboard with transparent Phase1 outage overlay bars (a/c)
+    # -------------------------------------------------------------------------
+    def create_use_case_capacity_duration_dashboard(
+        self,
+        title: str = "",
+        filename: str = "use_case_capacity_duration_dashboard.png",
+        x_axis_font_size: int = 22, y_axis_font_size: int = 22,
+        legend_font_size: int = 20,
+        height: int = 1200, width: int = 1800,
+        uniform_text_size: int = 16,
+        use_cases: Optional[Dict[str, List[str]]] = None,
+        sort_scenarios: str = "numeric",
+        bar_half_height: float = 0.4,
+        outage_outline_color: str = "black",
+        outage_outline_width: int = 2,
+        outage_dash: str = "dash",
+        outage_legend_label: str = "Storage dedicated to outage",
+    ):
+        # Data (regular only)
+        df_cap = self._filter_data_by_metric("Discharge power capacity", keep_zero=True)
+
+        df_diesel = self.df_all[
+            (self.df_all["Metric"].str.strip().str.lower() == "capacity") &
+            (self.df_all["Technology"].str.strip().str.lower() == "diesel") &
+            (self.df_all["__is_phase1__"] == False)
+        ].copy()
+        
+        df_diesel["Optimal Value"] = pd.to_numeric(df_diesel["Optimal Value"], errors="coerce").fillna(0.0)
+        df_diesel["Scenario"] = df_diesel["File_Scenario"].astype(str)
+        
+        # Keep only Diesel columns needed for capacity plotting
+        df_diesel = df_diesel[["Scenario", "Technology", "Optimal Value"]]
+        
+        # Append Diesel to df_cap (storage discharge capacities)
+        df_cap = pd.concat([df_cap, df_diesel], ignore_index=True)
+
+
+        df_dur = self._filter_data_by_metric("Discharge duration")
+        if df_cap.empty:
+            print("[Dashboard] No 'Discharge power capacity' data (regular).")
+            return None
+        if df_dur.empty:
+            print("[Dashboard] No 'Discharge duration' data (regular).")
+            return None
+
+        tech_alias = {"LiIon": "Li-Ion", "VRB": "Vanadium"}
+        for df_ in (df_cap, df_dur):
+            df_["Technology"] = df_["Technology"].replace(tech_alias)
+
+        # Use cases
+        uc_map = use_cases if use_cases is not None else self.use_cases
+        if not isinstance(uc_map, dict) or len(uc_map) != 2:
+            raise ValueError("Provide exactly two use cases: {'Use Case 1': [...], 'Use Case 2': [...]}")
+
+        (uc1_name, uc1_scenarios), (uc2_name, uc2_scenarios) = list(uc_map.items())
+        uc1_scenarios = list(map(str, uc1_scenarios))
+        uc2_scenarios = list(map(str, uc2_scenarios))
+
+        # Keep scenarios present in both regular metrics
+        reg_caps = set(df_cap["Scenario"].unique())
+        reg_durs = set(df_dur["Scenario"].unique())
+        uc1_scenarios = [s for s in uc1_scenarios if s in reg_caps and s in reg_durs]
+        uc2_scenarios = [s for s in uc2_scenarios if s in reg_caps and s in reg_durs]
+        if sort_scenarios == "numeric":
+            uc1_scenarios = sorted(uc1_scenarios, key=lambda s: int(s))
+            uc2_scenarios = sorted(uc2_scenarios, key=lambda s: int(s))
+
+        # Numeric Y positions (enables dashed rectangle outlines)
+        uc1_positions = list(range(len(uc1_scenarios)))
+        uc2_positions = list(range(len(uc2_scenarios)))
+        
+        max_rows = max(len(uc1_positions), len(uc2_positions))
+        uniform_y_range = [-0.5, max_rows - 0.5]
+        
+        uc1_labels = [self.scenario_titles.get(s, s) for s in uc1_scenarios]
+        uc2_labels = [self.scenario_titles.get(s, s) for s in uc2_scenarios]
+
+        # Technologies order for capacity stacks
+        technologies = sorted(
+            df_cap["Technology"].unique(),
+            key=lambda t: df_cap[df_cap["Technology"] == t]["Optimal Value"].max(),
+            reverse=True,
+        )
+        
+        
+        if "Diesel" in technologies:
+            technologies = ["Diesel"] + [t for t in technologies if t != "Diesel"]
+
+
+        # Units (shared across capacity panels)
+        all_cap_values = df_cap["Optimal Value"].tolist()
+        _, cap_unit_label = self._convert_units_and_get_label(all_cap_values, "MW")
+        scale_map = {"MW": 1.0, "GW": 1 / 1_000, "TW": 1 / 1_000_000}
+        cap_conversion = scale_map.get(cap_unit_label, 1.0)
+
+        # Subplots
+        fig = make_subplots(
+            rows=2, cols=2, shared_xaxes=False, shared_yaxes=False,
+            vertical_spacing=0.12, horizontal_spacing=0.08,
+            specs=[[{"type": "xy"}, {"type": "xy"}], [{"type": "xy"}, {"type": "xy"}]],
+            subplot_titles=(
+                f"a. {uc1_name} — Power Capacity",
+                f"b. {uc1_name} — Duration",
+                f"c. {uc2_name} — Power Capacity",
+                f"d. {uc2_name} — Duration",
+            ),
+        )
+
+        # Build Phase1 overlay map: (tag, tech) → outage minimum value
+        df_phase1 = self.df_all[
+            (self.df_all["__is_phase1__"] == True) &
+            (self.df_all["Metric"].astype(str).str.strip().str.lower() == self.outage_req_metric.lower()) &
+            (self.df_all["__source_file__"].astype(str).str.contains(self.outage_source_keyword, case=False, na=False))
+        ].copy()
+        df_phase1["Technology"] = df_phase1["Technology"].astype(str)
+        df_phase1["Optimal Value"] = pd.to_numeric(df_phase1["Optimal Value"], errors="coerce").fillna(0.0)
+        df_phase1["Technology"] = df_phase1["Technology"].replace({"LiIon": "Li-Ion", "VRB": "Vanadium"})
+        # Tag per Phase1 row
+        df_phase1["__tag__"] = df_phase1["__source_file__"].apply(infer_tag_from_filename)
+
+        # (tag, tech) → value (if multiple rows, last occurrence wins)
+        phase1_overlay: Dict[Tuple[str, str], float] = {}
+        for _, r in df_phase1.iterrows():
+            tag = r["__tag__"]
+            tech = str(r["Technology"])
+            val = float(r["Optimal Value"])
+            if tag is None or tech not in self.outage_requirement_techs:
+                continue
+            phase1_overlay[(tag, tech)] = val
+
+        # Rectangle overlay helper — return flag if any rectangles were added
+        def _add_phase1_outage_rects(axis_index: int, scenarios: List[str], positions: List[int]) -> bool:
+            xref = f"x{axis_index}" if axis_index > 1 else "x"
+            yref = f"y{axis_index}" if axis_index > 1 else "y"
+            any_rect = False
+            for s, y in zip(scenarios, positions):
+                tag = self.scenario_to_tag.get(s)
+                if not tag:
+                    continue
+                for tech in self.outage_requirement_techs:
+                    v = phase1_overlay.get((tag, tech), 0.0) * cap_conversion
+                    if v <= 0:
+                        continue
+                    fig.add_shape(
+                        type="rect",
+                        xref=xref, yref=yref,
+                        x0=0.0, x1=v,
+                        y0=y - bar_half_height, y1=y + bar_half_height,
+                        line=dict(color=outage_outline_color, width=outage_outline_width, dash=outage_dash),
+                        fillcolor="rgba(0,0,0,0)",  # transparent
+                        layer="above",
+                    )
+                    any_rect = True
+            return any_rect
+
+        # Capacity panels (a/c): Phase1 rectangles + regular stacks
+        def _add_capacity_panel(scenarios: List[str], positions: List[int], labels: List[str],
+                                row: int, col: int, show_legend: bool, axis_index: int):
+            # Transparent Phase1 outage bars (paired by tag)
+            any_rect = _add_phase1_outage_rects(axis_index, scenarios, positions)
+
+            # Add a single legend entry (only in the first capacity panel where show_legend=True)
+            if any_rect and show_legend:
+                self._add_outage_legend_item(
+                    fig=fig, row=row, col=col, axis_index=axis_index,
+                    label=outage_legend_label, line_color=outage_outline_color,
+                    line_width=outage_outline_width, line_dash=outage_dash
+                )
+
+            # Regular capacity stacks
+            for tech in technologies:
+                vals = []
+                for s in scenarios:
+                    row_df = df_cap[(df_cap["Scenario"] == s) & (df_cap["Technology"] == tech)]
+                    val = float(row_df["Optimal Value"].iloc[0]) * cap_conversion if not row_df.empty else 0.0
+                    vals.append(val)
+                text_vals = [f"{v:.1f}" if v > 0 else "" for v in vals]
+                fig.add_trace(
+                    go.Bar(
+                        x=vals, y=positions, name=tech, orientation="h",
+                        marker_color=self.color_map.get(tech, "#808080"),
+                        text=text_vals, texttemplate="%{text}", textposition="inside",
+                        textfont=dict(color="black", size=uniform_text_size, family="Arial"),
+                        insidetextanchor="middle", constraintext="none",
+                        hoverinfo="skip", legendgroup=f"cap_{tech}", showlegend=show_legend,
+                    ),
+                    row=row, col=col
+                )
+
+            # Y tick labels (capacity panels show scenario labels)
+            fig.update_yaxes(tickmode="array", tickvals=positions, ticktext=labels, row=row, col=col)
+
+        # (a) UC1 capacity → axis_index 1
+        _add_capacity_panel(uc1_scenarios, uc1_positions, uc1_labels, row=1, col=1, show_legend=True, axis_index=1)
+        # (c) UC2 capacity → axis_index 3
+        _add_capacity_panel(uc2_scenarios, uc2_positions, uc2_labels, row=2, col=1, show_legend=False, axis_index=3)
+
+        # Duration panels (b/d) — NO y-axis labels/ticks
+        def _add_duration_panel(scenarios: List[str], positions: List[int], labels: List[str], row: int, col: int):
+            scen_pos = {s: p for s, p in zip(scenarios, positions)}
             
-            fig_cost.update_layout(
-                title=dict(
-                    text=scenario_title,
-                    x=0.5,
-                    xanchor='center',
-                    y=title_y_position,
-                    font=dict(size=title_size, color='black')
-                ),
-                xaxis=dict(
-                    title=dict(
-                        text='Storage Technology',
-                        font=dict(size=axis_title_size, color='black')
-                    ),
-                    tickangle=0,
-                    tickfont=dict(size=tick_label_size, color='black'),
-                    categoryorder='array',
-                    categoryarray=sorted(techs_with_data),
-                    linecolor='white',
-                    linewidth=0,
-                    mirror=False
-                ),
-                yaxis=dict(
-                    title=dict(
-                        text='Cost ($)',
-                        font=dict(size=axis_title_size, color='black')
-                    ),
-                    tickfont=dict(size=tick_label_size, color='black'),
-                    showgrid=True,
-                    gridcolor='lightgray',
-                    gridwidth=1,
-                    zeroline=True,
-                    zerolinecolor='lightgray',
-                    zerolinewidth=1,
-                    linecolor='white',
-                    linewidth=0,
-                    mirror=False
-                ),
-                legend=dict(
-                    title=dict(text='', font=dict(size=legend_title_size, color='black')),
-                    font=dict(size=legend_text_size, color='black')
-                ),
-                barmode='overlay',
-                height=height,
-                width=width,
-                plot_bgcolor='white',
-                paper_bgcolor='white',
-                font=dict(color='black')
+            dur_techs_sorted = sorted(df_dur["Technology"].unique())
+            
+            # Compute the spread of durations (min–max) for this scenario group
+            scenario_durations = []
+            for tech in dur_techs_sorted:
+                vals = df_dur[df_dur["Technology"] == tech]["Optimal Value"].tolist()
+                scenario_durations.extend(vals)
+            if scenario_durations:
+                dur_range = max(scenario_durations) - min(scenario_durations)
+            else:
+                dur_range = 0
+            
+            # Base jitter scales dynamically: more jitter if durations cluster
+            base_jitter = 0.5 if dur_range > 2 else 0.35 if dur_range > 0.5 else 0.55
+            
+            marker_offsets = np.linspace(-base_jitter, base_jitter, len(dur_techs_sorted))
+            tech_to_offset = dict(zip(dur_techs_sorted, marker_offsets))
+
+            for tech in dur_techs_sorted:
+                tdf = df_dur[df_dur["Technology"] == tech]
+                xs, ys, texts = [], [], []
+                for s in scenarios:
+                    r = tdf[tdf["Scenario"] == s]
+                    if not r.empty:
+                        val = float(r["Optimal Value"].iloc[0])
+                        xs.append(val)
+                        ys.append(scen_pos[s] + tech_to_offset[tech])
+                        texts.append(f"{val:.1f}")
+                if xs:
+                    fig.add_trace(
+                        go.Scatter(
+                            x=xs, y=ys, mode="markers+text",
+                            text=texts, textposition="middle right",
+                            textfont=dict(size=18, color="black", family="Arial"),   # ← NEW
+                            name=tech, showlegend=False,
+                            marker=dict(
+                                color=self.color_map.get(tech, "#808080"),
+                                size=16,
+                                symbol=self.marker_symbols.get(tech, "circle"),
+                                line=dict(width=1, color="black"),
+                            ),
+                            hovertemplate="<b>%{text} h</b>",
+                            ),
+                        row=row, col=col
+                    )
+            # Intentionally no y tick labels on duration panels
+
+        # (b) UC1 duration
+        _add_duration_panel(uc1_scenarios, uc1_positions, uc1_labels, row=1, col=2)
+        # (d) UC2 duration
+        _add_duration_panel(uc2_scenarios, uc2_positions, uc2_labels, row=2, col=2)
+
+        # Ranges & layout
+        def _cap_total(scenarios: List[str]) -> float:
+            return max((df_cap[df_cap["Scenario"] == s]["Optimal Value"].sum() * cap_conversion for s in scenarios), default=0.0)
+
+
+        cap_x_max_uc1 = _cap_total(uc1_scenarios)
+        cap_x_max_uc2 = _cap_total(uc2_scenarios)
+        
+        cap_x_pad_uc1 = 0.15 * cap_x_max_uc1 if cap_x_max_uc1 > 0 else 1.0
+        cap_x_pad_uc2 = 0.15 * cap_x_max_uc2 if cap_x_max_uc2 > 0 else 1.0
+
+
+        # Capacity x/y (keep y title for capacity panels)
+        for r, c, positions in [(1, 1, uc1_positions), (2, 1, uc2_positions)]:
+
+            fig.update_xaxes(
+                title=f"Discharge Storage Power Capacity ({cap_unit_label})",
+                range=[0, cap_x_max_uc1 + cap_x_pad_uc1],
+                showgrid=True,
+                gridcolor="rgba(128,128,128,0.25)",
+                tickfont=dict(size=x_axis_font_size, color="black"),
+                title_font=dict(color="black", size=x_axis_font_size + 6),
+                row=1, col=1
             )
             
-            # Save each scenario as separate HTML file
-            filename = f"storage_cost_breakdown_scenario_{scenario}.html"
-            fig_cost.write_html(filename, auto_open=True, config=self.plot_config)
+            # --- Subfigure c: UC2 capacity (row 2, col 1) ---
+            fig.update_xaxes(
+                title=f"Discharge Storage Power Capacity ({cap_unit_label})",
+                range=[0, cap_x_max_uc2 + cap_x_pad_uc2],
+                showgrid=True,
+                gridcolor="rgba(128,128,128,0.25)",
+                tickfont=dict(size=x_axis_font_size, color="black"),
+                title_font=dict(color="black", size=x_axis_font_size + 6),
+                row=2, col=1
+            )
+
+            # fig.update_yaxes(title="", showgrid=False,
+            #                  range=[-0.5, (positions[-1] if positions else 0) + 0.5],
+            #                  tickfont=dict(size=y_axis_font_size, color="black"),
+            #                  title_font=dict(color="black", size=y_axis_font_size + 6),
+            #                  row=r, col=c)
             
-            print(f"Storage technologies cost breakdown plot for Scenario {scenario} created: {filename}")
-            print(f"Technologies plotted: {techs_with_data}")
+            fig.update_yaxes(
+                                title="",
+                                showgrid=False,
+                                range=uniform_y_range,              # ← use uniform range
+                                tickfont=dict(size=y_axis_font_size, color="black"),
+                                row=r, col=c
+                            )
+
+        # Duration x/y — NO y-axis title or tick labels on b/d
+        dur_x_max = float(df_dur["Optimal Value"].max()) if not df_dur.empty else 10.0
+        dur_x_range = [-2, max(dur_x_max * 1.25, 10.0)]
+        for r, c, positions in [(1, 2, uc1_positions), (2, 2, uc2_positions)]:
+            fig.update_xaxes(title="", range=dur_x_range,
+                             showgrid=True, gridcolor="rgba(0,0,0,0.08)",
+                             zeroline=False, tickfont=dict(size=x_axis_font_size, color="black"),
+                             title_font=dict(color="black", size=x_axis_font_size + 6),
+                             row=r, col=c)
+            fig.update_yaxes(
+                title="",
+                showgrid=False,
+                range=uniform_y_range,              # ← use uniform range
+                tickfont=dict(size=y_axis_font_size, color="black"),
+                row=r, col=c
+            )
+
+        layout_settings = self._get_standard_layout()
+        layout_settings.update({
+            "title": {"text": title, "x": 0.5, "y": 0.98, "font": dict(size=28, color="black")},
+            "height": height, "width": width,
+            "barmode": "stack",
+            # Legend at TOP; plenty of margin so it fits
+            "legend": {
+                "orientation": "h",
+                "x": 0.5, "xanchor": "center",
+                "y": 1.08, "yanchor": "bottom",
+                "font": dict(color="black", size=legend_font_size),
+                "itemsizing": "constant",
+                "itemwidth": 60,
+                "traceorder": "normal",
+                "bgcolor": "rgba(255,255,255,0)"
+            },
+            # more top margin so legend doesn't clip
+            "margin": dict(t=140, b=80, l=180, r=60),
+            "paper_bgcolor": "white", "plot_bgcolor": "white",
+            "uniformtext": {"minsize": uniform_text_size, "mode": "show"},
+        })
+        fig.update_layout(**layout_settings)
+
+        try:
+            fig.write_image(filename, width=width, height=height)
+            print(f"[Dashboard] Saved {filename}")
+        except Exception as e:
+            html_fallback = Path(filename).with_suffix(".html")
+            fig.write_html(str(html_fallback), include_plotlyjs="cdn")
+            print(f"[Dashboard] PNG export failed ({e}). Fallback HTML saved: {html_fallback}")
+
+        return fig
+
+    # -------------------------------------------------------------------------
+    # Annualized System Cost split by use case (side-by-side, regular only)
+    # -------------------------------------------------------------------------
+    def create_system_cost_stacked_bar_by_use_case(
+        self,
+        title: str = "",
+        filename: str = "cost_components_by_use_case.png",
+        height: int = 900, width: int = 1800,
+        legend_font_size: int = 18, axis_title_size: int = 22,
+        tick_font_size: int = 14, title_font_size: int = 26,
+        sort_scenarios: str = "numeric",
+        include_components: Optional[List[str]] = None,
+        component_colors: Optional[Dict[str, str]] = None,
+    ):
+        df = self.df_all[self.df_all["__is_phase1__"] == False].copy()
+        if df.empty:
+            print("[Cost] No regular summary data loaded.")
+            return None
+
+        df["Optimal Value"] = pd.to_numeric(df["Optimal Value"], errors="coerce").fillna(0.0)
+        df["Scenario"] = df["File_Scenario"].astype(str)
+        tech_alias = {"LiIon": "Li-Ion", "VRB": "Vanadium"}
+        df["Technology"] = df["Technology"].replace(tech_alias)
+        df["Technology"] = df["Technology"].astype(str)
+
+        uc_map = self.use_cases
+        if not isinstance(uc_map, dict) or len(uc_map) != 2:
+            raise ValueError("Provide exactly two use cases: {'Use Case 1': [...], 'Use Case 2': [...]}")
+
+        (uc1_name, uc1_scenarios), (uc2_name, uc2_scenarios) = list(uc_map.items())
+        uc1_scenarios = list(map(str, uc1_scenarios))
+        uc2_scenarios = list(map(str, uc2_scenarios))
+
+        storage_set = set(self.storage_technologies) | {"Li-Ion"}
+
+        def _not_agg(ser):
+            return ~ser.astype(str).str.strip().str.lower().str.startswith("all")
+
+        gen_capex = df[(df["Metric"] == "CAPEX") & (~df["Technology"].isin(storage_set)) & _not_agg(df["Technology"])].groupby("Scenario")["Optimal Value"].sum()
+        sto_capex = df[(df["Metric"] == "Total Capex") & (df["Technology"].isin(storage_set)) & _not_agg(df["Technology"])].groupby("Scenario")["Optimal Value"].sum()
+
+        # FOM / VOM aggregation: prefer 'all technologies'; otherwise sum non-aggregated rows
+        tech_lower = df["Technology"].str.lower()
+        fom_all = df[(df["Metric"] == "FOM") & (tech_lower == "all technologies")].set_index("Scenario")["Optimal Value"]
+        if fom_all.empty:
+            fom_all = df[(df["Metric"] == "FOM") & _not_agg(df["Technology"])].groupby("Scenario")["Optimal Value"].sum()
+
+        # --- Split VOM components ---
+        vom_grid_imports = (
+            df[(df["Metric"]=="VOM") & (df["Technology"]=="Grid Imports")]
+            .set_index("Scenario")["Optimal Value"]
+        )
         
-        return True
+        vom_grid_exports = (
+            df[(df["Metric"]=="VOM") & (df["Technology"]=="Grid Exports")]
+            .set_index("Scenario")["Optimal Value"]
+        )
+        
+        # All VOM rows except Grid Imports/Exports
+        vom_other = df[
+            (df["Metric"]=="VOM") &
+            (~df["Technology"].isin(["Grid Imports", "Grid Exports"])) &
+            _not_agg(df["Technology"])
+        ].groupby("Scenario")["Optimal Value"].sum()
+        
+        # If any scenario is missing a component, fill with zero
+        def _align(series):
+            return series.reindex(df["Scenario"].unique().astype(str), fill_value=0.0)
+        
+        vom_grid_imports = _align(vom_grid_imports)
+        vom_grid_exports = _align(vom_grid_exports)
+        vom_other         = _align(vom_other)
 
-    # =========================================================================
-    # MASTER FUNCTION FOR CREATING ALL PLOTS
-    # =========================================================================
 
+        components_default = ["Generation CAPEX", "Storage CAPEX", "FOM", "VOM", "Grid"]
+        components = include_components if include_components else components_default
+
+        def _tidy(case_scenarios: List[str]) -> pd.DataFrame:
+            scens = [s for s in case_scenarios if s in df["Scenario"].unique()]
+            if sort_scenarios == "numeric":
+                scens = sorted(scens, key=lambda s: int(s))
+            return pd.DataFrame({
+                "Scenario": scens,
+                "Label": [self.scenario_titles.get(s, s) for s in scens],
+                "Generation CAPEX": [float(gen_capex.get(s, 0.0)) for s in scens],
+                "Storage CAPEX":    [float(sto_capex.get(s, 0.0)) for s in scens],
+                "FOM":              [float(fom_all.get(s, 0.0))   for s in scens],
+                "VOM":              [float(vom_other.get(s, 0.0))   for s in scens],
+                "Grid":             [float(vom_grid_imports.get(s, 0.0))   for s in scens],
+            })
+
+        tidy_uc1 = _tidy(uc1_scenarios)
+        tidy_uc2 = _tidy(uc2_scenarios)
+
+        # Collect all values across components for unit scaling
+        all_vals = []
+        if not tidy_uc1.empty:
+            all_vals += tidy_uc1[components].to_numpy().ravel().tolist()
+        if not tidy_uc2.empty:
+            all_vals += tidy_uc2[components].to_numpy().ravel().tolist()
+
+        unit_label, scale = self._cost_unit_and_factor(all_vals)
+
+        comp_colors = {
+            "Generation CAPEX": "deepskyblue",
+            "Storage CAPEX":    "darkorange",
+            "FOM":              "lightseagreen",
+            "VOM":              "gold",
+            "Grid":             "navy"
+        }
+        if component_colors:
+            comp_colors.update(component_colors)
+
+        fig = make_subplots(
+            rows=1, cols=2, shared_yaxes=False, horizontal_spacing=0.10,
+            subplot_titles=(f"a. {uc1_name}", f"b. {uc2_name}"),
+        )
+
+        def _add_cost_column(tidy_df: pd.DataFrame, col_index: int, show_legend: bool):
+            if tidy_df.empty:
+                fig.add_annotation(
+                    text="No scenarios for this use case",
+                    x=0.5, y=0.5, xref="x domain", yref="y domain",
+                    showarrow=False, font=dict(size=14, color="grey"),
+                    row=1, col=col_index
+                )
+                return
+            totals_scaled = (tidy_df[components].sum(axis=1) * scale).tolist()
+            y_max = max(totals_scaled) if totals_scaled else 0.0
+            y_pad = 0.12 * y_max
+
+            fig.update_yaxes(
+                title=dict(text=f"Annualized Cost ({unit_label})", font=dict(size=axis_title_size, color="black")),
+                range=[0, y_max + y_pad],
+                showgrid=True, gridcolor="rgba(0,0,0,0.1)",
+                zeroline=False, tickfont=dict(size=tick_font_size, color="black"),
+                row=1, col=col_index
+            )
+            fig.update_xaxes(
+                title=dict(text="", font=dict(size=axis_title_size, color="black")),
+                showgrid=False, zeroline=False, tickfont=dict(size=tick_font_size, color="black"),
+                row=1, col=col_index
+            )
+
+            labels = tidy_df["Label"].tolist()
+            for comp in components:
+                y_vals = (tidy_df[comp] * scale).tolist()
+                text_vals = [f"{v:,.1f}" if v > 0 else "" for v in y_vals]
+                fig.add_trace(
+                    go.Bar(
+                        x=labels, y=y_vals, name=comp,
+                        marker=dict(color=comp_colors.get(comp, "#808080"),
+                                    line=dict(color="rgba(0,0,0,0.18)", width=1)),
+                        text=text_vals, texttemplate="%{text}", textposition="inside", insidetextanchor="middle",
+                        textfont=dict(color="black", size=12),
+                        hovertemplate="<b>%{x}</b><br>" + comp + ": %{y:,.1f} " + unit_label + "<extra></extra>",
+                        showlegend=show_legend, cliponaxis=False,
+                    ),
+                    row=1, col=col_index
+                )
+
+        _add_cost_column(tidy_uc1, col_index=1, show_legend=True)
+        _add_cost_column(tidy_uc2, col_index=2, show_legend=False)
+
+        fig.update_layout(
+            title=dict(text=title, x=0.5, y=0.98, font=dict(size=title_font_size, color="black")),
+            barmode="stack", height=height, width=width,
+            # Legend at TOP to fit cleanly
+            legend=dict(
+                orientation="h",
+                x=0.5, xanchor="center",
+                y=1.08, yanchor="bottom",
+                font=dict(size=legend_font_size, color="black"),
+                itemsizing="constant",
+                itemwidth=60,
+                traceorder="normal"
+            ),
+            margin=dict(t=130, r=60, b=110, l=80),
+            paper_bgcolor="white", plot_bgcolor="white",
+            uniformtext=dict(minsize=10, mode="show"),
+        )
+
+        try:
+            fig.write_image(filename, width=width, height=height)
+            print(f"[Cost] Saved {filename}")
+        except Exception as e:
+            html_fallback = Path(filename).with_suffix(".html")
+            fig.write_html(str(html_fallback), include_plotlyjs="cdn")
+            print(f"[Cost] PNG export failed ({e}). Fallback HTML saved: {html_fallback}")
+        return fig
+
+    # Convenience bundle
     def create_all_plots(self):
-        """Convenience method to create all plot types"""
-        
         print("=" * 60)
-        print("CREATING ALL SDOM PLOTS")
+        print("CREATING DASHBOARD + COST BY USE CASE")
         print("=" * 60)
-        
-        print("\n1. Creating storage capacity plots...")
-        self.create_storage_capacity_plot()
-        
-        print("\n2. Creating storage duration plots...")
-        self.create_storage_duration_plot()
-        
-        print("\n3. Creating scenario donut plots...")
-        self.create_scenario_donut_plots()
-        
-        print("\n4. Creating storage cost breakdown plots...")
-        self.create_storage_cost_breakdown_plots()
-        
-        # Create matplotlib plots for all scenarios
-        scenarios = ['1', '2', '3', '4']
-        
-        print("\n5. Creating matplotlib doughnut charts...")
-        for scenario in scenarios:
-            print(f"   - Creating doughnut chart for scenario {scenario}...")
-            self.create_matplotlib_doughnut_chart(scenario=scenario)
-        
-        print("\n6. Creating storage heatmaps...")
-        # Create heatmaps for Li-Ion storage in all scenarios
-        storage_techs = ['Li-Ion']  # Try both naming conventions
-        for scenario in scenarios:
-            print(f"   - Creating heatmap for scenario {scenario}...")
-            for tech in storage_techs:
-                try:
-                    self.create_storage_heatmap(scenario=scenario, technology=tech)
-                    break  # If one works, don't try the other
-                except Exception as e:
-                    print(f"     Could not create heatmap for {tech} in scenario {scenario}: {e}")
-                    continue
-        
-        print("\n" + "=" * 60)
-        print("ALL PLOTS CREATED SUCCESSFULLY!")
+        self.create_use_case_capacity_duration_dashboard()
+        self.create_system_cost_stacked_bar_by_use_case()
+        print("=" * 60)
+        print("DONE")
         print("=" * 60)
 
 
-# ============================================================================= 
-# MAIN EXECUTION SECTION
 # =============================================================================
-
+# MAIN — automatic path discovery (NO wildcards; exact filename list)
+# =============================================================================
 def main():
-    """Main function to demonstrate all plotting capabilities"""
-    
-    # Define your CSV files
-    summary_files = [
-        "OutputSummary_SDOM_MEA_Nuclear_1_Target_0.00_.csv",
-        "OutputSummary_SDOM_MEA_Nuclear_1_Target_1.00_.csv", 
-#        "OutputSummary_SDOM_SDOM_pyomo_cbc_122324_Nuclear_1_Target_1.00_.csv",
-#        "OutputSummary_SDOM_SDOM_pyomo_cbc_122324_Nuclear_1_Target_1.00_.csv"       
-    ]
-    
-    storage_files = [
-        "OutputStorage_SDOM_MEA_Nuclear_1_Target_0.00_.csv",
-        "OutputStorage_SDOM_MEA_Nuclear_1_Target_1.00_.csv", 
-#        "OutputStorage_SDOM_SDOM_pyomo_cbc_122324_Nuclear_1_Target_1.00_.csv",
-#        "OutputStorage_SDOM_SDOM_pyomo_cbc_122324_Nuclear_1_Target_1.00_.csv"       
-    ]
-    
+    # 0) Optional explicit overrides via env var (semicolon-separated absolute files)
+    summary_override = os.environ.get("SDOM_SUMMARY_FILES", "").strip()
+    if summary_override:
+        summary_paths = [Path(p).expanduser().resolve() for p in summary_override.split(";") if p.strip()]
+        storage_paths: List[Path] = []
+    else:
+        # 1) Exact filenames (NO WILDCARDS). Order matters.
+        #    — Regular scenarios (PGnE → 1, MEA → 2)
+        #    — Phase1 overlays (PGnE, MEA) for transparent dashed outage rectangles
+        exact_filenames_summary = [
+            # Regular PGnE / MEA variants
+            "2030_OutputSummary_SDOM_PGnE_Target_0.00_Resilience_1.00_Outage_24.00hrs_Recovery_0.00hrs_diesel_3MW.csv",
+            "2030_OutputSummary_SDOM_PGnE_Target_0.00_Resilience_1.00_Outage_24.00hrs_Recovery_24.00hrs_3MW.csv",
+            "2030_OutputSummary_SDOM_PGnE_Target_0.00_Resilience_1.00_Outage_48.00hrs_Recovery_0.00hrs_diesel_3MW.csv",
+            "2030_OutputSummary_SDOM_PGnE_Target_0.00_Resilience_1.00_Outage_48.00hrs_Recovery_48.00hrs_3MW.csv",
+            "2030_OutputSummary_SDOM_PGnE_Target_0.00_Resilience_1.00_Outage_72.00hrs_Recovery_0.00hrs_diesel_3MW.csv",
+            "2030_OutputSummary_SDOM_PGnE_Target_0.00_Resilience_1.00_Outage_72.00hrs_Recovery_72.00hrs_3MW.csv",
+            
+            "2030_OutputSummary_SDOM_PGnE_Target_0.00_Resilience_1.00_Outage_24.00hrs_Recovery_0.00hrs_diesel_actual.csv",
+            "2030_OutputSummary_SDOM_PGnE_Target_0.00_Resilience_1.00_Outage_24.00hrs_Recovery_24.00hrs_actual.csv",
+            "2030_OutputSummary_SDOM_PGnE_Target_0.00_Resilience_1.00_Outage_48.00hrs_Recovery_0.00hrs_diesel_actual.csv",
+            "2030_OutputSummary_SDOM_PGnE_Target_0.00_Resilience_1.00_Outage_48.00hrs_Recovery_48.00hrs_actual.csv",
+            "2030_OutputSummary_SDOM_PGnE_Target_0.00_Resilience_1.00_Outage_72.00hrs_Recovery_0.00hrs_diesel_actual.csv",
+            "2030_OutputSummary_SDOM_PGnE_Target_0.00_Resilience_1.00_Outage_72.00hrs_Recovery_72.00hrs_actual.csv",
+            
+            "2030_OutputSummary_SDOM_MEA_Target_0.00_Resilience_1.00_Outage_24.00hrs_Recovery_0.00hrs_diesel_land_constr.csv",
+            "2030_OutputSummary_SDOM_MEA_Target_0.00_Resilience_1.00_Outage_24.00hrs_Recovery_24.00hrs_land_constr.csv",
+            "2030_OutputSummary_SDOM_MEA_Target_0.00_Resilience_1.00_Outage_48.00hrs_Recovery_0.00hrs_diesel_land_constr.csv",
+            "2030_OutputSummary_SDOM_MEA_Target_0.00_Resilience_1.00_Outage_48.00hrs_Recovery_48.00hrs_land_constr.csv",
+            
+            "2030_OutputSummary_SDOM_MEA_Target_0.00_Resilience_1.00_Outage_24.00hrs_Recovery_0.00hrs_diesel_noland_constr.csv",
+            "2030_OutputSummary_SDOM_MEA_Target_0.00_Resilience_1.00_Outage_24.00hrs_Recovery_24.00hrs_noland_constr.csv",
+            "2030_OutputSummary_SDOM_MEA_Target_0.00_Resilience_1.00_Outage_48.00hrs_Recovery_0.00hrs_diesel_noland_constr.csv",
+            "2030_OutputSummary_SDOM_MEA_Target_0.00_Resilience_1.00_Outage_48.00hrs_Recovery_48.00hrs_noland_constr.csv",
 
-    # Create analyzer instance
-    analyzer = SDOMPlots(summary_files, storage_files, renderer='browser')
-    
-    analyzer.create_all_plots()
-    
-   
+
+            # Supplementary Phase1 overlays
+            "2030_OutputSummary_Phase1_SDOM_PGnE_Target_0.00_Resilience_1.00_Outage_24.00hrs_Recovery_0.00hrs_diesel_3MW.csv",
+            "2030_OutputSummary_Phase1_SDOM_PGnE_Target_0.00_Resilience_1.00_Outage_24.00hrs_Recovery_24.00hrs_3MW.csv",
+            "2030_OutputSummary_Phase1_SDOM_PGnE_Target_0.00_Resilience_1.00_Outage_48.00hrs_Recovery_0.00hrs_diesel_3MW.csv",
+            "2030_OutputSummary_Phase1_SDOM_PGnE_Target_0.00_Resilience_1.00_Outage_48.00hrs_Recovery_48.00hrs_3MW.csv",
+            "2030_OutputSummary_Phase1_SDOM_PGnE_Target_0.00_Resilience_1.00_Outage_72.00hrs_Recovery_0.00hrs_diesel_3MW.csv",
+            "2030_OutputSummary_Phase1_SDOM_PGnE_Target_0.00_Resilience_1.00_Outage_72.00hrs_Recovery_72.00hrs_3MW.csv",
+            
+            "2030_OutputSummary_Phase1_SDOM_PGnE_Target_0.00_Resilience_1.00_Outage_24.00hrs_Recovery_0.00hrs_diesel_actual.csv",
+            "2030_OutputSummary_Phase1_SDOM_PGnE_Target_0.00_Resilience_1.00_Outage_24.00hrs_Recovery_24.00hrs_actual.csv",
+            "2030_OutputSummary_Phase1_SDOM_PGnE_Target_0.00_Resilience_1.00_Outage_48.00hrs_Recovery_0.00hrs_diesel_actual.csv",
+            "2030_OutputSummary_Phase1_SDOM_PGnE_Target_0.00_Resilience_1.00_Outage_48.00hrs_Recovery_48.00hrs_actual.csv",
+            "2030_OutputSummary_Phase1_SDOM_PGnE_Target_0.00_Resilience_1.00_Outage_72.00hrs_Recovery_0.00hrs_diesel_actual.csv",
+            "2030_OutputSummary_Phase1_SDOM_PGnE_Target_0.00_Resilience_1.00_Outage_72.00hrs_Recovery_72.00hrs_actual.csv",
+
+            "2030_OutputSummary_Phase1_SDOM_MEA_Target_0.00_Resilience_1.00_Outage_24.00hrs_Recovery_0.00hrs_diesel_land_constr.csv",
+            "2030_OutputSummary_Phase1_SDOM_MEA_Target_0.00_Resilience_1.00_Outage_24.00hrs_Recovery_24.00hrs_land_constr.csv",
+            "2030_OutputSummary_Phase1_SDOM_MEA_Target_0.00_Resilience_1.00_Outage_48.00hrs_Recovery_0.00hrs_diesel_land_constr.csv",
+            "2030_OutputSummary_Phase1_SDOM_MEA_Target_0.00_Resilience_1.00_Outage_48.00hrs_Recovery_48.00hrs_land_constr.csv",
+            
+            "2030_OutputSummary_Phase1_SDOM_MEA_Target_0.00_Resilience_1.00_Outage_24.00hrs_Recovery_0.00hrs_diesel_noland_constr.csv",
+            "2030_OutputSummary_Phase1_SDOM_MEA_Target_0.00_Resilience_1.00_Outage_24.00hrs_Recovery_24.00hrs_noland_constr.csv",
+            "2030_OutputSummary_Phase1_SDOM_MEA_Target_0.00_Resilience_1.00_Outage_48.00hrs_Recovery_0.00hrs_diesel_noland_constr.csv",
+            "2030_OutputSummary_Phase1_SDOM_MEA_Target_0.00_Resilience_1.00_Outage_48.00hrs_Recovery_48.00hrs_noland_constr.csv"
+
+
+        ]
+        exact_filenames_storage: List[str] = []  # add exact storage filenames here if needed
+
+        # 2) Discover files by exact basename match (no wildcards)
+        roots = candidate_roots()
+        summary_paths, unmatched_summary = discover_exact_filenames(exact_filenames_summary, roots)
+        storage_paths, unmatched_storage = discover_exact_filenames(exact_filenames_storage, roots)
+
+        # Diagnostics
+        print("[Discovery] Summary matches (in load order):")
+        if summary_paths:
+            for p in summary_paths:
+                tag = infer_tag_from_filename(str(p)) or "?"
+                is_p1 = "Phase1" if is_phase1_file(str(p)) else "Regular"
+                print(f"  → [{is_p1} | {tag:4}] {p.name} | {p}")
+        else:
+            print("  (none)")
+
+        if unmatched_summary:
+            print("[Discovery] Summary filenames not found (first plausible hint path):")
+            for u in unmatched_summary:
+                print("  -", u)
+
+        if unmatched_storage:
+            print("[Discovery] Storage filenames not found (first plausible hint path):")
+            for u in unmatched_storage:
+                print("  -", u)
+
+    # Helpful warnings
+    if not any(not is_phase1_file(str(p)) for p in summary_paths):
+        print("[WARNING] No regular summary files were found. Plots require at least one regular file.")
+    if not any(is_phase1_file(str(p)) for p in summary_paths):
+        print("[INFO] No Phase1 overlay files found. Capacity panels will render without dashed outage bars.")
+
+    # 3) Build use cases automatically (first regular match → Scenario 1; second → Scenario 2)
+    use_cases = {"Off-grid": ["1",'2','3','4','5','6','7','8','9','10','11','12'], "Grid": ["13",'14','15','16','17','18','19','20']}
+
+    # 4) Optional nicer scenario labels (human-friendly names)
+    scenario_labels_map = {
+        "1": "3 MW (flat) diesel backup, 24 h outage",
+        "2": "3 MW (flat) storage backup, 24 h outage",
+        "3": "3 MW (flat) diesel backup, 48 h outage",
+        "4": "3 MW (flat) storage backup, 48 h outage",
+        "5": "3 MW (flat) diesel backup, 72 h outage",
+        "6": "3 MW (flat) storage backup, 72 h outage",
+        "7": "Actual load diesel backup, 24 h outage",
+        "8": "Actual load storage backup, 24 h outage",
+        "9": "Actual load diesel backup, 48 h outage",
+        "10": "Actual load storage backup, 48 h outage",
+        "11": "Actual load diesel backup, 72 h outage",
+        "12": "Actual load storage backup, 72 h outage",
+        "13": "Land constrained diesel backup, 24 h outage",
+        "14": "Land constrained storage backup, 24 h outage",
+        "15": "Land constrained diesel backup, 48 h outage",
+        "16": "Land constrained storage backup, 48 h outage",
+        "17": "No land constrained diesel backup, 24 h outage",
+        "18": "No land constrained storage backup, 24 h outage",
+        "19": "No land constrained diesel backup, 48 h outage",
+        "20": "No land constrained storage backup, 48 h outage",
+
+
+    }
+
+    # 5) Overlay technologies (transparent dashed bars)
+    outage_techs = ["H2","Li-Ion",'Vanadium"']  # add more like ["H2", "Vanadium"] if needed
+
+    # 6) Create plots
+    plots = SDOMPlots(
+        csv_summary_paths=summary_paths,
+        csv_storage_paths=storage_paths,
+        renderer="browser",
+        use_cases=use_cases,
+        outage_requirement_metric_name="Discharge power capacity",
+        outage_requirement_techs=outage_techs,
+        outage_source_keyword="Phase1",
+        scenario_labels_map=scenario_labels_map,
+    )
+
+    plots.create_use_case_capacity_duration_dashboard(
+        title="",
+        filename="use_case_capacity_duration_dashboard.png",
+        outage_legend_label="Storage dedicated to outage",
+    )
+
+    plots.create_system_cost_stacked_bar_by_use_case(
+        title="",
+        filename="cost_components_by_use_case.png",
+    )
+
+    # Or: plots.create_all_plots()
+
 
 if __name__ == "__main__":
     main()

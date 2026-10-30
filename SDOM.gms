@@ -13,13 +13,14 @@ $OffText
 
 $setGlobal sim_year         2030
 $setGlobal NumberOfPeriods  8760
-$setGlobal OutageDur        24
+$setGlobal OutageDur        48
 $setGlobal ResilienceOption 1
 $setGlobal DieselforBackup  0
-$setGlobal DemandCharges    0
+$setGlobal DemandCharges    1
+$setGlobal GridConnection   1
 $setGlobal indir            Data
 $setGlobal outdir           Outputs
-$setGlobal case_name        1_7MW_24h
+$setGlobal case_name        Paper
 
 $call mkdir "%outdir%" > nul 2> nul
 
@@ -274,7 +275,9 @@ $include %indir%\%case_name%\Import_Cap_%sim_year%.csv
 $Offdelim
 /;
 
-ImportCap(h) = 0 ; 
+If (%GridConnection%=0,
+    ImportCap(h) = 0 ;
+    );
 
 Parameter ExportCap(h) Max export power (MW)
 /
@@ -302,7 +305,7 @@ $Offdelim
 /
 ;
 
-*ImportPrices(h) = 0*ImportPrices(h) ;
+ImportPrices(h) = ImportPrices(h) ;
 ExportPrices(h) = 0*ExportPrices(h) ;
 
 Parameter LargeHydroBudget(h) Generation from large hydro power plants for every hour in the analysis period (MW)
@@ -459,7 +462,7 @@ Obj..    TSC =e= sum(k, (FCR_VRE*(1000*CapSolar(k,'CAPEX_M') + CapSolar(k,'trans
 
                  sum(bu,CRF_GasCC(bu)*1000*DataBU(bu,'Capex')*CapCC(bu) + DataBU(bu,'FuelCost')*DataBU(bu,'HeatRate')*sum(h, GenCC(h,bu)) + DataBU(bu,'FOM')*1000*CapCC(bu) + DataBU(bu,'VOM')*sum(h, GenCC(h,bu))) +
                  
-                 FCR_Diesel*(1000 * CapexDiesel * CapDiesel + CapexDieselSto*HRDiesel*HCDiesel*sum(h, GenDiesel(h))) + DieselPrice*HRDiesel*sum(h, GenDiesel(h)) + (FOM_Diesel + FOM_Diesel_storage)*1000*CapDiesel + VOM_Diesel*sum(h,GenDiesel(h)) + 
+                 FCR_Diesel*(1000 * CapexDiesel * CapDiesel + CapexDieselSto*HRDiesel*HCDiesel*sum(h, GenDiesel(h))) + DieselPrice*HRDiesel*HCDiesel*sum(h, GenDiesel(h)) + (FOM_Diesel + FOM_Diesel_storage)*1000*CapDiesel + VOM_Diesel*sum(h,GenDiesel(h)) + 
                  
                  sum(h, ImportPrices(h)*Imports(h))- sum(h, ExportPrices(h)*Exports(h)) +
                  
@@ -541,7 +544,8 @@ BackupDiesel(h)..   CapDiesel =g= GenDiesel(h);
 
 MaxCycleYear..   sum(h,PD('Li-Ion',h)) =l= (MaxCycles/StorageData('Lifetime','Li-Ion'))*Ecap('Li-Ion') ;
 
-BackupEnergyOutage(j,h)$(ord(h)<outage_start_hour or ord(h)>(outage_start_hour + max_backup_power_dur + SOC_restore_hours) and %ResilienceOption%=1).. sqrt(StorageData('Eff',j))*SOC(j,h) =g= BackupSOC(j);
+*BackupEnergyOutage(j,h)$(ord(h)<outage_start_hour or ord(h)>=(outage_start_hour + max_backup_power_dur + SOC_restore_hours-1) and %ResilienceOption%=1).. SOC(j,h) =g= BackupSOC(j);
+BackupEnergyOutage(j,h)$(%ResilienceOption%=1).. SOC(j,h) =g= BackupSOC(j);
 
 *****************
 $offlisting
@@ -557,7 +561,7 @@ Model TechMix
                  Offpeak_variable_demand_charge
                  SolarBal
                  WindBal
-*                 Footprint
+                 Footprint
                  HydroBudget
                  ChargSt
                  DischargSt
@@ -582,7 +586,7 @@ Model SDOM_ResDesign
                  GenMix_ShareDes
                  SolarBalDes
                  WindBalDes
-*                 Footprint
+                 Footprint
                  HydroBudgetDes
                  ChargStDes
                  DischargStDes
@@ -609,7 +613,7 @@ Model SDOM_ResOutage
                  Offpeak_variable_demand_charge
                  SolarBal
                  WindBal
-*                 Footprint
+                 Footprint
                  HydroBudget
                  ChargSt
                  DischargSt
@@ -638,7 +642,7 @@ Model SDOM_ResOutage_Diesel
                  Offpeak_variable_demand_charge
                  SolarBal
                  WindBal
-*                 Footprint
+                 Footprint
                  HydroBudget
                  ChargSt
                  DischargSt
@@ -659,7 +663,7 @@ Model SDOM_ResOutage_Diesel
                  / ;
                  
 
-option optcr=0.05;
+option optcr=0.0;
 
 Option resLim = 1000000;
 
@@ -685,6 +689,74 @@ option sysout = off;
 
 
 Parameter
+         TotalCapCC_Phase1(Runs) Total capacity of gas combined cycle units (MW)
+         TotalDieselCap_Phase1(Runs) Total capacity of diesel units (MW)
+         TotalCapPV_Phase1(Runs) Total capacity of solar PV units (MW)
+         TotalCapWind_Phase1(Runs) Total capacity of wind units (MW)
+         TotalCapScha_Phase1(Runs,j) Total charge power capacity of storage units j (MW)
+         TotalCapSdis_Phase1(Runs,j) Total discharge power capacity of storage units j (MW)
+         TotalEcapS_Phase1(Runs,j) Total energy capacity of storage units j (MW)
+         TotalGenGasCC_Phase1(Runs) Total generation from Gas CC units (MWh)
+         TotalGenDiesel_Phase1(Runs) Total generation from diesel (MWh)
+         TotalGenPV_Phase1(Runs) Total generation from solar PV units (MWh)
+         TotalGenWind_Phase1(Runs) Total generation from wind units (MWh)
+         TotalOtherRen_Phase1(Runs) Total generation from other renewable units (MWh)
+         TotalHydro_Phase1(Runs) Total generation from hydro units (MWh)
+         TotalNuclear_Phase1(Runs) Total generation from nuclear units (MWh)
+         TotalGenS_Phase1(Runs,j) Total generation from storage units j (MWh)
+         TotalCost_Phase1(Runs) Total cost US$
+         TotalPCarge_Phase1(Runs,j) Total charged energy for storage unit j (MWh)
+         TotalAllPCarge_Phase1(Runs) Total charged energy for all storage units j (MWh)
+         SummaryPC_Phase1(Runs,h,j) Charging power for storage technology j during hour h (MW)
+         SummaryPD_Phase1(Runs,h,j) Discharging power for storage technology j during hour h (MW)
+         SummarySOC_Phase1(Runs,h,j) State-of-charge (SOC) for storage technology j during hour h (MWh)
+         SummaryD_Phase1(Runs,j) Discharge duration for storage technology j (h)
+         SolarPVGen_Phase1(Runs,h) Generation from solar PV plants
+         WindGen_Phase1(Runs,h) Generation from wind plants
+         SolarPVCurt_Phase1(Runs,h) Curtailment from solar PV plants
+         WindCurt_Phase1(Runs,h) Curtailment from wind plants
+         GenGasCC_Phase1(Runs,h) Generation from gas CC unit
+         GenGasDiesel_Phase1(Runs,h) Generation from diesel unit
+         ImportsPower_Phase1(Runs,h) Power Imports
+         ExportsPower_Phase1(Runs,h) Power Imports
+         HydroGene_Phase1(Runs,h) Hydropower generation 
+         StorageGasCC2Storage_Phase1(Runs,h) Power from Storage and Gas CC to Storage
+         SelectedSolarPV_Phase1(Runs,k) Selected Solar PV plants
+         SelectedWind_Phase1(Runs,w) Selected Wind plants
+         SolarCapex_Phase1(Runs) Total Capex for solar PV
+         WindCapex_Phase1(Runs) Total Capex for wind
+         SolarFOM_Phase1(Runs) Total FOM for solar PV
+         WindFOM_Phase1(Runs) Total FOM for wind
+         Li_Ion_Pcapex_Phase1(Runs) Total Power Capex for Li-Ion
+         Li_Ion_Ecapex_Phase1(Runs) Total Energy Capex for Li-Ion
+         Li_Ion_FOM_Phase1(Runs) Total FOM for Li-Ion
+         Li_Ion_VOM_Phase1(Runs) Total VOM for Li-Ion
+         Vanadium_Pcapex_Phase1(Runs) Total Power Capex for Vanadium
+         Vanadium_Ecapex_Phase1(Runs) Total Energy Capex for Vanadium
+         Vanadium_FOM_Phase1(Runs) Total FOM for Vanadium
+         Vanadium_VOM_Phase1(Runs) Total VOM for Vanadium
+         PHS_Pcapex_Phase1(Runs) Total Power Capex for PHS
+         PHS_Ecapex_Phase1(Runs) Total Energy Capex for PHS
+         PHS_FOM_Phase1(Runs) Total FOM for PHS
+         PHS_VOM_Phase1(Runs) Total VOM for PHS
+         H2_Pcapex_Phase1(Runs) Total Power Capex for H2
+         H2_Ecapex_Phase1(Runs) Total Energy Capex for H2
+         H2_FOM_Phase1(Runs) Total FOM for H2
+         H2_VOM_Phase1(Runs) Total VOM for H2
+         GasCC_Capex_Phase1(Runs) Total Gas CC Capex
+         GasCC_FOM_Phase1(Runs) Total Gas CC FOM
+         GasCC_VOM_Phase1(Runs) Total Gas CC VOM
+         GasCC_FUEL_Phase1(Runs) Total Gas CC fuel cost
+         Diesel_Capex_Phase1(Runs) Total diesel Capex
+         Diesel_FOM_Phase1(Runs) Total diesel FOM
+         Diesel_VOM_Phase1(Runs) Total diesel VOM
+         Diesel_FUEL_Phase1(Runs) Total fuel cost
+         ImportsCost_Phase1(Runs) Total cost of imports
+         ExportsCost_Phase1(Runs) Total cost of exports
+         DemandCharges_Phase1(Runs) Total demand charges
+         LCOE_Phase1(Runs) Added total annual cost of electricity from storage ($ per kWh)
+         LCOS_Phase1(Runs) Added total annual cost from storage ($ per kW)
+         
          TotalCapCC(Runs) Total capacity of gas combined cycle units (MW)
          TotalDieselCap(Runs) Total capacity of diesel units (MW)
          TotalCapPV(Runs) Total capacity of solar PV units (MW)
@@ -752,6 +824,8 @@ Parameter
          DemandCharges(Runs) Total demand charges
          LCOE(Runs) Added total annual cost of electricity from storage ($ per kWh)
          LCOS(Runs) Added total annual cost from storage ($ per kW)
+         
+         Phase1IniSto(j) state of charge in phase 1
 ;
 
 if(%ResilienceOption%=1,
@@ -797,28 +871,107 @@ if(%ResilienceOption%=1,
          Imports.fx(h)$(ord(h)>= outage_start_hour and ord(h)< outage_start_hour + max_backup_power_dur) =0;
          CFSolar(h,k)$(ord(h)>= outage_start_hour and ord(h)< outage_start_hour + max_backup_power_dur) =0;
          CFWind(h,w)$(ord(h)>= outage_start_hour and ord(h)< outage_start_hour + max_backup_power_dur) =0;
+         
+*         Phase1IniSto(j) = (SOC.l(j,'1') + critical_peak_load/sqrt(StorageData('Eff',j))) ;
 
          if(%DieselforBackup%=1,
-         CapDiesel.fx = CapDiesel.l;
+         CapDiesel.lo = CapDiesel.l;
          GenDiesel.fx(h)$(ord(h)< (outage_start_hour) or ord(h)>= (outage_start_hour + max_backup_power_dur)) = 0;
          PD.fx(j,h)$(ord(h)>= (outage_start_hour) and ord(h)< (outage_start_hour + max_backup_power_dur )) = 0;
-         StorageData('Min_Duration',j) = 0;
-         StorageData('Max_Duration',j) = 0;
-         StorageData('Max_P',j) = 0 ;
-         SOC.fx(j,h) = 0 ;
-         PC.fx(j,h) = 0;
-         PD.fx(j,h) = 0;
+*         StorageData('Min_Duration',j) = 0;
+*         StorageData('Max_Duration',j) = 0;
+*         StorageData('Max_P',j) = 0 ;
+*         SOC.fx(j,h) = 0 ;
+*         PC.fx(j,h) = 0;
+*         PD.fx(j,h) = 0;
          Solve SDOM_ResOutage_Diesel using mip minimizing TSC;
          elseif %DieselforBackup%=0,
+
+*===============================================================================================
+* Outputs
+*===============================================================================================         
+         TotalCost_Phase1(Runs) = TSC.l;
+         TotalCapCC_Phase1(Runs) = sum(bu,CapCC.l(bu));
+         TotalDieselCap_Phase1(Runs) = CapDiesel.l ;
+         TotalCapPV_Phase1(Runs) = sum(k, CapSolar(k,'capacity')*Ypv.l(k));
+         TotalCapWind_Phase1(Runs) = sum(w, CapWind(w,'capacity')*Ywind.l(w));
+         TotalCapScha_Phase1(Runs,j) = Pcha.l(j);
+         TotalCapSdis_Phase1(Runs,j) = Pdis.l(j);
+         TotalEcapS_Phase1(Runs,j) = Ecap.l(j);
+         TotalGenGasCC_Phase1(Runs) = sum((h,bu),GenCC.l(h,bu));
+         TotalGenDiesel_Phase1(Runs) = sum(h,GenDiesel.l(h));
+         TotalGenPV_Phase1(Runs) = sum(h, GenPV.l(h));
+         TotalGenWind_Phase1(Runs) = sum(h, GenWind.l(h));
+         TotalGenS_Phase1(Runs,j) = sum((h),PD.l(j,h));
+         TotalOtherRen_Phase1(Runs) = sum(h, OtherRenewables(h));
+         TotalHydro_Phase1(Runs) = sum(h, LargeHydro(h));
+         TotalNuclear_Phase1(Runs) = sum(h, Nuclear(h));
+         SummaryPC_Phase1(Runs,h,j) = PC.l(j,h);
+         TotalPCarge_Phase1(Runs,j) = sum(h,SummaryPC_Phase1(Runs,h,j));
+         TotalAllPCarge_Phase1(Runs) = sum(j,TotalPCarge_Phase1(Runs,j)) ; 
+         SummaryPD_Phase1(Runs,h,j) = PD.l(j,h);
+         SummarySOC_Phase1(Runs,h,j) = SOC.l(j,h);
+         SummaryD_Phase1(Runs,j) = sqrt(StorageData('Eff',j))*Ecap.l(j)/(Pdis.l(j) + 1e-15);
+         SolarPVGen_Phase1(Runs,h) = GenPV.l(h);
+         WindGen_Phase1(Runs,h) = GenWind.l(h);
+         SolarPVCurt_Phase1(Runs,h) = CurtPV.l(h);
+         WindCurt_Phase1(Runs,h) = CurtWind.l(h);
+         GenGasCC_Phase1(Runs,h) = sum(bu,GenCC.l(h,bu));
+         GenGasDiesel_Phase1(Runs,h)= GenDiesel.l(h);
+         ImportsPower_Phase1(Runs,h) = Imports.l(h);
+         ExportsPower_Phase1(Runs,h) = Exports.l(h);
+         HydroGene_Phase1(Runs,h) = LargeHydro(h);
+         SelectedSolarPV_Phase1(Runs,k) = Ypv.l(k);
+         SelectedWind_Phase1(Runs,w) = Ywind.l(w);
+         StorageGasCC2Storage_Phase1(Runs,h) = (sum(j, PD.l(j,h)) + sum(bu,GenCC.l(h,bu)))$(Load(h)-AlphaNuclear*Nuclear(h)-AlphaLargHy*LargeHydro(h)-AlphaOtheRe*OtherRenewables(h)-GenPV.l(h)-GenWind.l(h) <= 0) +
+                                     sum(j, PC.l(j,h))$(Load(h)-AlphaNuclear*Nuclear(h)-AlphaLargHy*LargeHydro(h)-AlphaOtheRe*OtherRenewables(h)-GenPV.l(h)-GenWind.l(h) > 0) ;
+         SolarCapex_Phase1(Runs) = sum(k, (FCR_VRE*(1000*CapSolar(k,'CAPEX_M') + CapSolar(k,'trans_cap_cost'))*CapSolar(k,'capacity')*Ypv.l(k)));
+         WindCapex_Phase1(Runs) = sum(w, (FCR_VRE*(1000*CapWind(w,'CAPEX_M') + CapWind(w,'trans_cap_cost'))*CapWind(w,'capacity')*Ywind.l(w)));
+         SolarFOM_Phase1(Runs) = sum(k, 1000*CapSolar(k,'FOM_M')*CapSolar(k,'capacity')*Ypv.l(k));
+         WindFOM_Phase1(Runs) = sum(w, 1000*CapWind(w,'FOM_M')*CapWind(w,'capacity')*Ywind.l(w));
+         Li_Ion_Pcapex_Phase1(Runs) = CRF('Li-Ion')*(1000*StorageData('CostRatio','Li-Ion')*StorageData('P_Capex','Li-Ion')*Pcha.l('Li-Ion') + 1000*(1-StorageData('CostRatio','Li-Ion'))*StorageData('P_Capex','Li-Ion')*Pdis.l('Li-Ion') );
+         Li_Ion_Ecapex_Phase1(Runs)  = CRF('Li-Ion')*1000*StorageData('E_Capex','Li-Ion')*Ecap.l('Li-Ion');
+         Vanadium_Pcapex_Phase1(Runs) = CRF('Vanadium')*(1000*StorageData('CostRatio','Vanadium')*StorageData('P_Capex','Vanadium')*Pcha.l('Vanadium') + 1000*(1-StorageData('CostRatio','Vanadium'))*StorageData('P_Capex','Vanadium')*Pdis.l('Vanadium') );
+         Vanadium_Ecapex_Phase1(Runs)  = CRF('Vanadium')*1000*StorageData('E_Capex','Vanadium')*Ecap.l('Vanadium');
+         PHS_Pcapex_Phase1(Runs) = CRF('PHS')*(1000*StorageData('CostRatio','PHS')*StorageData('P_Capex','PHS')*Pcha.l('PHS') + 1000*(1-StorageData('CostRatio','PHS'))*StorageData('P_Capex','PHS')*Pdis.l('PHS') );
+         PHS_Ecapex_Phase1(Runs)  = CRF('PHS')*1000*StorageData('E_Capex','PHS')*Ecap.l('PHS');
+         H2_Pcapex_Phase1(Runs) = CRF('H2')*(1000*StorageData('CostRatio','H2')*StorageData('P_Capex','H2')*Pcha.l('H2') + 1000*(1-StorageData('CostRatio','H2'))*StorageData('P_Capex','H2')*Pdis.l('H2') );
+         H2_Ecapex_Phase1(Runs)  = CRF('H2')*1000*StorageData('E_Capex','H2')*Ecap.l('H2');
+         Li_Ion_FOM_Phase1(Runs) = 1000*StorageData('CostRatio','Li-Ion')*StorageData('FOM','Li-Ion')*Pcha.l('Li-Ion') + 1000*(1-StorageData('CostRatio','Li-Ion'))*StorageData('FOM','Li-Ion')*Pdis.l('Li-Ion') ;
+         Li_Ion_VOM_Phase1(Runs) = StorageData('VOM','Li-Ion')*sum(h,PD.l('Li-Ion',h));
+         Vanadium_FOM_Phase1(Runs) = 1000*StorageData('CostRatio','Vanadium')*StorageData('FOM','Vanadium')*Pcha.l('Vanadium') + 1000*(1-StorageData('CostRatio','Vanadium'))*StorageData('FOM','Vanadium')*Pdis.l('Vanadium') ;
+         Vanadium_VOM_Phase1(Runs) = StorageData('VOM','Vanadium')*sum(h,PD.l('Vanadium',h));
+         PHS_FOM_Phase1(Runs) = 1000*StorageData('CostRatio','PHS')*StorageData('FOM','PHS')*Pcha.l('PHS') + 1000*(1-StorageData('CostRatio','PHS'))*StorageData('FOM','PHS')*Pdis.l('PHS') ;
+         PHS_VOM_Phase1(Runs) = StorageData('VOM','PHS')*sum(h,PD.l('PHS',h));
+         H2_FOM_Phase1(Runs) = 1000*StorageData('CostRatio','H2')*StorageData('FOM','H2')*Pcha.l('H2') + 1000*(1-StorageData('CostRatio','H2'))*StorageData('FOM','H2')*Pdis.l('H2') ;
+         H2_VOM_Phase1(Runs) = StorageData('VOM','H2')*sum(h,PD.l('H2',h));
+         GasCC_Capex_Phase1(Runs) = FCR_GasCC*1000*CapexGasCC*sum(bu,CapCC.l(bu));
+         GasCC_FOM_Phase1(Runs) = FOM_GasCC*1000*sum(bu,CapCC.l(bu));
+         GasCC_VOM_Phase1(Runs) = VOM_GasCC*sum((h,bu), GenCC.l(h,bu));
+         GasCC_FUEL_Phase1(Runs) = GasPrice*HR*sum((h,bu), GenCC.l(h,bu));
+         Diesel_Capex_Phase1(Runs) = FCR_Diesel*(1000 * CapexDiesel * CapDiesel.l + CapexDieselSto*HRDiesel*HCDiesel*sum(h, GenDiesel.l(h)));
+         Diesel_FOM_Phase1(Runs) =  (FOM_Diesel + FOM_Diesel_storage)*1000*CapDiesel.l ;
+         Diesel_VOM_Phase1(Runs) =  VOM_Diesel*sum(h,GenDiesel.l(h)) ;
+         Diesel_FUEL_Phase1(Runs) = DieselPrice*HRDiesel*HCDiesel*sum(h, GenDiesel.l(h)) ;
+         ImportsCost_Phase1(Runs) = sum(h, ImportPrices(h)*Imports.l(h));
+         ExportsCost_Phase1(Runs) = -sum(h, ExportPrices(h)*Exports.l(h));
+         DemandCharges_Phase1(Runs) = sum(m,Fixed_dem_charge.l(m) + Peak_variable_dem_charge.l(m) + Offpeak_variable_dem_charge.l(m)) ;
+         LCOE_Phase1(Runs) = (sum(j, CRF(j)*(1000*StorageData('CostRatio',j)*StorageData('P_Capex',j)*Pcha.l(j) + 1000*(1-StorageData('CostRatio',j))*StorageData('P_Capex',j)*Pdis.l(j) + 1000*StorageData('E_Capex',j)*Ecap.l(j)))+
+                      sum(j, 1000*StorageData('CostRatio',j)*StorageData('FOM',j)*Pcha.l(j) + 1000*(1-StorageData('CostRatio',j))*StorageData('FOM',j)*Pdis.l(j) + StorageData('VOM',j)*sum(h,PD.l(j,h))) + eps) /(sum(j,TotalGenS_Phase1(Runs,j) + eps));               
+
+         LCOS_Phase1(Runs) = (sum(j, CRF(j)*(1000*StorageData('CostRatio',j)*StorageData('P_Capex',j)*Pcha.l(j) + 1000*(1-StorageData('CostRatio',j))*StorageData('P_Capex',j)*Pdis.l(j) + 1000*StorageData('E_Capex',j)*Ecap.l(j)))+
+                      sum(j, 1000*StorageData('CostRatio',j)*StorageData('FOM',j)*Pcha.l(j) + 1000*(1-StorageData('CostRatio',j))*StorageData('FOM',j)*Pdis.l(j) + StorageData('VOM',j)*sum(h,PD.l(j,h))) + eps) /(sum(j,(TotalCapScha_Phase1(Runs,j) + TotalCapSdis_Phase1(Runs,j))/2) + eps);
+*===================================================================================================================
          Pdis.lo(j) = Pdis.l(j) ;
-         Pcha.lo(j) = Pcha.l(j) ;
+*         Pcha.lo(j) = Pcha.l(j) ;
          Ecap.lo(j) = Ecap.l(j) ;
-         BackupSOC(j) = SOC.l(j,'1') ;
-         CapDiesel.fx = 0 ;
+         BackupSOC(j) = SOC.l(j,'1') + PD.l(j,'1')/sqrt(StorageData('Eff',j)) ;
+         PD.fx(j,h)$(ord(h)>= (outage_start_hour) and ord(h)< (outage_start_hour + max_backup_power_dur ) and SOC.l(j,'1')=0) = 0;
+         PC.fx(j,h)$(ord(h)>= (outage_start_hour) and ord(h)< (outage_start_hour + max_backup_power_dur ) and SOC.l(j,'1')=0) = 0;
+         CapDiesel.fx = 0 ;                      
+
          Solve SDOM_ResOutage using mip minimizing TSC;
          );
-
-
    
          TotalCost(Runs) = TSC.l;
          TotalCapCC(Runs) = sum(bu,CapCC.l(bu));
@@ -882,15 +1035,15 @@ if(%ResilienceOption%=1,
          Diesel_Capex(Runs) = FCR_Diesel*(1000 * CapexDiesel * CapDiesel.l + CapexDieselSto*HRDiesel*HCDiesel*sum(h, GenDiesel.l(h)));
          Diesel_FOM(Runs) =  (FOM_Diesel + FOM_Diesel_storage)*1000*CapDiesel.l ;
          Diesel_VOM(Runs) =  VOM_Diesel*sum(h,GenDiesel.l(h)) ;
-         Diesel_FUEL(Runs) = DieselPrice*HRDiesel*sum(h, GenDiesel.l(h)) ;
+         Diesel_FUEL(Runs) = DieselPrice*HRDiesel*HCDiesel*sum(h, GenDiesel.l(h)) ;
          ImportsCost(Runs) = sum(h, ImportPrices(h)*Imports.l(h));
          ExportsCost(Runs) = -sum(h, ExportPrices(h)*Exports.l(h));
          DemandCharges(Runs) = sum(m,Fixed_dem_charge.l(m) + Peak_variable_dem_charge.l(m) + Offpeak_variable_dem_charge.l(m)) ;
          LCOE(Runs) = (sum(j, CRF(j)*(1000*StorageData('CostRatio',j)*StorageData('P_Capex',j)*Pcha.l(j) + 1000*(1-StorageData('CostRatio',j))*StorageData('P_Capex',j)*Pdis.l(j) + 1000*StorageData('E_Capex',j)*Ecap.l(j)))+
-                      sum(j, 1000*StorageData('CostRatio',j)*StorageData('FOM',j)*Pcha.l(j) + 1000*(1-StorageData('CostRatio',j))*StorageData('FOM',j)*Pdis.l(j) + StorageData('VOM',j)*sum(h,PD.l(j,h))) + eps) /(sum(j,1000*TotalEcapS(Runs,j) + eps));               
+                      sum(j, 1000*StorageData('CostRatio',j)*StorageData('FOM',j)*Pcha.l(j) + 1000*(1-StorageData('CostRatio',j))*StorageData('FOM',j)*Pdis.l(j) + StorageData('VOM',j)*sum(h,PD.l(j,h))) + eps) /(sum(j,TotalGenS(Runs,j) + eps));               
 
                   LCOS(Runs) = (sum(j, CRF(j)*(1000*StorageData('CostRatio',j)*StorageData('P_Capex',j)*Pcha.l(j) + 1000*(1-StorageData('CostRatio',j))*StorageData('P_Capex',j)*Pdis.l(j) + 1000*StorageData('E_Capex',j)*Ecap.l(j)))+
-                      sum(j, 1000*StorageData('CostRatio',j)*StorageData('FOM',j)*Pcha.l(j) + 1000*(1-StorageData('CostRatio',j))*StorageData('FOM',j)*Pdis.l(j) + StorageData('VOM',j)*sum(h,PD.l(j,h))) + eps) /(sum(j,1000*(TotalCapScha(Runs,j) + TotalCapSdis(Runs,j))/2) + eps);
+                      sum(j, 1000*StorageData('CostRatio',j)*StorageData('FOM',j)*Pcha.l(j) + 1000*(1-StorageData('CostRatio',j))*StorageData('FOM',j)*Pdis.l(j) + StorageData('VOM',j)*sum(h,PD.l(j,h))) + eps) /(sum(j,(TotalCapScha(Runs,j) + TotalCapSdis(Runs,j))/2) + eps);
                       
          );
     elseif %ResilienceOption%=0,
@@ -960,7 +1113,7 @@ if(%ResilienceOption%=1,
          Diesel_Capex(Runs) = FCR_Diesel*(1000 * CapexDiesel * CapDiesel.l + CapexDieselSto*HRDiesel*HCDiesel*sum(h, GenDiesel.l(h)));
          Diesel_FOM(Runs) =  (FOM_Diesel + FOM_Diesel_storage)*1000*CapDiesel.l ;
          Diesel_VOM(Runs) =  VOM_Diesel*sum(h,GenDiesel.l(h)) ;
-         Diesel_FUEL(Runs) = DieselPrice*HRDiesel*sum(h, GenDiesel.l(h)) ;
+         Diesel_FUEL(Runs) = DieselPrice*HRDiesel*HCDiesel*sum(h, GenDiesel.l(h)) ;
          ImportsCost(Runs) = sum(h, ImportPrices(h)*Imports.l(h));
          ExportsCost(Runs) = -sum(h, ExportPrices(h)*Exports.l(h));
          DemandCharges(Runs) = sum(m,Fixed_dem_charge.l(m) + Peak_variable_dem_charge.l(m) + Offpeak_variable_dem_charge.l(m)) ;
@@ -972,10 +1125,288 @@ if(%ResilienceOption%=1,
                       
          );
     );
-         
+
+        
+FILE csvPhase1 Report File /OutputSummary_Phase1.csv/;
+PUT csvPhase1
+put_utility 'ren' / '%outdir%\%case_name%\%sim_year%_OutputSummary_Phase1_SDOM_%FNAME%_Target_' GenMix_Target:0 '_Resilience_' %ResilienceOption%:0'_Outage_' max_backup_power_dur:0'hrs_Recovery_'SOC_restore_hours:0'hrs.csv';
+csvPhase1.pc = 5;
+PUT csvPhase1;
+        
+        PUT 'Metric','Technology','Scenario','Optimal Value','Unit'/;
+        
+        loop (Runs,
+             PUT 'Total cost', '', Runs.tl, TotalCost(Runs):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'Cost of energy', '', Runs.tl, (TotalCost_Phase1(Runs)/sum(h, Load(h))):0:5, 'US$/MWh' /);
+        
+        loop (Runs,
+             PUT 'Capacity', 'GasCC', Runs.tl, TotalCapCC_Phase1(Runs):0:5, 'MW' /);
+             
+        loop (Runs,
+             PUT 'Capacity', 'Diesel', Runs.tl, TotalDieselCap_Phase1(Runs):0:5, 'MW' /);
+        
+        loop (Runs,
+             PUT 'Capacity', 'Solar PV', Runs.tl, TotalCapPV_Phase1(Runs):0:5, 'MW' /);
+        
+        loop (Runs,
+             PUT 'Capacity', 'Wind', Runs.tl, TotalCapWind_Phase1(Runs):0:5, 'MW' /);
+             
+        loop (Runs,
+             PUT 'Capacity', 'All generation', Runs.tl, (TotalCapWind_Phase1(Runs) + TotalCapPV_Phase1(Runs) + TotalCapCC_Phase1(Runs)):0:5, 'MW' /);
+             
+        loop (Runs,
+             PUT 'Total generation', 'GasCC', Runs.tl, TotalGenGasCC_Phase1(Runs):0:5, 'MWh' /);
+             
+        loop (Runs,
+             PUT 'Total generation', 'Diesel', Runs.tl, TotalGenDiesel_Phase1(Runs):0:5, 'MWh' /);
+        
+        loop (Runs,
+             PUT 'Total generation', 'Solar PV', Runs.tl, TotalGenPV_Phase1(Runs):0:5, 'MWh' /);
+        
+        loop (Runs,
+             PUT 'Total generation', 'Wind', Runs.tl, TotalGenWind_Phase1(Runs):0:5, 'MWh' /);
+             
+        loop (Runs,
+             PUT 'Total generation', 'Other renewables', Runs.tl, TotalOtherRen_Phase1(Runs):0:5, 'MWh' /);
+        
+        loop (Runs,
+             PUT 'Total generation', 'Hydro', Runs.tl, TotalHydro_Phase1(Runs):0:5, 'MWh' /);
+             
+        loop (Runs,
+             PUT 'Total generation', 'Nuclear', Runs.tl, TotalNuclear_Phase1(Runs):0:5, 'MWh' /);
+             
+        loop ((Runs,j),
+             PUT 'Total generation', j.tl, Runs.tl, TotalGenS_Phase1(Runs,j):0:5, 'MWh' /);
+             
+        loop (Runs,
+             PUT 'Total generation', 'All technologies', Runs.tl, (TotalGenGasCC_Phase1(Runs) + TotalGenDiesel_Phase1(Runs) + TotalGenPV_Phase1(Runs) + TotalGenWind_Phase1(Runs) + TotalOtherRen_Phase1(Runs) + TotalHydro_Phase1(Runs) + TotalNuclear_Phase1(Runs) + sum(j,TotalGenS_Phase1(Runs,j))):0:5, 'MWh' /);
+             
+        loop (Runs,
+             PUT 'Imports', 'Grid', Runs.tl, sum(h,ImportsPower_Phase1(Runs,h)):0:5, 'MWh' /);
+             
+        loop (Runs,
+             PUT 'Exports', 'Grid', Runs.tl, sum(h,ExportsPower_Phase1(Runs,h)):0:5, 'MWh' /);
+             
+        loop ((Runs,j),
+             PUT 'Storage energy charging', j.tl, Runs.tl, TotalPCarge_Phase1(Runs,j):0:5, 'MWh' /);
+             
+        loop (Runs,
+             PUT 'Storage energy charging', 'All storage', Runs.tl, TotalAllPCarge_Phase1(Runs):0:5, 'MWh' /);
+             
+        loop (Runs,
+             PUT 'Total demand', '', Runs.tl, sum(h, Load(h)):0:5, 'MWh' /);
+        
+        loop (Runs,
+             PUT 'CAPEX', 'GasCC', Runs.tl, GasCC_Capex_Phase1(Runs):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'CAPEX', 'Diesel', Runs.tl, Diesel_Capex_Phase1(Runs):0:5, 'US$' /);
+        
+        loop (Runs,
+             PUT 'CAPEX', 'Solar PV', Runs.tl, SolarCapex_Phase1(Runs):0:5, 'US$' /);
+        
+        loop (Runs,
+             PUT 'CAPEX', 'Wind', Runs.tl, WindCapex_Phase1(Runs):0:5, 'US$' /);
+        
+        loop (Runs,
+             PUT 'CAPEX', 'All generation', Runs.tl, (GasCC_Capex_Phase1(Runs) + Diesel_Capex_Phase1(Runs) + SolarCapex_Phase1(Runs) + WindCapex_Phase1(Runs)):0:5, 'US$' /);      
+        
+        loop (Runs,
+             PUT 'Power Capex', 'Li-Ion', Runs.tl, Li_Ion_Pcapex_Phase1(Runs):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'Power Capex', 'Vanadium', Runs.tl, Vanadium_Pcapex_Phase1(Runs):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'Power Capex', 'PHS', Runs.tl, PHS_Pcapex_Phase1(Runs):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'Power Capex', 'H2', Runs.tl, H2_Pcapex_Phase1(Runs):0:5, 'US$' /);
+        
+        loop (Runs,
+             PUT 'Total Power Capex', 'All storage', Runs.tl, (Li_Ion_Pcapex_Phase1(Runs) + Vanadium_Pcapex_Phase1(Runs) + PHS_Pcapex_Phase1(Runs) + H2_Pcapex_Phase1(Runs)):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'Energy Capex', 'Li-Ion', Runs.tl, Li_Ion_Ecapex_Phase1(Runs):0:5, 'US$' /);
+        
+        loop (Runs,
+             PUT 'Energy Capex', 'Vanadium', Runs.tl, Vanadium_Ecapex_Phase1(Runs):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'Energy Capex', 'PHS', Runs.tl, PHS_Ecapex_Phase1(Runs):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'Energy Capex', 'H2', Runs.tl, H2_Ecapex_Phase1(Runs):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'Total Energy Capex', 'All storage', Runs.tl, (Li_Ion_Ecapex_Phase1(Runs) + Vanadium_Ecapex_Phase1(Runs) + PHS_Ecapex_Phase1(Runs) + H2_Ecapex_Phase1(Runs)):0:5, 'US$' /);
+        
+        loop (Runs,
+             PUT 'Total Capex', 'Li-Ion', Runs.tl, (Li_Ion_Ecapex_Phase1(Runs) + Li_Ion_Pcapex_Phase1(Runs)):0:5, 'US$' /);
+        
+        loop (Runs,
+             PUT 'Total Capex', 'Vanadium', Runs.tl, (Vanadium_Ecapex_Phase1(Runs) + Vanadium_Pcapex_Phase1(Runs)):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'Total Capex', 'PHS', Runs.tl, (PHS_Ecapex_Phase1(Runs) + PHS_Pcapex_Phase1(Runs)):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'Total Capex', 'H2', Runs.tl, (H2_Ecapex_Phase1(Runs) + H2_Pcapex_Phase1(Runs)):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'Total Capex', 'All storage', Runs.tl, (Li_Ion_Pcapex_Phase1(Runs) + Vanadium_Pcapex_Phase1(Runs) + PHS_Pcapex_Phase1(Runs) + H2_Pcapex_Phase1(Runs) + Li_Ion_Ecapex_Phase1(Runs) + Vanadium_Ecapex_Phase1(Runs) + PHS_Ecapex_Phase1(Runs) + H2_Ecapex_Phase1(Runs)):0:5, 'US$' /);
+        
+        loop (Runs,
+             PUT 'FOM', 'GasCC', Runs.tl, GasCC_FOM_Phase1(Runs):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'FOM', 'Diesel', Runs.tl, Diesel_FOM_Phase1(Runs):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'FOM', 'Solar PV', Runs.tl, SolarFOM_Phase1(Runs):0:5, 'US$' /);
+        
+        loop (Runs,
+             PUT 'FOM', 'Wind', Runs.tl, WindFOM_Phase1(Runs):0:5, 'US$' /);
+        
+        loop (Runs,
+             PUT 'FOM', 'Li-Ion', Runs.tl, Li_Ion_FOM_Phase1(Runs):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'FOM', 'Vanadium', Runs.tl, Vanadium_FOM_Phase1(Runs):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'FOM', 'PHS', Runs.tl, PHS_FOM_Phase1(Runs):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'FOM', 'H2', Runs.tl, H2_FOM_Phase1(Runs):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'FOM', 'All technologies', Runs.tl, (GasCC_FOM_Phase1(Runs) + Diesel_FOM_Phase1(Runs) + SolarFOM_Phase1(Runs) + WindFOM_Phase1(Runs) + Li_Ion_FOM_Phase1(Runs) + Vanadium_FOM_Phase1(Runs) + PHS_FOM_Phase1(Runs) + H2_FOM_Phase1(Runs)):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'VOM', 'GasCC', Runs.tl, (GasCC_VOM_Phase1(Runs) + GasCC_FUEL_Phase1(Runs)):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'VOM', 'Diesel', Runs.tl, (Diesel_VOM_Phase1(Runs) + Diesel_FUEL_Phase1(Runs)):0:5, 'US$' /);
+        
+        loop (Runs,
+             PUT 'VOM', 'Li-Ion', Runs.tl, Li_Ion_VOM_Phase1(Runs):0:5, 'US$' /);
+        
+        loop (Runs,
+             PUT 'VOM', 'Vanadium', Runs.tl, Vanadium_VOM_Phase1(Runs):0:5, 'US$' /);
+        
+        loop (Runs,
+             PUT 'VOM', 'PHS', Runs.tl, PHS_VOM_Phase1(Runs):0:5, 'US$' /);
+        
+        loop (Runs,
+             PUT 'VOM', 'H2', Runs.tl, H2_VOM_Phase1(Runs):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'VOM', 'Grid Imports', Runs.tl, ImportsCost_Phase1(Runs):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'VOM', 'Grid Exports', Runs.tl, ExportsCost_Phase1(Runs):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'VOM', 'Demand Charges', Runs.tl, DemandCharges_Phase1(Runs):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'VOM', 'All technologies', Runs.tl, (GasCC_VOM_Phase1(Runs) + GasCC_FUEL_Phase1(Runs) + (Diesel_VOM_Phase1(Runs) + Diesel_FUEL_Phase1(Runs)) + Li_Ion_VOM_Phase1(Runs) + Vanadium_VOM_Phase1(Runs) + PHS_VOM_Phase1(Runs) + H2_VOM_Phase1(Runs) + ImportsCost_Phase1(Runs) + DemandCharges_Phase1(Runs) + ExportsCost_Phase1(Runs)):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'OPEX', 'GasCC', Runs.tl, (GasCC_FOM_Phase1(Runs) + GasCC_VOM_Phase1(Runs) + GasCC_FUEL_Phase1(Runs)):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'OPEX', 'Diesel', Runs.tl, (Diesel_FOM_Phase1(Runs) + Diesel_VOM_Phase1(Runs) + Diesel_FUEL_Phase1(Runs)):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'OPEX', 'Solar PV', Runs.tl, SolarFOM_Phase1(Runs):0:5, 'US$' /);
+        
+        loop (Runs,
+             PUT 'OPEX', 'Wind', Runs.tl, WindFOM_Phase1(Runs):0:5, 'US$' /);
+        
+        loop (Runs,
+             PUT 'OPEX', 'Li-Ion', Runs.tl, (Li_Ion_FOM_Phase1(Runs) + Li_Ion_VOM_Phase1(Runs)):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'OPEX', 'Vanadium', Runs.tl, (Vanadium_FOM_Phase1(Runs) + Vanadium_VOM_Phase1(Runs)):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'OPEX', 'PHS', Runs.tl, (PHS_FOM_Phase1(Runs) + PHS_VOM_Phase1(Runs)):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'OPEX', 'H2', Runs.tl, (H2_FOM_Phase1(Runs) + H2_VOM_Phase1(Runs)):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'OPEX', 'All technologies', Runs.tl, (GasCC_FOM_Phase1(Runs) + Diesel_FOM_Phase1(Runs) + SolarFOM_Phase1(Runs) + WindFOM_Phase1(Runs) + Li_Ion_FOM_Phase1(Runs) + Vanadium_FOM_Phase1(Runs) + PHS_FOM_Phase1(Runs) + H2_FOM_Phase1(Runs) + GasCC_VOM_Phase1(Runs) + GasCC_FUEL_Phase1(Runs) + Diesel_VOM_Phase1(Runs) + Diesel_FUEL_Phase1(Runs) +Li_Ion_VOM_Phase1(Runs) + Vanadium_VOM_Phase1(Runs) + PHS_VOM_Phase1(Runs) + H2_VOM_Phase1(Runs) + ImportsCost_Phase1(Runs) + DemandCharges_Phase1(Runs) + ExportsCost_Phase1(Runs)):0:5, 'US$' /);
+             
+        loop (Runs,
+             PUT 'Average added storage cost', 'All storage', Runs.tl, (LCOE_Phase1(runs)):0:5, 'US$/MWh'/) ;
+             
+        loop (Runs,
+             PUT 'Average storage cost', 'All storage', Runs.tl, (LCOS_Phase1(runs)):0:5, 'US$/MW'/) ;
+          
+        loop ((Runs,j),
+             PUT 'Charge power capacity', j.tl, Runs.tl,  TotalCapScha_Phase1(Runs,j):0:5, 'MW' /);
+             
+        loop (Runs,
+             PUT 'Charge power capacity', 'All storage', Runs.tl,  sum(j,TotalCapScha_Phase1(Runs,j)):0:5, 'MW' /);
+        
+        loop ((Runs,j),
+             PUT 'Discharge power capacity', j.tl, Runs.tl,  TotalCapSdis_Phase1(Runs,j):0:5, 'MW' /);
+             
+        loop (Runs,
+             PUT 'Discharge power capacity', 'All storage', Runs.tl,  sum(j,TotalCapSdis_Phase1(Runs,j)):0:5, 'MW' /);
+             
+        loop ((Runs,j),
+             PUT 'Average power capacity', j.tl, Runs.tl,  ((TotalCapScha_Phase1(Runs,j) + TotalCapSdis_Phase1(Runs,j))/2):0:5, 'MW' /);
+             
+        loop (Runs,
+             PUT 'Average power capacity', 'All storage', Runs.tl,  (sum(j,(TotalCapScha_Phase1(Runs,j) + TotalCapSdis_Phase1(Runs,j)))/2):0:5, 'MW' /);
+        
+        loop ((Runs,j),
+             PUT 'Energy capacity', j.tl, Runs.tl,  TotalEcapS_Phase1(Runs,j):0:5, 'MWh' /);
+             
+        loop (Runs,
+             PUT 'Energy capacity', 'All storage', Runs.tl,  sum(j,TotalEcapS_Phase1(Runs,j)):0:5, 'MWh' /);
+        
+        loop ((Runs,j),
+             PUT 'Discharge duration', j.tl, Runs.tl, SummaryD_Phase1(Runs,j):0:5, 'h' /);
+             
+        loop ((Runs,j),
+             PUT 'Equivalent number of cycles', j.tl, Runs.tl, ((TotalGenS_Phase1(Runs,j))/(TotalEcapS_Phase1(Runs,j)+0.0001)):0:5, '-' /);
+             
+        loop (Runs,
+             PUT 'Renewables footprint', 'Solar and Wind', Runs.tl, (pv_footprint * TotalCapPV_Phase1(Runs) + wind_footprint * TotalCapWind_Phase1(Runs)):0:5, 'acres' /);
+        
+        Putclose ;  
+        
+        FILE csvStorage Report File /OutputStorage_Phase1.csv/;
+        PUT csvStorage
+        put_utility 'ren' / '%outdir%\%case_name%\%sim_year%_OutputStorage_Phase1_SDOM_%FNAME%_Target_' GenMix_Target:0 '_Resilience_' %ResilienceOption%:0'_Outage_' max_backup_power_dur:0'hrs_Recovery_'SOC_restore_hours:0'hrs.csv';
+        csvStorage.pc = 5;
+        PUT csvStorage;    
+        PUT 'Scenario', 'Technology', 'Hour', 'Charging power (MW)', 'Discharging power (MW)', 'State of charge (MWh)'  /;
+        loop ((Runs,h,j),
+             PUT Runs.tl, j.tl, h.tl, SummaryPC_Phase1(Runs,h,j):0:5, SummaryPD_Phase1(Runs,h,j):0:5, SummarySOC_Phase1(Runs,h,j):0:5 /);
+        Putclose ;
+        
+        FILE csvGen Report File /OutputGeneration_Phase1.csv/;
+        PUT csvGen
+        put_utility 'ren' / '%outdir%\%case_name%\%sim_year%_OutputGeneration_Phase1_SDOM_%FNAME%_Target_' GenMix_Target:0 '_Resilience_' %ResilienceOption%:0'_Outage_' max_backup_power_dur:0'hrs_Recovery_'SOC_restore_hours:0'hrs.csv';
+        csvGen.pc = 5;
+        PUT csvGen;    
+        PUT 'Scenario', 'Hour','Solar PV Generation (MW)', 'Solar PV Curtailment (MW)', 'Wind Generation (MW)', 'Wind Curtailment (MW)', 'Gas CC Generation (MW)', 'Diesel Generation (MW)', 'Power from Storage and Gas CC to Storage (MW)', 'Imports (MW)', 'Exports (MW)', 'Hydropower (MW)' /;
+        loop ((Runs,h),
+             PUT Runs.tl, h.tl, SolarPVGen_Phase1(Runs,h):0:5, SolarPVCurt_Phase1(Runs,h):0:5, WindGen_Phase1(Runs,h):0:5, WindCurt_Phase1(Runs,h):0:5, GenGasCC_Phase1(Runs,h):0:5, GenGasDiesel_Phase1(Runs,h):0:5, StorageGasCC2Storage_Phase1(Runs,h):0:5, ImportsPower_Phase1(Runs,h):0:5, ExportsPower_Phase1(Runs,h):0:5, HydroGene_Phase1(Runs,h):0:5 /);
+        Putclose ;
+
+    
 FILE csv Report File /OutputSummary.csv/;
 PUT csv
-put_utility 'ren' / '%outdir%\%case_name%\%sim_year%_OutputSummary_SDOM_%FNAME%_Nuclear_' AlphaNuclear:0:0 '_Target_' GenMix_Target:00 '_Resilience_' %ResilienceOption%:00 '.csv';
+put_utility 'ren' / '%outdir%\%case_name%\%sim_year%_OutputSummary_SDOM_%FNAME%_Target_' GenMix_Target:0 '_Resilience_' %ResilienceOption%:0'_Outage_' max_backup_power_dur:0'hrs_Recovery_'SOC_restore_hours:0'hrs.csv';
 csv.pc = 5;
 PUT csv;
 
@@ -983,6 +1414,9 @@ PUT 'Metric','Technology','Scenario','Optimal Value','Unit'/;
 
 loop (Runs,
      PUT 'Total cost', '', Runs.tl, TotalCost(Runs):0:5, 'US$' /);
+     
+loop (Runs,
+     PUT 'Cost of energy', '', Runs.tl, (TotalCost(Runs)/sum(h, Load(h))):0:5, 'US$/MWh'/);
 
 loop (Runs,
      PUT 'Capacity', 'GasCC', Runs.tl, TotalCapCC(Runs):0:5, 'MW' /);
@@ -997,7 +1431,7 @@ loop (Runs,
      PUT 'Capacity', 'Wind', Runs.tl, TotalCapWind(Runs):0:5, 'MW' /);
      
 loop (Runs,
-     PUT 'Capacity', 'All', Runs.tl, (TotalCapWind(Runs) + TotalCapPV(Runs) + TotalCapCC(Runs)):0:5, 'MW' /);
+     PUT 'Capacity', 'All generation', Runs.tl, (TotalCapWind(Runs) + TotalCapPV(Runs) + TotalCapCC(Runs)):0:5, 'MW' /);
      
 loop (Runs,
      PUT 'Total generation', 'GasCC', Runs.tl, TotalGenGasCC(Runs):0:5, 'MWh' /);
@@ -1024,19 +1458,19 @@ loop ((Runs,j),
      PUT 'Total generation', j.tl, Runs.tl, TotalGenS(Runs,j):0:5, 'MWh' /);
      
 loop (Runs,
-     PUT 'Total generation', 'All', Runs.tl, (TotalGenGasCC(Runs) + TotalGenPV(Runs) + TotalGenWind(Runs) + TotalOtherRen(Runs) + TotalHydro(Runs) + TotalNuclear(Runs) + sum(j,TotalGenS(Runs,j))):0:5, 'MWh' /);
+     PUT 'Total generation', 'All technologies', Runs.tl, (TotalGenGasCC(Runs) + TotalGenDiesel(Runs) + TotalGenPV(Runs) + TotalGenWind(Runs) + TotalOtherRen(Runs) + TotalHydro(Runs) + TotalNuclear(Runs) + sum(j,TotalGenS(Runs,j))):0:5, 'MWh' /);
      
 loop (Runs,
-     PUT 'Imports', 'Total Imports/Exports', Runs.tl, sum(h,ImportsPower(Runs,h)):0:5, 'MWh' /);
+     PUT 'Imports', 'Grid', Runs.tl, sum(h,ImportsPower(Runs,h)):0:5, 'MWh' /);
      
 loop (Runs,
-     PUT 'Exports', 'Total Imports/Exports', Runs.tl, sum(h,ExportsPower(Runs,h)):0:5, 'MWh' /);
+     PUT 'Exports', 'Grid', Runs.tl, sum(h,ExportsPower(Runs,h)):0:5, 'MWh' /);
      
 loop ((Runs,j),
      PUT 'Storage energy charging', j.tl, Runs.tl, TotalPCarge(Runs,j):0:5, 'MWh' /);
      
 loop (Runs,
-     PUT 'Storage energy charging', 'All', Runs.tl, TotalAllPCarge(Runs):0:5, 'MWh' /);
+     PUT 'Storage energy charging', 'All storage', Runs.tl, TotalAllPCarge(Runs):0:5, 'MWh' /);
      
 loop (Runs,
      PUT 'Total demand', '', Runs.tl, sum(h, Load(h)):0:5, 'MWh' /);
@@ -1045,7 +1479,7 @@ loop (Runs,
      PUT 'CAPEX', 'GasCC', Runs.tl, GasCC_Capex(Runs):0:5, 'US$' /);
      
 loop (Runs,
-     PUT 'CAPEX', 'Diesel generator', Runs.tl, Diesel_Capex(Runs):0:5, 'US$' /);
+     PUT 'CAPEX', 'Diesel', Runs.tl, Diesel_Capex(Runs):0:5, 'US$' /);
 
 loop (Runs,
      PUT 'CAPEX', 'Solar PV', Runs.tl, SolarCapex(Runs):0:5, 'US$' /);
@@ -1054,7 +1488,7 @@ loop (Runs,
      PUT 'CAPEX', 'Wind', Runs.tl, WindCapex(Runs):0:5, 'US$' /);
 
 loop (Runs,
-     PUT 'CAPEX', 'All', Runs.tl, (GasCC_Capex(Runs) + SolarCapex(Runs) + WindCapex(Runs)):0:5, 'US$' /);      
+     PUT 'CAPEX', 'All generation', Runs.tl, (GasCC_Capex(Runs) + SolarCapex(Runs) + WindCapex(Runs) + Diesel_Capex(Runs)):0:5, 'US$' /);      
 
 loop (Runs,
      PUT 'Power Capex', 'Li-Ion', Runs.tl, Li_Ion_Pcapex(Runs):0:5, 'US$' /);
@@ -1069,7 +1503,7 @@ loop (Runs,
      PUT 'Power Capex', 'H2', Runs.tl, H2_Pcapex(Runs):0:5, 'US$' /);
 
 loop (Runs,
-     PUT 'Total Power Capex', 'All', Runs.tl, (Li_Ion_Pcapex(Runs) + Vanadium_Pcapex(Runs) + PHS_Pcapex(Runs) + H2_Pcapex(Runs)):0:5, 'US$' /);
+     PUT 'Total Power Capex', 'All storage', Runs.tl, (Li_Ion_Pcapex(Runs) + Vanadium_Pcapex(Runs) + PHS_Pcapex(Runs) + H2_Pcapex(Runs)):0:5, 'US$' /);
      
 loop (Runs,
      PUT 'Energy Capex', 'Li-Ion', Runs.tl, Li_Ion_Ecapex(Runs):0:5, 'US$' /);
@@ -1084,7 +1518,7 @@ loop (Runs,
      PUT 'Energy Capex', 'H2', Runs.tl, H2_Ecapex(Runs):0:5, 'US$' /);
      
 loop (Runs,
-     PUT 'Energy Capex', 'All', Runs.tl, (Li_Ion_Ecapex(Runs) + Vanadium_Ecapex(Runs) + PHS_Ecapex(Runs) + H2_Ecapex(Runs)):0:5, 'US$' /);
+     PUT 'Total Energy Capex', 'All storage', Runs.tl, (Li_Ion_Ecapex(Runs) + Vanadium_Ecapex(Runs) + PHS_Ecapex(Runs) + H2_Ecapex(Runs)):0:5, 'US$' /);
 
 loop (Runs,
      PUT 'Total Capex', 'Li-Ion', Runs.tl, (Li_Ion_Ecapex(Runs) + Li_Ion_Pcapex(Runs)):0:5, 'US$' /);
@@ -1099,13 +1533,13 @@ loop (Runs,
      PUT 'Total Capex', 'H2', Runs.tl, (H2_Ecapex(Runs) + H2_Pcapex(Runs)):0:5, 'US$' /);
      
 loop (Runs,
-     PUT 'Total Capex', 'All', Runs.tl, (Li_Ion_Pcapex(Runs) + Vanadium_Pcapex(Runs) + PHS_Pcapex(Runs) + H2_Pcapex(Runs) + Li_Ion_Ecapex(Runs) + Vanadium_Ecapex(Runs) + PHS_Ecapex(Runs) + H2_Ecapex(Runs)):0:5, 'US$' /);
+     PUT 'Total Capex', 'All storage', Runs.tl, (Li_Ion_Pcapex(Runs) + Vanadium_Pcapex(Runs) + PHS_Pcapex(Runs) + H2_Pcapex(Runs) + Li_Ion_Ecapex(Runs) + Vanadium_Ecapex(Runs) + PHS_Ecapex(Runs) + H2_Ecapex(Runs)):0:5, 'US$' /);
 
 loop (Runs,
      PUT 'FOM', 'GasCC', Runs.tl, GasCC_FOM(Runs):0:5, 'US$' /);
      
 loop (Runs,
-     PUT 'FOM', 'Diesel generator', Runs.tl, Diesel_FOM(Runs):0:5, 'US$' /);
+     PUT 'FOM', 'Diesel', Runs.tl, Diesel_FOM(Runs):0:5, 'US$' /);
      
 loop (Runs,
      PUT 'FOM', 'Solar PV', Runs.tl, SolarFOM(Runs):0:5, 'US$' /);
@@ -1126,13 +1560,13 @@ loop (Runs,
      PUT 'FOM', 'H2', Runs.tl, H2_FOM(Runs):0:5, 'US$' /);
      
 loop (Runs,
-     PUT 'FOM', 'All', Runs.tl, (GasCC_FOM(Runs) + SolarFOM(Runs) + WindFOM(Runs) + Li_Ion_FOM(Runs) + Vanadium_FOM(Runs) + PHS_FOM(Runs) + H2_FOM(Runs)):0:5, 'US$' /);
+     PUT 'FOM', 'All technologies', Runs.tl, (GasCC_FOM(Runs) + Diesel_FOM(Runs) + SolarFOM(Runs) + WindFOM(Runs) + Li_Ion_FOM(Runs) + Vanadium_FOM(Runs) + PHS_FOM(Runs) + H2_FOM(Runs)):0:5, 'US$' /);
      
 loop (Runs,
      PUT 'VOM', 'GasCC', Runs.tl, (GasCC_VOM(Runs) + GasCC_FUEL(Runs)):0:5, 'US$' /);
      
 loop (Runs,
-     PUT 'VOM', 'Diesel generator', Runs.tl, (Diesel_VOM(Runs) + Diesel_FUEL(Runs)):0:5, 'US$' /);
+     PUT 'VOM', 'Diesel', Runs.tl, (Diesel_VOM(Runs) + Diesel_FUEL(Runs)):0:5, 'US$' /);
 
 loop (Runs,
      PUT 'VOM', 'Li-Ion', Runs.tl, Li_Ion_VOM(Runs):0:5, 'US$' /);
@@ -1145,21 +1579,24 @@ loop (Runs,
 
 loop (Runs,
      PUT 'VOM', 'H2', Runs.tl, H2_VOM(Runs):0:5, 'US$' /);
+     
+loop (Runs,
+     PUT 'VOM', 'Grid Imports', Runs.tl, ImportsCost(Runs):0:5, 'US$' /);
+     
+loop (Runs,
+     PUT 'VOM', 'Grid Exports', Runs.tl, ExportsCost(Runs):0:5, 'US$' /);
+     
+loop (Runs,
+     PUT 'VOM', 'Demand Exports', Runs.tl, DemandCharges(Runs):0:5, 'US$' /);
 
 loop (Runs,
-     PUT 'VOM', 'H2', Runs.tl, (GasCC_VOM(Runs) + GasCC_FUEL(Runs) + Li_Ion_VOM(Runs) + Vanadium_VOM(Runs) + PHS_VOM(Runs) + H2_VOM(Runs)):0:5, 'US$' /);
-     
-loop (Runs,
-     PUT 'VOM', 'Import Cost', Runs.tl, ImportsCost(Runs):0:5, 'US$' /);
-     
-loop (Runs,
-     PUT 'VOM', 'Export Cost', Runs.tl, ExportsCost(Runs):0:5, 'US$' /);
-     
-loop (Runs,
-     PUT 'VOM', 'Demand Charges', Runs.tl, DemandCharges(Runs):0:5, 'US$' /);
-     
+     PUT 'VOM', 'All technologies', Runs.tl, (GasCC_VOM(Runs) + (Diesel_VOM(Runs) + Diesel_FUEL(Runs)) + GasCC_FUEL(Runs) + Li_Ion_VOM(Runs) + Vanadium_VOM(Runs) + PHS_VOM(Runs) + H2_VOM(Runs) + ImportsCost(Runs) + ExportsCost(Runs) + DemandCharges(Runs)):0:5, 'US$' /);
+          
 loop (Runs,
      PUT 'OPEX', 'GasCC', Runs.tl, (GasCC_FOM(Runs) + GasCC_VOM(Runs) + GasCC_FUEL(Runs)):0:5, 'US$' /);
+     
+loop (Runs,
+     PUT 'OPEX', 'Diesel', Runs.tl, (Diesel_FOM(Runs) + Diesel_VOM(Runs) + Diesel_FUEL(Runs)):0:5, 'US$' /);
      
 loop (Runs,
      PUT 'OPEX', 'Solar PV', Runs.tl, SolarFOM(Runs):0:5, 'US$' /);
@@ -1180,63 +1617,67 @@ loop (Runs,
      PUT 'OPEX', 'H2', Runs.tl, (H2_FOM(Runs) + H2_VOM(Runs)):0:5, 'US$' /);
      
 loop (Runs,
-     PUT 'OPEX', 'All', Runs.tl, (GasCC_FOM(Runs) + SolarFOM(Runs) + WindFOM(Runs) + Li_Ion_FOM(Runs) + Vanadium_FOM(Runs) + PHS_FOM(Runs) + H2_FOM(Runs) + GasCC_VOM(Runs) + GasCC_FUEL(Runs) + Li_Ion_VOM(Runs) + Vanadium_VOM(Runs) + PHS_VOM(Runs) + H2_VOM(Runs)):0:5, 'US$' /);
+     PUT 'OPEX', 'All technologies', Runs.tl, (GasCC_FOM(Runs) + Diesel_FOM(Runs) + SolarFOM(Runs) + WindFOM(Runs) + Li_Ion_FOM(Runs) + Vanadium_FOM(Runs) + PHS_FOM(Runs) + H2_FOM(Runs) + GasCC_VOM(Runs) + GasCC_FUEL(Runs) + Diesel_VOM(Runs) + Diesel_FUEL(Runs) + Li_Ion_VOM(Runs) + Vanadium_VOM(Runs) + PHS_VOM(Runs) + H2_VOM(Runs) + ImportsCost(Runs) + DemandCharges(Runs) + ExportsCost(Runs)):0:5, 'US$' /);
      
 loop (Runs,
-     PUT 'Added LCOE', 'All', Runs.tl, (LCOE(runs)):0:5, 'US$/kWh'/) ;
+     PUT 'Average added storage cost', 'All storage', Runs.tl, (LCOE(runs)):0:5, 'US$/MWh'/) ;
      
 loop (Runs,
-     PUT 'Added LCOS', 'All', Runs.tl, (LCOS(runs)):0:5, 'US$/kW'/) ;
+     PUT 'Average storage cost', 'All storage', Runs.tl, (LCOS(runs)):0:5, 'US$/MW'/) ;
   
 loop ((Runs,j),
      PUT 'Charge power capacity', j.tl, Runs.tl,  TotalCapScha(Runs,j):0:5, 'MW' /);
      
 loop (Runs,
-     PUT 'Charge power capacity', 'All', Runs.tl,  sum(j,TotalCapScha(Runs,j)):0:5, 'MW' /);
+     PUT 'Charge power capacity', 'All storage', Runs.tl,  sum(j,TotalCapScha(Runs,j)):0:5, 'MW' /);
 
 loop ((Runs,j),
      PUT 'Discharge power capacity', j.tl, Runs.tl,  TotalCapSdis(Runs,j):0:5, 'MW' /);
      
 loop (Runs,
-     PUT 'Discharge power capacity', 'All', Runs.tl,  sum(j,TotalCapSdis(Runs,j)):0:5, 'MW' /);
+     PUT 'Discharge power capacity', 'All storage', Runs.tl,  sum(j,TotalCapSdis(Runs,j)):0:5, 'MW' /);
      
 loop ((Runs,j),
      PUT 'Average power capacity', j.tl, Runs.tl,  ((TotalCapScha(Runs,j) + TotalCapSdis(Runs,j))/2):0:5, 'MW' /);
      
 loop (Runs,
-     PUT 'Average power capacity', 'All', Runs.tl,  (sum(j,(TotalCapScha(Runs,j) + TotalCapSdis(Runs,j)))/2):0:5, 'MW' /);
+     PUT 'Average power capacity', 'All storage', Runs.tl,  (sum(j,(TotalCapScha(Runs,j) + TotalCapSdis(Runs,j)))/2):0:5, 'MW' /);
 
 loop ((Runs,j),
      PUT 'Energy capacity', j.tl, Runs.tl,  TotalEcapS(Runs,j):0:5, 'MWh' /);
      
 loop (Runs,
-     PUT 'Energy capacity', 'All', Runs.tl,  sum(j,TotalEcapS(Runs,j)):0:5, 'MWh' /);
+     PUT 'Energy capacity', 'All storage', Runs.tl,  sum(j,TotalEcapS(Runs,j)):0:5, 'MWh' /);
 
 loop ((Runs,j),
      PUT 'Discharge duration', j.tl, Runs.tl, SummaryD(Runs,j):0:5, 'h' /);
      
 loop ((Runs,j),
      PUT 'Equivalent number of cycles', j.tl, Runs.tl, ((TotalGenS(Runs,j))/(TotalEcapS(Runs,j)+0.0001)):0:5, '-' /);
+     
+loop (Runs,
+     PUT 'Renewables footprint', 'Solar and Wind', Runs.tl, (pv_footprint * TotalCapPV(Runs) + wind_footprint * TotalCapWind(Runs)):0:5, 'acres' /);
+        
 
 Putclose ;
 
-FILE csvStorage Report File /OutputStorage.csv/;
-PUT csvStorage
-put_utility 'ren' / '%outdir%\%case_name%\%sim_year%_OutputStorage_SDOM_%FNAME%_Nuclear_' AlphaNuclear:0:0 '_Target_' GenMix_Target:00 '_Resilience_' %ResilienceOption%:00 '.csv';
-csvStorage.pc = 5;
-PUT csvStorage;
+FILE csvStoragePhase1 Report File /OutputStorage.csv/;
+PUT csvStoragePhase1
+put_utility 'ren' / '%outdir%\%case_name%\%sim_year%_OutputStorage_SDOM_%FNAME%_Target_' GenMix_Target:0 '_Resilience_' %ResilienceOption%:0'_Outage_' max_backup_power_dur:0'hrs_Recovery_'SOC_restore_hours:0'hrs.csv';
+csvStoragePhase1.pc = 5;
+PUT csvStoragePhase1;
 
-PUT 'Scenario', 'Technology', 'Hour', 'Charging power (MW)', 'Disharging power (MW)', 'State of charge (MWh)'  /;
+PUT 'Scenario', 'Technology', 'Hour', 'Charging power (MW)', 'Discharging power (MW)', 'State of charge (MWh)'  /;
 loop ((Runs,h,j),
      PUT Runs.tl, j.tl, h.tl, SummaryPC(Runs,h,j):0:5, SummaryPD(Runs,h,j):0:5, SummarySOC(Runs,h,j):0:5 /);
 Putclose ;
 
 
-FILE csvGen Report File /OutputGeneration.csv/;
-PUT csvGen
-put_utility 'ren' / '%outdir%\%case_name%\%sim_year%_OutputGeneration_SDOM_%FNAME%_Nuclear_' AlphaNuclear:0:0 '_Target_' GenMix_Target:00 '_Resilience_' %ResilienceOption%:00 '.csv';
-csvGen.pc = 5;
-PUT csvGen;
+FILE csvGenPhase1 Report File /OutputGeneration.csv/;
+PUT csvGenPhase1
+put_utility 'ren' / '%outdir%\%case_name%\%sim_year%_OutputGeneration_SDOM_%FNAME%_Target_' GenMix_Target:0 '_Resilience_' %ResilienceOption%:0'_Outage_' max_backup_power_dur:0'hrs_Recovery_'SOC_restore_hours:0'hrs.csv';
+csvGenPhase1.pc = 5;
+PUT csvGenPhase1;
 
 PUT 'Scenario', 'Hour','Solar PV Generation (MW)', 'Solar PV Curtailment (MW)', 'Wind Generation (MW)', 'Wind Curtailment (MW)', 'Gas CC Generation (MW)', 'Diesel Generation (MW)', 'Power from Storage and Gas CC to Storage (MW)', 'Imports (MW)', 'Exports (MW)', 'Hydropower (MW)' /;
 loop ((Runs,h),
@@ -1246,7 +1687,7 @@ Putclose ;
 
 FILE csvVRE Report File /OutputSelectedVRE.csv/;
 PUT csvVRE
-put_utility 'ren' / '%outdir%\%case_name%\%sim_year%_OutputSelectedVRE_SDOM_%FNAME%_Nuclear_' AlphaNuclear:0:0 '_Target_' GenMix_Target:00 '_Resilience_' %ResilienceOption%:00 '.csv';
+put_utility 'ren' / '%outdir%\%case_name%\%sim_year%_OutputSelectedVRE_SDOM_%FNAME%_Target_' GenMix_Target:0 '_Resilience_' %ResilienceOption%:0'_Outage_' max_backup_power_dur:0'hrs_Recovery_'SOC_restore_hours:0'hrs.csv';
 csvVRE.pc = 5;
 PUT csvVRE;
 
